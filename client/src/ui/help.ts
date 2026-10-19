@@ -59,7 +59,7 @@ const GITHUB_HELP: [string, string][] = [
 /** O Codex no escritório: o que muda em relação ao Claude Code (trechos `assim` viram código). */
 const CODEX_HELP: string[] = [
   tr('Cada projeto aberto no Codex (no terminal ou no app) vira uma sala: a mesma do Claude Code naquela pasta, e os dois dividem a sala.'),
-  tr('Os agentes do Codex têm o chip da conta vazado (só a borda na cor da conta) e o selo CODEX na etiqueta e nos detalhes.'),
+  tr('O símbolo do Codex identifica os agentes dessa ferramenta; a borda do chip mantém a cor de cada conta.'),
   tr('{0} Sem os hooks, o escritório lê os arquivos de sessão do Codex: cada passo aparece quando termina.', [CODEX_LIVE_HINT]),
   tr('Aprovar pelo escritório: no Codex, a aprovação só aparece no terminal depois que você responder aqui ou o prazo acabar (alguns segundos). Não há “não perguntar de novo” nem “interromper”, e recusar pede um motivo.'),
   tr('Mensagens: entram na fila da sessão e viram o próximo prompt quando o Codex terminar o que está fazendo (até ~10 s). Com o Habblaud no Docker, deixe `npm run codex:bridge` rodando; no modo Node funciona sozinho.'),
@@ -246,8 +246,8 @@ export class HelpDialog {
       h(
         'ul',
         { class: 'ui-help__list' },
-        h('li', { text: tr('O chip colorido com a letra (C, D…) mostra de qual conta do Claude Code é cada agente: cada atalho de terminal usa uma pasta de configuração diferente.') }),
-        h('li', {}, accountSample('C', '#f08a3c'), tr(' Conta do Claude Code · '), accountSample('X', '#a77bf3', true), tr(' Conta do Codex (chip vazado, com o selo CODEX onde há espaço).')),
+        h('li', { text: tr('O símbolo mostra se a conta usa Claude Code ou Codex; a cor da borda distingue contas da mesma ferramenta.') }),
+        h('li', {}, accountSample('C', '#f08a3c'), tr(' Conta do Claude Code · '), accountSample('X', '#a77bf3', true), tr(' Conta do Codex.')),
         h('li', {
           text: tr('No topo, cada conta mostra o uso da sessão de 5 horas e da semana. O ↻ indica quando cada limite reinicia (contagem regressiva se faltar menos de um dia). Verde abaixo de 50%, âmbar até 80% e vermelho a partir daí.'),
         }),
@@ -280,7 +280,7 @@ export class HelpDialog {
 /** Um chip de conta de exemplo (legenda). */
 function accountSample(short: string, color: string, codex = false): HTMLElement {
   const chip = createAccountChip('sm');
-  updateAccountChip(chip, { id: short, short, name: codex ? 'Codex' : tr('Conta {0}', [short]), color, configDir: '', sessions: 0, usageStatus: 'disabled', ...(codex ? { provider: 'codex' as const } : {}) });
+  updateAccountChip(chip, { id: short, short, name: codex ? 'Codex' : 'Claude Code', color, configDir: '', sessions: 0, usageStatus: 'disabled', ...(codex ? { provider: 'codex' as const } : {}) });
   chip.setAttribute('aria-hidden', 'true');
   return chip;
 }

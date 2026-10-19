@@ -103,29 +103,13 @@ interface Label {
 
 type Item = Bubble | Label;
 
-/** Luminância relativa de uma cor hex (0..1). */
-/** Fundo do chip vazado das contas do Codex (o mesmo dos painéis). */
+/** Fundo dos pontos pequenos de conta nas salas. */
 const CODEX_CHIP_BG = '#161b26';
 /** Selo "CODEX" das etiquetas: discreto (vidro claro), sem a cor de ninguém. */
 const CODEX_BADGE = 'CODEX';
 
-/** Octógono "em degrau" (um quadrado de cantos cortados, como um pixel arredondado). */
-function steppedRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, s: number): void {
-  ctx.beginPath();
-  ctx.moveTo(x + s, y);
-  ctx.lineTo(x + w - s, y);
-  ctx.lineTo(x + w, y + s);
-  ctx.lineTo(x + w, y + h - s);
-  ctx.lineTo(x + w - s, y + h);
-  ctx.lineTo(x + s, y + h);
-  ctx.lineTo(x, y + h - s);
-  ctx.lineTo(x, y + s);
-  ctx.closePath();
-}
-
 /**
- * Bolinha de uma conta (placas e pílulas das salas): cheia no Claude Code; vazada (anel na cor da conta) no Codex,
- * como o chip dos painéis.
+ * Bolinha minúscula de uma conta (placas e pílulas das salas): cheia no Claude Code, vazada no Codex.
  */
 function accountDot(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, acc: { color: string; provider?: string }): void {
   ctx.beginPath();
@@ -142,13 +126,6 @@ function accountDot(ctx: CanvasRenderingContext2D, x: number, y: number, r: numb
   }
   ctx.fillStyle = acc.color;
   ctx.fill();
-}
-
-function luminance(hex: string): number {
-  const m = /^#?([0-9a-f]{6})$/i.exec(hex);
-  if (!m) return 0.5;
-  const n = parseInt(m[1], 16);
-  return (0.2126 * ((n >> 16) & 255) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255;
 }
 
 /** Altura (px de mundo) ocupada pelos ícones sobre a cabeça: balões e etiquetas sobem para não cobri-los. */
@@ -183,6 +160,8 @@ export function rationBubbles(items: readonly { room: string; prio: number; chan
 }
 
 export class Overlay {
+  private readonly claudeLogo = new Image();
+  private readonly codexLogo = new Image();
   private widths = new Map<string, number>();
   private fitted = new Map<string, string>();
   private placed: number[] = [];
@@ -205,7 +184,10 @@ export class Overlay {
     private readonly sim: Sim,
     private readonly renderer: Renderer,
     private readonly camera: Camera,
-  ) {}
+  ) {
+    this.claudeLogo.src = '/assets/providers/claude.svg';
+    this.codexLogo.src = '/assets/providers/codex.png';
+  }
 
   /** Descarta medições (ex.: depois que uma fonte carregou). */
   resetCaches(): void {
@@ -873,7 +855,7 @@ export class Overlay {
     const ch = l.ch;
     const acc = this.sim.accounts.get(ch.info.account);
     const nameW = this.measure(LABEL_FONT, ch.info.name);
-    const chipW = acc ? 13 : 0;
+    const chipW = acc ? 15 : 0;
     const visitor = ch === this.sim.visitor;
     const badgeW = visitor ? this.measure(BADGE_FONT, visitorBadge()) + 7 : ch.info.kind === 'sub' && !l.compact ? this.measure(BADGE_FONT, 'SUB') + 7 : 0;
     const codexW = ch.info.provider === 'codex' && !l.compact ? this.measure(BADGE_FONT, CODEX_BADGE) + 7 : 0;
@@ -916,31 +898,24 @@ export class Overlay {
     ctx.roundRect(x, y, w, h, 7.5);
     ctx.fill();
     let cx = x + 4;
-    if (acc && codex) {
-      // Codex: chip vazado de cantos em degrau (fundo escuro, borda e letra na cor da conta), como nos painéis.
-      steppedRect(ctx, cx, y + h / 2 - 5, 10, 10, 2);
-      ctx.fillStyle = CODEX_CHIP_BG;
-      ctx.fill();
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = acc.color;
-      steppedRect(ctx, cx + 0.75, y + h / 2 - 4.25, 8.5, 8.5, 1.6);
-      ctx.stroke();
-      ctx.font = CHIP_FONT;
-      ctx.textAlign = 'center';
-      ctx.fillStyle = acc.color;
-      ctx.fillText(acc.short.slice(0, 1), cx + 5, y + h / 2 + 0.5);
-      ctx.textAlign = 'left';
-      cx += chipW;
-    } else if (acc) {
+    if (acc) {
+      const logo = codex ? this.codexLogo : this.claudeLogo;
       ctx.beginPath();
-      ctx.arc(cx + 5, y + h / 2, 5, 0, Math.PI * 2);
-      ctx.fillStyle = acc.color;
+      ctx.roundRect(cx, y + h / 2 - 6.5, 13, 13, 3);
+      ctx.fillStyle = '#171b24';
       ctx.fill();
-      ctx.font = CHIP_FONT;
-      ctx.textAlign = 'center';
-      ctx.fillStyle = luminance(acc.color) > 0.62 ? '#1d2330' : '#ffffff';
-      ctx.fillText(acc.short.slice(0, 1), cx + 5, y + h / 2 + 0.5);
-      ctx.textAlign = 'left';
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = acc.color;
+      ctx.stroke();
+      if (logo.complete && logo.naturalWidth) {
+        ctx.drawImage(logo, cx + 1, y + h / 2 - 5.5, 11, 11);
+      } else {
+        ctx.font = CHIP_FONT;
+        ctx.textAlign = 'center';
+        ctx.fillStyle = acc.color;
+        ctx.fillText(acc.short.slice(0, 1), cx + 6.5, y + h / 2 + 0.5);
+        ctx.textAlign = 'left';
+      }
       cx += chipW;
     }
     ctx.font = LABEL_FONT;

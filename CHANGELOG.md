@@ -12,6 +12,8 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Contas identificadas pelas marcas oficiais.** Os chips agora exibem os símbolos do Claude e do Codex, inclusive nos filtros, cartões, estatísticas e etiquetas dos personagens; a borda continua com a cor de cada conta.
+
 - **Salas explicadas na lista.** O painel agora informa que salas representam pastas com sessões abertas, mostra a pasta de trabalho com rótulo e identifica claramente Claude Code e Codex em cada sala e nos filtros. Títulos de tarefa aparecem com mais espaço.
 
 - **Painéis mais legíveis.** A lista de salas e o feed ganharam melhor espaçamento, alinhamento e hierarquia de texto; superfícies e seleção ficaram mais nítidas sobre o escritório.

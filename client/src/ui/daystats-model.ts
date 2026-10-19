@@ -252,7 +252,7 @@ export interface AccountCard {
   tokens: string;
   /** null = conta do Codex (ele não grava custo: o cartão mostra só os tokens). */
   cost: string | null;
-  /** Conta do Codex (chip vazado). */
+  /** Conta do Codex (símbolo próprio no chip). */
   codex: boolean;
 }
 

@@ -4,23 +4,28 @@ import type { AccountInfo, Activity, AgentInfo, AgentStatus, Provider } from '..
 import { h, setAttr, setHidden, setStyleVar, setText, setTitle, setVariant } from './dom';
 import { WORDMARK } from './icons';
 import { shellDoneKind, shellLine, shellStage, statusLabel, type ShellWait } from './model';
-import { accountChipLabel, accountProvider, fallbackShort, showsProviderTag } from './provider';
+import { accountChipLabel, accountProvider, showsProviderTag } from './provider';
 import { tr } from '../../../shared/i18n';
 
 /**
- * Chip quadrado com a letra curta da conta ("C", "D") na cor da conta. Conta do Codex: o chip fica vazado (fundo
- * escuro, borda e letra na cor da conta, cantos em degrau): `data-provider="codex"`.
+ * Símbolo oficial da ferramenta dentro do chip; a borda conserva a cor própria da conta.
  */
 export function createAccountChip(size: 'sm' | 'md' | 'lg' = 'sm'): HTMLElement {
-  return h('span', { class: `ui-acc-chip ui-acc-chip--${size}` });
+  return h('span', { class: `ui-acc-chip ui-acc-chip--${size}` }, h('img', { attrs: { src: '/assets/providers/claude.svg', alt: '', 'aria-hidden': 'true' } }));
+}
+
+/** Atualiza apenas a identidade visual; também serve aos resumos históricos sem AccountInfo completo. */
+export function setAccountChipBrand(chip: HTMLElement, provider: Provider, color: string): void {
+  setStyleVar(chip, '--acc', color);
+  setAttr(chip, 'data-provider', provider);
+  const img = chip.firstElementChild;
+  if (img) setAttr(img, 'src', provider === 'codex' ? '/assets/providers/codex.png' : '/assets/providers/claude.svg');
 }
 
 /** `provider` = dica para quando a conta não está no snapshot (ex.: a sessão do histórico diz de que ferramenta é). */
 export function updateAccountChip(chip: HTMLElement, account: AccountInfo | undefined, fallbackId = '', provider?: Provider): void {
   const p = accountProvider(account, fallbackId, provider);
-  setText(chip, account?.short ?? fallbackShort(fallbackId, p));
-  setStyleVar(chip, '--acc', account?.color ?? '#8b98b3');
-  setAttr(chip, 'data-provider', p === 'codex' ? 'codex' : null);
+  setAccountChipBrand(chip, p, account?.color ?? '#8b98b3');
   const label = accountChipLabel(account, fallbackId, p);
   setTitle(chip, label);
   setAttr(chip, 'aria-label', label);
