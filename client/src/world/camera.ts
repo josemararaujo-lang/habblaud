@@ -31,6 +31,23 @@ export function overviewFrame(
   return { zoom: Math.min(freeW / r.w, freeH / r.h), cx: r.x + r.w / 2, cy: r.y + r.h / 2, dy: (m.top - m.bottom) / 2 };
 }
 
+/** No celular em pé, amplia o prédio para usar a altura disponível; o arraste revela as laterais. */
+export function automaticFrame(
+  building: Bounds,
+  viewW: number,
+  viewH: number,
+  insets: { top: number; right: number; bottom: number; left: number },
+): ReturnType<typeof overviewFrame> {
+  const full = overviewFrame(building, viewW, viewH, insets);
+  const freeW = viewW - insets.left - insets.right;
+  const freeH = viewH - insets.top - insets.bottom;
+  if (viewW > 600 || freeH < freeW * 1.2) return full;
+  const framedHeight = building.h + 3.5 * TILE;
+  const heightZoom = Math.max(0, freeH - OVERVIEW_MARGIN.top - OVERVIEW_MARGIN.bottom) / framedHeight;
+  if (heightZoom <= full.zoom) return full;
+  return { ...full, zoom: Math.max(full.zoom, Math.min(heightZoom * 0.72, full.zoom * 2.2)) };
+}
+
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 export class Camera {

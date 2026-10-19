@@ -12,6 +12,8 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Escritório maior no celular.** Em telas estreitas e verticais, a abertura amplia as salas para ocupar melhor a altura disponível; arraste para ver as laterais e use Visão geral para enquadrar o prédio inteiro.
+
 - **Feed com foco nos acontecimentos importantes.** O painel abre no modo Importantes, que mostra pedidos, mudanças,
   testes, erros e conclusões; o botão Tudo revela os passos detalhados. Eventos operacionais idênticos em sequência
   aparecem agrupados com uma contagem, e a escolha fica salva no navegador.
