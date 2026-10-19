@@ -60,6 +60,10 @@ export class Sidebar implements UiComponent {
   private nowPanel: NowPanel;
   private roomList: HTMLElement;
   private tabs: HTMLButtonElement[];
+  private summary: HTMLElement;
+  private compactBtn: HTMLButtonElement;
+  private mainBtn: HTMLButtonElement;
+  private focusBtn: HTMLButtonElement;
   private lastSelKey = '';
 
   constructor(private ctx: UiContext) {
@@ -132,18 +136,23 @@ export class Sidebar implements UiComponent {
         click: () => {
           this.input.value = '';
           this.query = '';
-          this.ctx.updatePrefs({ hiddenAccounts: [] });
+          this.nowPanel.resetFilters();
+          this.ctx.updatePrefs({ hiddenAccounts: [], mainAgentsOnly: false });
         },
       },
     });
     this.empty = h('div', { class: 'ui-side__empty', hidden: true }, this.emptyText, this.clearBtn);
     this.scroller.append(this.empty);
 
+    this.summary = h('p', { class: 'ui-side__summary' });
+    this.compactBtn = h('button', { class: 'ui-side-option', type: 'button', text: tr('Compacto'), title: tr('Mostrar mais agentes com cartões compactos'), on: { click: () => ctx.updatePrefs({ compactCards: !ctx.prefs.compactCards }) } });
+    this.focusBtn = h('button', { class: 'ui-side-option', type: 'button', text: tr('Foco'), title: tr('Reduzir passeios e mostrar somente balões importantes'), on: { click: () => ctx.updatePrefs({ focusMode: !ctx.prefs.focusMode }) } });
+    this.mainBtn = h('button', { class: 'ui-side-option', type: 'button', text: tr('Só principais'), title: tr('Mostrar somente agentes principais'), on: { click: () => ctx.updatePrefs({ mainAgentsOnly: !ctx.prefs.mainAgentsOnly }) } });
     const close = iconButton(ICONS.close, tr('Fechar painel lateral'), () => ctx.togglePanel('sidebar', false), 'ui-side__close');
     this.el = h(
       'aside',
       { class: 'ui-panel ui-sidebar', attrs: { 'aria-label': tr('Salas e agentes'), id: 'ui-sidebar' } },
-      h('div', { class: 'ui-side__head' }, h('div', { class: 'ui-side__title' }, h('h2', { text: tr('Escritório') }), close), h('p', { class: 'ui-side__hint', text: tr('Cada sala reúne sessões abertas na mesma pasta.') }), search, this.filters, h('div', { class: 'ui-view-tabs', role: 'group', attrs: { 'aria-label': tr('Organizar escritório') } }, ...this.tabs)),
+      h('div', { class: 'ui-side__head' }, h('div', { class: 'ui-side__title' }, h('h2', { text: tr('Escritório'), title: tr('Cada sala reúne sessões abertas na mesma pasta.') }), h('div', { class: 'ui-side__options' }, this.compactBtn, this.focusBtn, close)), this.summary, search, this.filters, h('div', { class: 'ui-view-tabs', role: 'group', attrs: { 'aria-label': tr('Organizar escritório') } }, ...this.tabs, this.mainBtn)),
       this.scroller,
     );
     const grip = h('div', { class: 'ui-side__resize', role: 'separator', tabIndex: 0, attrs: { 'aria-label': tr('Largura do painel lateral'), 'aria-orientation': 'vertical', 'aria-valuemin': 300, 'aria-valuemax': 440 } });
@@ -176,6 +185,12 @@ export class Sidebar implements UiComponent {
     const snap = this.ctx.store.snapshot;
     const accounts = snap?.accounts ?? [];
     const hidden = new Set(this.ctx.prefs.hiddenAccounts);
+    setText(this.summary, tr('{0} salas · {1} agentes', [snap?.rooms.length ?? 0, snap?.agents.filter(a => a.status !== 'offline').length ?? 0]));
+    setAttr(this.compactBtn, 'aria-pressed', String(this.ctx.prefs.compactCards));
+    setAttr(this.mainBtn, 'aria-pressed', String(this.ctx.prefs.mainAgentsOnly));
+    setAttr(this.focusBtn, 'aria-pressed', String(this.ctx.prefs.focusMode));
+    this.el.classList.toggle('is-compact', this.ctx.prefs.compactCards);
+    setHidden(this.mainBtn, this.ctx.prefs.sidebarView !== 'now');
     this.filterList.sync(accounts.length > 1 ? accounts : []);
     setHidden(this.filters, accounts.length <= 1);
 
@@ -187,10 +202,16 @@ export class Sidebar implements UiComponent {
     setHidden(this.nowPanel.el, !nowView);
     this.tabs.forEach((tab, i) => setAttr(tab, 'aria-pressed', String(i === (nowView ? 0 : 1))));
     this.rooms.sync(nowView ? [] : groups);
-    const nowAgents = groups.flatMap(g => g.agents.filter(a => !hidden.has(a.account) && matchesQuery(a, g.room, this.ctx.account(a.account), this.query)));
+    const nowAgents = groups.flatMap(g => g.agents.filter(a => (!this.ctx.prefs.mainAgentsOnly || a.kind === 'main') && !hidden.has(a.account) && matchesQuery(a, g.room, this.ctx.account(a.account), this.query)));
+    const sel = this.ctx.selection();
+    const selKey = sel ? `${sel.type}:${sel.id}` : '';
+    if (nowView && selKey !== this.lastSelKey && sel?.type === 'agent') {
+      const selectedAgent = this.ctx.agent(sel.id);
+      if (selectedAgent) this.nowPanel.revealAgent(selectedAgent);
+    }
     this.nowPanel.render(nowView ? nowAgents : []);
 
-    const filtering = this.query.trim().length > 0 || hidden.size > 0;
+    const filtering = this.query.trim().length > 0 || hidden.size > 0 || (nowView && this.ctx.prefs.mainAgentsOnly);
     const total = snap?.agents.length ?? 0;
     // Escritório vazio sem filtro: o cartão central já explica; a lista não repete o aviso.
     const showEmpty = (nowView ? !nowAgents.some(a => a.status !== 'offline') : groups.length === 0) && (filtering || !officeIsEmpty(this.ctx));
@@ -201,15 +222,13 @@ export class Sidebar implements UiComponent {
         filtering && total > 0
           ? this.query.trim()
             ? tr('Nenhum agente encontrado para “{0}”.', [this.query.trim()])
-            : tr('Nenhum agente nas contas selecionadas.')
+            : this.ctx.prefs.mainAgentsOnly ? tr('Nenhum agente principal com estes filtros.') : tr('Nenhum agente nas contas selecionadas.')
           : tr('Nenhuma sessão aberta no momento.'),
       );
       setHidden(this.clearBtn, !(filtering && total > 0));
     }
 
     // Ao mudar a seleção (ex.: clique no canvas), traz o item para a área visível.
-    const sel = this.ctx.selection();
-    const selKey = sel ? `${sel.type}:${sel.id}` : '';
     if (selKey !== this.lastSelKey) {
       this.lastSelKey = selKey;
       if (sel) {

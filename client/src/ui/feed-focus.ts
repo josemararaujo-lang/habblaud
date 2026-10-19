@@ -2,7 +2,7 @@ import type { Activity, FeedItem } from '../../../shared/types';
 import { GITHUB_TOOL } from '../../../shared/github';
 import { shellDoneKind } from './model';
 
-export type FeedMode = 'important' | 'all';
+export type FeedMode = 'important' | 'errors' | 'all';
 export type FeedRow = FeedItem & { repeatCount?: number };
 
 const IMPORTANT = new Set<Activity['kind']>([
@@ -24,7 +24,7 @@ export function isImportantFeedItem(item: FeedItem): boolean {
 export function feedRows(items: readonly FeedItem[], mode: FeedMode, limit = 50): FeedRow[] {
   const rows: FeedRow[] = [];
   for (const item of items) {
-    if (mode === 'important' && !isImportantFeedItem(item)) continue;
+    if (!matchesFeedMode(item, mode)) continue;
     const previous = rows[rows.length - 1];
     if (
       previous && !item.activity.error && !shellDoneKind(item.activity) && REPEATABLE.has(item.activity.kind) &&
@@ -39,4 +39,13 @@ export function feedRows(items: readonly FeedItem[], mode: FeedMode, limit = 50)
     }
   }
   return rows.slice(-limit);
+}
+
+export function matchesFeedMode(item: FeedItem, mode: FeedMode): boolean {
+  if (mode === 'errors') return item.activity.kind === 'error' || !!item.activity.error || shellDoneKind(item.activity) === 'fail';
+  return mode === 'all' || isImportantFeedItem(item);
+}
+
+export function matchesFeedSelection(item: FeedItem, selection: { type: 'agent' | 'room'; id: string } | null): boolean {
+  return !selection || (selection.type === 'agent' ? item.agentId === selection.id : item.roomId === selection.id);
 }

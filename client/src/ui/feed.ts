@@ -5,7 +5,7 @@ import { createAvatar, createAvatarPlaceholder, updateAvatar } from './avatar';
 import type { UiComponent, UiContext } from './context';
 import { h, KeyedList, setAttr, setHidden, setText, setTitle } from './dom';
 import { formatClock } from './format';
-import { feedRows, isImportantFeedItem, type FeedRow } from './feed-focus';
+import { feedRows, matchesFeedMode, matchesFeedSelection, type FeedRow } from './feed-focus';
 import { ICONS } from './icons';
 import { shellDoneKind } from './model';
 import { officeIsEmpty } from './overlays';
@@ -32,6 +32,9 @@ export class FeedPanel implements UiComponent {
   private filterNote: HTMLElement;
   private importantBtn: HTMLButtonElement;
   private allBtn: HTMLButtonElement;
+  private errorsBtn: HTMLButtonElement;
+  private scopeBtn: HTMLButtonElement;
+  private followingSelection = false;
   /** Aparência/conta dos agentes com eventos guardados (o feed sobrevive à saída do agente). */
   private meta = new Map<string, AgentMeta>();
 
@@ -49,7 +52,9 @@ export class FeedPanel implements UiComponent {
     this.filterNote = h('span', { class: 'ui-feed__filter', hidden: true });
     this.importantBtn = h('button', { class: 'ui-feed__mode-btn', type: 'button', text: tr('Importantes'), on: { click: () => ctx.updatePrefs({ feedMode: 'important' }) } });
     this.allBtn = h('button', { class: 'ui-feed__mode-btn', type: 'button', text: tr('Tudo'), on: { click: () => ctx.updatePrefs({ feedMode: 'all' }) } });
-    const modes = h('div', { class: 'ui-feed__modes', role: 'group', attrs: { 'aria-label': tr('Filtrar atividade') } }, this.importantBtn, this.allBtn);
+    this.errorsBtn = h('button', { class: 'ui-feed__mode-btn', type: 'button', text: tr('Erros'), on: { click: () => ctx.updatePrefs({ feedMode: 'errors' }) } });
+    this.scopeBtn = h('button', { class: 'ui-feed__mode-btn ui-feed__scope', type: 'button', text: tr('Seleção'), on: { click: () => { this.followingSelection = !this.followingSelection; ctx.invalidate(); } } });
+    const modes = h('div', { class: 'ui-feed__modes', role: 'group', attrs: { 'aria-label': tr('Filtrar atividade') } }, this.importantBtn, this.errorsBtn, this.allBtn, this.scopeBtn);
     this.toggleBtn = h('button', { class: 'ui-icon-btn ui-icon-btn--sm', type: 'button', on: { click: () => ctx.togglePanel('feed') } });
     const scroller = h('div', { class: 'ui-feed__scroll' }, this.list, this.empty);
     scroller.addEventListener('scroll', () => {
@@ -113,10 +118,15 @@ export class FeedPanel implements UiComponent {
     // Filtro por conta da barra lateral: também vale para o feed.
     const hidden = this.ctx.prefs.hiddenAccounts;
     const mode = this.ctx.prefs.feedMode;
-    const filtering = hidden.length > 0;
-    const accountItems = this.items.filter((f) => this.visible(f));
+    const selection = this.ctx.selection();
+    const scope = this.followingSelection ? selection : null;
+    this.scopeBtn.disabled = !selection;
+    setAttr(this.scopeBtn, 'aria-pressed', String(!!scope));
+    setTitle(this.scopeBtn, selection ? tr('Mostrar apenas a atividade do agente ou sala selecionada') : tr('Selecione um agente ou uma sala no escritório'));
+    const filtering = hidden.length > 0 || !!scope;
+    const accountItems = this.items.filter((f) => this.visible(f) && matchesFeedSelection(f, scope));
     const visible = feedRows(accountItems, mode, VISIBLE);
-    const pending = this.pending.filter((f) => this.visible(f) && (mode === 'all' || isImportantFeedItem(f)));
+    const pending = this.pending.filter((f) => this.visible(f) && matchesFeedSelection(f, scope) && matchesFeedMode(f, mode));
     const newCount = pending.length;
     setHidden(this.newPill, !(paused && newCount > 0 && open));
     if (newCount) setText(this.newPill, newCount === 1 ? tr('1 nova') : tr('{0} novas', [Math.min(newCount, 99)]));
@@ -124,18 +134,19 @@ export class FeedPanel implements UiComponent {
     setHidden(this.empty, visible.length > 0 || officeIsEmpty(this.ctx));
     setText(
       this.empty,
-      filtering && this.items.length > 0 && accountItems.length === 0 ? tr('Nenhum evento das contas selecionadas.') : mode === 'important' ? tr('Nenhum evento importante recente.') : tr('Os eventos dos agentes aparecem aqui assim que acontecem.'),
+      scope && accountItems.length === 0 ? tr('Nenhuma atividade recente nesta seleção.') : filtering && this.items.length > 0 && accountItems.length === 0 ? tr('Nenhum evento das contas selecionadas.') : mode === 'errors' ? tr('Nenhum erro recente com estes filtros.') : mode === 'important' ? tr('Nenhum evento importante recente.') : tr('Os eventos dos agentes aparecem aqui assim que acontecem.'),
     );
     setHidden(this.filterNote, !filtering);
     if (filtering) {
       const names = hidden.map((id) => this.ctx.account(id)?.name ?? id);
-      setText(this.filterNote, 'filtrado');
-      setTitle(this.filterNote, tr('Sem {0} (filtro da barra lateral)', [names.join(', ')]));
+      setText(this.filterNote, tr('Filtrado'));
+      setTitle(this.filterNote, scope ? tr('Mostrar apenas a atividade do agente ou sala selecionada') : tr('Sem {0} (filtro da barra lateral)', [names.join(', ')]));
     }
 
     const latest = pending[pending.length - 1] ?? visible[visible.length - 1];
     setText(this.ticker, latest ? `${latest.agentName}: ${latest.activity.icon} ${latest.activity.text}` : '');
     setAttr(this.importantBtn, 'aria-pressed', String(mode === 'important'));
+    setAttr(this.errorsBtn, 'aria-pressed', String(mode === 'errors'));
     setAttr(this.allBtn, 'aria-pressed', String(mode === 'all'));
     this.toggleBtn.innerHTML = open ? ICONS.chevronDown : ICONS.chevronUp;
     const label = open ? tr('Recolher feed ( ] )') : tr('Abrir feed ( ] )');

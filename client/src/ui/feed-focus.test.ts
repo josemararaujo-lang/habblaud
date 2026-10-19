@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ActivityKind, FeedItem } from '../../../shared/types';
 import { GITHUB_TOOL } from '../../../shared/github';
-import { feedRows, isImportantFeedItem } from './feed-focus';
+import { feedRows, isImportantFeedItem, matchesFeedSelection } from './feed-focus';
 
 function event(id: string, kind: ActivityKind, text = id, at = 0, agentId = 'a'): FeedItem {
   return { id, agentId, roomId: 'r', roomName: 'Sala', agentName: agentId,
@@ -43,4 +43,18 @@ describe('feed com foco', () => {
 
 it('excludes response typing, generic tools and social simulation from important events', () => {
   expect(feedRows([event('r', 'respond'), event('tool', 'other', 'Usando webrun'), event('social:1', 'other'), event('d', 'done')], 'important').map(x => x.id)).toEqual(['d']);
+});
+
+
+it('keeps tool failures and explicit errors separate from successful work', () => {
+  const failedTool = event('tool', 'run');
+  failedTool.activity.error = true;
+  expect(feedRows([event('ok', 'done'), failedTool, event('failure', 'error'), event('edit', 'edit')], 'errors').map(x => x.id)).toEqual(['tool', 'failure']);
+});
+
+it('scopes activity to the selected agent or room without mixing other work', () => {
+  const items = [event('a', 'edit', '', 1, 'one'), event('b', 'edit', '', 2, 'two'), { ...event('c', 'edit'), roomId: 'other' }];
+  expect(items.filter(x => matchesFeedSelection(x, { type: 'agent', id: 'one' })).map(x => x.id)).toEqual(['a']);
+  expect(items.filter(x => matchesFeedSelection(x, { type: 'room', id: 'r' })).map(x => x.id)).toEqual(['a', 'b']);
+  expect(items.filter(x => matchesFeedSelection(x, null))).toHaveLength(3);
 });

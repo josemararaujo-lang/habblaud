@@ -429,15 +429,14 @@ class AgentView {
       this.shellBox,
       this.shellsSec.el,
       nowSec.el,
+      resultSec.el,
       this.msgSec.el,
       this.tasksSec.el,
       this.teamSec.el,
-      resultSec.el,
       this.collaborationSec.el,
       this.timelineSec.el,
       this.social.el,
-      statsSec.el,
-      this.codexHint,
+      h('details', { class: 'ui-technical' }, h('summary', { text: tr('Detalhes técnicos da sessão') }), statsSec.el, this.codexHint),
     );
   }
 

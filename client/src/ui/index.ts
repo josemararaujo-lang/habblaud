@@ -94,6 +94,8 @@ export function createUI(root: HTMLElement, store: OfficeStore, world: WorldApi,
       return prefs;
     },
     updatePrefs(patch) {
+      // Editing motion preferences explicitly leaves focus mode; toggling it otherwise restores those choices.
+      if (patch.focusMode === undefined && (patch.bubbles !== undefined || patch.liveliness !== undefined)) patch = { ...patch, focusMode: false };
       prefs = { ...prefs, ...patch };
       savePrefs(storage, prefs);
       world.setOptions(worldOptionsFrom(prefs));

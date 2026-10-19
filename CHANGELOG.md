@@ -12,6 +12,11 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Acompanhamento mais claro.** Cartões compactos ajustáveis, resumo do escritório, filtro de agentes principais e grupos recolhíveis para conclusões e disponibilidade. Equipe e provedor aparecem juntos nos cartões; os filtros de estado permanecem visíveis durante a rolagem.
+- **Modo Foco.** Um controle reduz passeios e limita os balões aos acontecimentos importantes, preservando as preferências anteriores ao sair.
+- **Feed direcionado.** Filtros de erros e da seleção atual permitem acompanhar um agente ou uma sala, com estados vazios explicados.
+- **Detalhes na ordem de uso.** Resultado e próximo passo aparecem junto à atividade atual; estatísticas e configuração técnica ficam em uma seção expansível.
+
 - **Barra superior compacta.** Marca, indicadores e controles alinhados em uma faixa de 56 px quando as contas cabem. Cartões de consumo menores, com percentuais visíveis e renovação nos detalhes por mouse ou teclado; a segunda linha também ocupa menos altura em telas estreitas.
 
 - **Mensagens do Codex conectadas.** A ponte oferece o modo `--messages-only`, que mantém somente a entrega de mensagens ativa.

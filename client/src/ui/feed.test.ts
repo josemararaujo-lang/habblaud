@@ -77,6 +77,7 @@ function panel(feed: FeedItem[] = [], agents: AgentInfo[] = []) {
     world: { onSocialEvent: (cb: typeof social) => { social = cb; } },
     prefs, agent: (id: string) => snapshot.agents.find((a) => a.id === id), account: () => undefined,
     invalidate: () => {}, togglePanel: () => {}, isPanelOpen: () => open,
+    selection: () => null,
     updatePrefs: (patch: Partial<typeof prefs>) => Object.assign(prefs, patch),
   } as unknown as UiContext;
   const view = new FeedPanel(ctx);

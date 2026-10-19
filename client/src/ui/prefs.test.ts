@@ -123,3 +123,14 @@ describe('migração do nome antigo (CodeTown)', () => {
     expect(Object.fromEntries(full.data)).toEqual({ 'codetown:prefs': '{}' });
   });
 });
+
+
+it('focus mode temporarily reduces motion and preserves the saved choices', () => {
+  const saved = sanitizePrefs({ focusMode: true, bubbles: 'all', liveliness: 'lively', compactCards: false, mainAgentsOnly: true, feedMode: 'errors' });
+  const st = memoryStorage();
+  savePrefs(st, saved);
+  expect(loadPrefs(st)).toMatchObject({ compactCards: false, mainAgentsOnly: true, focusMode: true, feedMode: 'errors' });
+  expect(worldOptionsFrom(saved)).toMatchObject({ bubbles: 'important', liveliness: 'calm' });
+  expect(worldOptionsFrom({ ...saved, focusMode: false })).toMatchObject({ bubbles: 'all', liveliness: 'lively' });
+  expect(worldOptionsFrom({ ...saved, bubbles: 'none' }).bubbles).toBe('none');
+});

@@ -2,6 +2,26 @@
 // As lacunas {0}, {1}... (e as nomeadas, como {sala}) precisam aparecer na tradução, em qualquer ordem.
 // Chave ausente = o texto fica em PT. `npm run i18n:check` lista os textos sem tradução e as chaves que sobraram.
 export const FR: Readonly<Record<string, string>> = {
+  "Detalhes técnicos da sessão": "Détails techniques de la session",
+  "Erros": "Erreurs",
+  "Seleção": "Sélection",
+  "Mostrar apenas a atividade do agente ou sala selecionada": "Afficher uniquement l’activité de l’agent ou de la salle sélectionnée",
+  "Selecione um agente ou uma sala no escritório": "Sélectionnez un agent ou une salle dans le bureau",
+  "Nenhuma atividade recente nesta seleção.": "Aucune activité récente dans cette sélection.",
+  "Nenhum erro recente com estes filtros.": "Aucune erreur récente avec ces filtres.",
+  "Filtrado": "Filtré",
+  "Ver todos os estados": "Voir tous les états",
+  "Equipe de {0}": "Équipe de {0}",
+  "{0} subagentes": "{0} sous-agents",
+  "Compacto": "Compact",
+  "Mostrar mais agentes com cartões compactos": "Afficher plus d’agents avec des cartes compactes",
+  "Foco": "Focus",
+  "Reduzir passeios e mostrar somente balões importantes": "Réduire les déplacements et afficher uniquement les bulles importantes",
+  "Só principais": "Principaux",
+  "Mostrar somente agentes principais": "Afficher uniquement les agents principaux",
+  "{0} salas · {1} agentes": "{0} salles · {1} agents",
+  "Nenhum agente principal com estes filtros.": "Aucun agent principal ne correspond à ces filtres.",
+
   "Atenção": "Attention",
   "Ativos": "Actifs",
   "Revisar": "Vérifier",
