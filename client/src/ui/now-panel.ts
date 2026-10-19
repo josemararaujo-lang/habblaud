@@ -76,7 +76,7 @@ export class NowPanel {
           const parent = agents.find(x => x.id === a.parentId);
           const children = agents.filter(x => x.parentId === a.id && x.status !== 'offline').length;
           const provider = a.provider === 'codex' ? tr('Codex') : tr('Claude Code');
-          const team = parent ? tr('Equipe de {0}', [parent.name]) : a.kind !== 'main' ? tr('Subagente') : children ? tr('{0} subagentes', [children]) : '';
+          const team = parent ? tr('Equipe de {0}', [parent.name]) : a.kind !== 'main' ? tr('Subagente') : children === 1 ? tr('1 subagente') : children ? tr('{0} subagentes', [children]) : '';
           setText(r.team, team ? `${provider} · ${team}` : provider);
           const progress = taskProgress(a.tasks);
           setHidden(r.progressBox, progress.total === 0);

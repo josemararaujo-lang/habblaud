@@ -2,6 +2,7 @@
 // As lacunas {0}, {1}... (e as nomeadas, como {sala}) precisam aparecer na tradução, em qualquer ordem.
 // Chave ausente = o texto fica em PT. `npm run i18n:check` lista os textos sem tradução e as chaves que sobraram.
 export const FR: Readonly<Record<string, string>> = {
+  "1 subagente": "1 sous-agent",
   "Detalhes técnicos da sessão": "Détails techniques de la session",
   "Erros": "Erreurs",
   "Seleção": "Sélection",
