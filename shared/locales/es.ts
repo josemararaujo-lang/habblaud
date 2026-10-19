@@ -658,6 +658,11 @@ export const ES: Readonly<Record<string, string>> = {
   "Não foi possível mudar o modo demonstração.": "No se pudo cambiar el modo demostración.",
 
   // client/src/ui/sidebar.ts
+  "Claude Code": "Claude Code",
+  "Codex": "Codex",
+  "Claude Code + Codex": "Claude Code + Codex",
+  "Cada sala reúne sessões abertas na mesma pasta.": "Cada sala agrupa sesiones abiertas en la misma carpeta.",
+  "Pasta: {0}": "Carpeta: {0}",
   "Atalho: /": "Atajo: /",
   "Filtrar por conta": "Filtrar por cuenta",
   "Mostrar a {0} na lista, no feed e nos avisos": "Mostrar {0} en la lista, el feed y los avisos",

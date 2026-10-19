@@ -17,6 +17,7 @@ interface RoomRefs {
   head: HTMLButtonElement;
   name: HTMLElement;
   count: HTMLElement;
+  source: HTMLElement;
   path: HTMLElement;
   accs: KeyedList<AccountInfo | string>;
   tasks: HTMLElement;
@@ -96,7 +97,9 @@ export class Sidebar implements UiComponent {
       update: (b, a) => {
         const hidden = this.ctx.prefs.hiddenAccounts.includes(a.id);
         updateAccountChip(b.firstElementChild as HTMLElement, a);
-        setText(b.lastElementChild!, a.name);
+        const provider = a.provider === 'codex' ? tr('Codex') : tr('Claude Code');
+        setText(b.lastElementChild!, a.name === provider ? provider : `${provider} · ${a.name}`);
+        setAttr(b, 'data-provider', a.provider === 'codex' ? 'codex' : 'claude');
         setAttr(b, 'aria-pressed', String(!hidden));
         setTitle(b, hidden ? tr('Mostrar a {0} na lista, no feed e nos avisos', [a.name]) : tr('Ocultar a {0} na lista, no feed e nos avisos (o escritório continua mostrando todos)', [a.name]));
         b.classList.toggle('is-off', hidden);
@@ -132,7 +135,7 @@ export class Sidebar implements UiComponent {
     this.el = h(
       'aside',
       { class: 'ui-panel ui-sidebar', attrs: { 'aria-label': tr('Salas e agentes'), id: 'ui-sidebar' } },
-      h('div', { class: 'ui-side__head' }, h('div', { class: 'ui-side__title' }, h('h2', { text: tr('Escritório') }), close), search, this.filters),
+      h('div', { class: 'ui-side__head' }, h('div', { class: 'ui-side__title' }, h('h2', { text: tr('Escritório') }), close), h('p', { class: 'ui-side__hint', text: tr('Cada sala reúne sessões abertas na mesma pasta.') }), search, this.filters),
       this.scroller,
     );
   }
@@ -199,6 +202,7 @@ export class Sidebar implements UiComponent {
     const name = h('span', { class: 'ui-room__name' });
     const count = h('span', { class: 'ui-room__count' });
     const accsEl = h('span', { class: 'ui-room__accs' });
+    const source = h('span', { class: 'ui-room__source', hidden: true });
     const path = h('span', { class: 'ui-room__path' });
     const tasksBar = createProgress(tr('Progresso das tarefas da sala'));
     const tasksText = h('span', { class: 'ui-room__tasks-text' });
@@ -209,6 +213,7 @@ export class Sidebar implements UiComponent {
       { class: 'ui-room__head', type: 'button' },
       swatch,
       h('span', { class: 'ui-room__line' }, name, count, accsEl),
+      source,
       path,
       tasks,
     );
@@ -239,7 +244,7 @@ export class Sidebar implements UiComponent {
       create: (n) => this.createNode(n),
       update: (el, n) => this.updateNode(el, n),
     });
-    this.roomRefs.set(section, { head, name, count, path, accs, tasks, tasksBar, tasksText, nodes });
+    this.roomRefs.set(section, { head, name, count, source, path, accs, tasks, tasksBar, tasksText, nodes });
     return section;
   }
 
@@ -250,9 +255,16 @@ export class Sidebar implements UiComponent {
     const present = g.agents.filter((a) => a.status !== 'offline').length;
     setText(r.count, String(present));
     setTitle(r.count, plural(present, tr('agente'), tr('agentes')));
-    setText(r.path, shortPath(g.room.path));
+    const providers = new Set(g.agents.map((a) => a.provider === 'codex' ? 'codex' : 'claude'));
+    const source = providers.size === 2 ? tr('Claude Code + Codex') : providers.has('codex') ? tr('Codex') : tr('Claude Code');
+    setHidden(r.source, providers.size === 0);
+    if (providers.size) {
+      setText(r.source, source);
+      setAttr(r.source, 'data-provider', providers.size === 2 ? 'mixed' : providers.has('codex') ? 'codex' : 'claude');
+    }
+    setText(r.path, tr('Pasta: {0}', [shortPath(g.room.path)]));
     setTitle(r.head, tr('{0}\nClique para ver a sala', [g.room.path]));
-    setAttr(r.head, 'aria-label', tr('Sala {0}, {1}', [g.room.name, plural(present, tr('agente'), tr('agentes'))]));
+    setAttr(r.head, 'aria-label', `${tr('Sala {0}, {1}', [g.room.name, plural(present, tr('agente'), tr('agentes'))])}. ${providers.size ? `${source}. ` : ''}${tr('Pasta: {0}', [g.room.path])}`);
     r.accs.sync(g.accounts.map((id) => this.ctx.account(id) ?? id));
     const selected = sel?.type === 'room' && sel.id === g.room.id;
     r.head.classList.toggle('is-selected', selected);

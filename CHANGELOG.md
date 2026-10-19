@@ -12,6 +12,10 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Salas explicadas na lista.** O painel agora informa que salas representam pastas com sessões abertas, mostra a pasta de trabalho com rótulo e identifica claramente Claude Code e Codex em cada sala e nos filtros. Títulos de tarefa aparecem com mais espaço.
+
+- **Painéis mais legíveis.** A lista de salas e o feed ganharam melhor espaçamento, alinhamento e hierarquia de texto; superfícies e seleção ficaram mais nítidas sobre o escritório.
+
 - **Botões mais claros e responsivos.** Os controles da barra superior, as ações comuns e o filtro do feed agora distinguem melhor os estados normal, ativo e pressionado, com resposta ao toque e respeito à preferência de movimento reduzido.
 
 - **Escritório maior no celular.** Em telas estreitas e verticais, a abertura amplia as salas para ocupar melhor a altura disponível; arraste para ver as laterais e use Visão geral para enquadrar o prédio inteiro.

@@ -1445,6 +1445,8 @@
   width: var(--side-w);
   display: flex;
   flex-direction: column;
+  background: linear-gradient(155deg, rgba(28, 35, 48, 0.96), rgba(17, 22, 32, 0.95) 42%, rgba(14, 19, 29, 0.96));
+  border-color: var(--ui-line-strong);
   transform: translateX(calc(-100% - var(--gap) * 2));
   visibility: hidden;
   transition:
@@ -1461,9 +1463,10 @@
 .ui-side__head {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px 10px 8px;
-  border-bottom: 1px solid var(--ui-line);
+  gap: 10px;
+  padding: 13px 12px 11px;
+  background: rgba(255, 255, 255, 0.025);
+  border-bottom: 1px solid var(--ui-line-strong);
 }
 
 .ui-side__title {
@@ -1475,8 +1478,15 @@
 }
 
 .ui-side__title h2 {
-  font: 600 15px/1 var(--font-px);
+  font: 600 16px/1.2 var(--font-px);
   letter-spacing: 0.01em;
+}
+
+.ui-side__hint {
+  max-width: 30ch;
+  color: #afb9ca;
+  font-size: 11.5px;
+  line-height: 1.35;
 }
 
 .ui-side__close {
@@ -1487,7 +1497,7 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  height: 34px;
+  height: 36px;
   padding: 0 7px 0 10px;
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.22);
@@ -1571,12 +1581,20 @@
   text-decoration: line-through;
 }
 
+.ui-acc-filter[data-provider='claude']:not(.is-off) {
+  border-color: rgba(255, 174, 105, 0.32);
+}
+
+.ui-acc-filter[data-provider='codex']:not(.is-off) {
+  border-color: rgba(113, 183, 255, 0.34);
+}
+
 .ui-side__scroll {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 8px 8px 10px;
+  padding: 10px 9px 12px;
   scrollbar-width: thin;
   scrollbar-color: rgba(160, 176, 210, 0.25) transparent;
 }
@@ -1584,13 +1602,14 @@
 .ui-rooms {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .ui-room {
   border-radius: 9px;
-  background: rgba(255, 255, 255, 0.022);
-  border: 1px solid var(--ui-line);
+  background: rgba(255, 255, 255, 0.032);
+  border: 1px solid rgba(160, 176, 210, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
 }
 
 .ui-room.is-empty {
@@ -1602,9 +1621,9 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   width: 100%;
-  padding: 8px 10px 8px 14px;
+  padding: 10px 11px 9px 16px;
   border-radius: 8px 8px 0 0;
   transition: background-color 0.15s;
 }
@@ -1612,9 +1631,9 @@
 .ui-room__head::before {
   content: '';
   position: absolute;
-  left: 5px;
-  top: 9px;
-  bottom: 9px;
+  left: 6px;
+  top: 11px;
+  bottom: 11px;
   width: 3px;
   border-radius: 2px;
   background: var(--room);
@@ -1625,7 +1644,8 @@
 }
 
 .ui-room__head.is-selected {
-  background: var(--ui-accent-soft);
+  background: rgba(124, 200, 255, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(124, 200, 255, 0.25);
 }
 
 .ui-room__line {
@@ -1640,7 +1660,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font: 650 13.5px/1.25 var(--font-ui);
+  font: 650 13.5px/1.35 var(--font-ui);
 }
 
 .ui-room__count {
@@ -1663,12 +1683,61 @@
   flex: none;
 }
 
+.ui-room__source {
+  align-self: flex-start;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 2px 7px 2px 14px;
+  border-radius: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: relative;
+}
+
+.ui-room__source::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  transform: translateY(-50%);
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.ui-room__source[data-provider='claude'] {
+  color: #ffc08a;
+  background: rgba(255, 163, 87, 0.13);
+}
+
+.ui-room__source[data-provider='codex'] {
+  color: #a9d5ff;
+  background: rgba(106, 168, 255, 0.15);
+}
+
+.ui-room__source[data-provider='mixed'] {
+  color: #d6c5ff;
+  background: rgba(170, 140, 255, 0.14);
+}
+
 .ui-room__path {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 11px;
+  line-height: 1.35;
   color: var(--ui-faint);
+}
+
+.ui-sidebar .ui-agent__task {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
 }
 
 .ui-room__tasks {
@@ -1689,7 +1758,7 @@
   display: flex;
   flex-direction: column;
   gap: 1px;
-  padding: 0 4px 5px;
+  padding: 2px 5px 7px;
 }
 
 .ui-agent {
@@ -1698,9 +1767,9 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
   width: 100%;
-  padding: 5px 8px 5px 6px;
+  padding: 7px 8px 7px 7px;
   border-radius: 8px;
   transition:
     background-color 0.15s,
@@ -1733,14 +1802,14 @@
 .ui-agent__main {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
   min-width: 0;
 }
 
 .ui-agent__top {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   min-width: 0;
 }
 
@@ -1867,6 +1936,8 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background: linear-gradient(160deg, rgba(28, 35, 48, 0.96), rgba(15, 20, 29, 0.96));
+  border-color: var(--ui-line-strong);
   transition:
     height 0.3s var(--ease),
     left 0.32s var(--ease),
@@ -1896,7 +1967,8 @@
   gap: 8px;
   flex: none;
   height: calc(var(--feed-head) - 2px);
-  padding: 0 6px 0 4px;
+  padding: 0 8px 0 5px;
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .has-feed .ui-feed__head {
@@ -1916,7 +1988,7 @@
 
 .ui-feed__title h2 {
   flex: none;
-  font: 600 13.5px/1 var(--font-px);
+  font: 600 14px/1.2 var(--font-px);
   letter-spacing: 0.01em;
 }
 
@@ -2000,7 +2072,7 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 4px 4px 6px;
+  padding: 7px 7px 9px;
   scrollbar-width: thin;
   scrollbar-color: rgba(160, 176, 210, 0.25) transparent;
 }
@@ -2015,10 +2087,10 @@
   display: grid;
   grid-template-columns: 58px 20px 78px 16px minmax(0, 118px) 18px minmax(0, 1fr);
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   width: 100%;
-  height: 26px;
-  padding: 0 8px 0 6px;
+  min-height: 30px;
+  padding: 3px 10px 3px 8px;
   border-radius: 6px;
   font-size: 12px;
   transition: background-color 0.12s;
@@ -2061,6 +2133,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.ui-feed__row:focus-visible {
+  background: var(--ui-accent-soft);
 }
 
 .ui-feed__item.is-error .ui-feed__text {
@@ -7591,11 +7667,11 @@ html.is-replay #world {
 /* Título da sessão na lista de agentes (o mesmo do hover do personagem). */
 .ui-agent__task {
   display: block;
-  margin-top: 1px;
+  margin-top: 2px;
   overflow: hidden;
   font-size: 12px;
-  line-height: 1.3;
-  color: var(--ui-text);
+  line-height: 1.35;
+  color: #cbd3e1;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
