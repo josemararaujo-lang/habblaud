@@ -12,6 +12,8 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Salas com contexto.** Resumo dos estados e do trabalho em destaque em cada sala, equipes expansíveis e atalho para o agente que precisa de atenção nos detalhes. A busca revela as equipes correspondentes automaticamente.
+
 - **Acompanhamento mais claro.** Cartões compactos ajustáveis, resumo do escritório, filtro de agentes principais e grupos recolhíveis para conclusões e disponibilidade. Equipe e provedor aparecem juntos nos cartões; os filtros de estado permanecem visíveis durante a rolagem.
 - **Modo Foco.** Um controle reduz passeios e limita os balões aos acontecimentos importantes, preservando as preferências anteriores ao sair.
 - **Feed direcionado.** Filtros de erros e da seleção atual permitem acompanhar um agente ou uma sala, com estados vazios explicados.

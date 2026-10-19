@@ -1,4 +1,5 @@
 import { NowPanel } from './now-panel';
+import { RoomOverview } from './room-overview';
 // Barra lateral: busca, filtro por conta e a lista de salas -> agentes -> subagentes.
 import type { AccountInfo, AgentInfo } from '../../../shared/types';
 import { roomTheme } from '../art';
@@ -8,13 +9,16 @@ import { moveRoom, orderRooms } from './roomorder';
 import { h, iconButton, KeyedList, setAttr, setHidden, setStyleVar, setText, setTitle } from './dom';
 import { plural, shortPath } from './format';
 import { ICONS } from './icons';
-import { groupRooms, matchesQuery, type AgentNode, type RoomGroup } from './model';
+import { aggregateTasks, groupRooms, matchesQuery, type AgentNode, type RoomGroup } from './model';
 import { officeIsEmpty } from './overlays';
 import { createAgentRow, updateAgentRow } from './rows';
 import { createAccountChip, createProgress, updateAccountChip, updateProgress } from './widgets';
 import { tr } from '../../../shared/i18n';
 
 interface RoomRefs {
+  overview: RoomOverview;
+  agentsEl: HTMLElement;
+  toggle: HTMLButtonElement;
   head: HTMLButtonElement;
   name: HTMLElement;
   count: HTMLElement;
@@ -65,6 +69,7 @@ export class Sidebar implements UiComponent {
   private mainBtn: HTMLButtonElement;
   private focusBtn: HTMLButtonElement;
   private lastSelKey = '';
+  private expandedRooms = new Set<string>();
 
   constructor(private ctx: UiContext) {
     this.input = h('input', {
@@ -201,10 +206,16 @@ export class Sidebar implements UiComponent {
     setHidden(this.roomList, nowView);
     setHidden(this.nowPanel.el, !nowView);
     this.tabs.forEach((tab, i) => setAttr(tab, 'aria-pressed', String(i === (nowView ? 0 : 1))));
+    const selection = this.ctx.selection();
+    const selectionKey = `${nowView ? 'now' : 'rooms'}:${selection ? `${selection.type}:${selection.id}` : ''}`;
+    if (!nowView && selectionKey !== this.lastSelKey && selection?.type === 'agent') {
+      const agent = this.ctx.agent(selection.id);
+      if (agent) this.expandedRooms.add(agent.roomId);
+    }
     this.rooms.sync(nowView ? [] : groups);
     const nowAgents = groups.flatMap(g => g.agents.filter(a => (!this.ctx.prefs.mainAgentsOnly || a.kind === 'main') && !hidden.has(a.account) && matchesQuery(a, g.room, this.ctx.account(a.account), this.query)));
     const sel = this.ctx.selection();
-    const selKey = sel ? `${sel.type}:${sel.id}` : '';
+    const selKey = `${nowView ? 'now' : 'rooms'}:${sel ? `${sel.type}:${sel.id}` : ''}`;
     if (nowView && selKey !== this.lastSelKey && sel?.type === 'agent') {
       const selectedAgent = this.ctx.agent(sel.id);
       if (selectedAgent) this.nowPanel.revealAgent(selectedAgent);
@@ -251,6 +262,7 @@ export class Sidebar implements UiComponent {
   // ---------------------------------------------------------------- salas
 
   private createRoom(g: RoomGroup): HTMLElement {
+    const overview = new RoomOverview();
     const name = h('span', { class: 'ui-room__name' });
     const count = h('span', { class: 'ui-room__count' });
     const accsEl = h('span', { class: 'ui-room__accs' });
@@ -266,6 +278,7 @@ export class Sidebar implements UiComponent {
       swatch,
       h('span', { class: 'ui-room__line' }, name, count, accsEl),
       source,
+      overview.el,
       path,
       tasks,
     );
@@ -283,9 +296,13 @@ export class Sidebar implements UiComponent {
     } catch {
       // Sem tema: mantém a cor padrão do CSS.
     }
-    const agentsEl = h('ul', { class: 'ui-nodes' });
+    const agentsEl = h('ul', { class: 'ui-nodes', attrs: { id: `room-team-${encodeURIComponent(g.room.id)}` } });
+    const toggle = h('button', { class: 'ui-room__toggle', type: 'button', attrs: { 'aria-controls': agentsEl.id }, on: { click: () => {
+      if (this.expandedRooms.has(g.room.id)) this.expandedRooms.delete(g.room.id); else this.expandedRooms.add(g.room.id);
+      this.ctx.invalidate();
+    } } });
     const rename = h('button', { class: 'ui-room__rename ui-link-btn', type: 'button', text: tr('Renomear sala'), on: { click: () => { const r = rename.getBoundingClientRect(); this.ctx.renameRoom?.(g.room.id, { x: r.left, y: r.bottom + 4 }); } } });
-    const section = h('section', { class: 'ui-room', role: 'listitem' }, head, rename, agentsEl);
+    const section = h('section', { class: 'ui-room', role: 'listitem' }, head, h('div', { class: 'ui-room__actions' }, toggle, rename), agentsEl);
     const accs = new KeyedList<AccountInfo | string>(accsEl, {
       animate: false,
       key: (a) => (typeof a === 'string' ? a : a.id),
@@ -297,7 +314,7 @@ export class Sidebar implements UiComponent {
       create: (n) => this.createNode(n),
       update: (el, n) => this.updateNode(el, n),
     });
-    this.roomRefs.set(section, { head, name, count, source, path, accs, tasks, tasksBar, tasksText, nodes });
+    this.roomRefs.set(section, { overview, agentsEl, toggle, head, name, count, source, path, accs, tasks, tasksBar, tasksText, nodes });
     return section;
   }
 
@@ -305,10 +322,20 @@ export class Sidebar implements UiComponent {
     const r = this.roomRefs.get(section)!;
     const sel = this.ctx.selection();
     setText(r.name, g.room.name);
-    const present = g.agents.filter((a) => a.status !== 'offline').length;
+    const visibleAgents = g.nodes.flatMap(n => [n.agent, ...n.subs]).filter(a => !this.ctx.prefs.hiddenAccounts.includes(a.account));
+    const summary = r.overview.update(visibleAgents);
+    const searching = this.query.trim().length > 0;
+    const expanded = searching || this.expandedRooms.has(g.room.id);
+    setHidden(r.agentsEl, !expanded);
+    setHidden(r.toggle, g.nodes.length === 0);
+    r.toggle.disabled = searching;
+    setAttr(r.toggle, 'aria-expanded', String(expanded));
+    setText(r.toggle, expanded ? tr('Recolher equipe') : tr('Mostrar equipe'));
+    setAttr(r.toggle, 'aria-label', expanded ? tr('Recolher equipe de {0}', [g.room.name]) : tr('Mostrar equipe de {0}', [g.room.name]));
+    const present = summary.total;
     setText(r.count, String(present));
     setTitle(r.count, plural(present, tr('agente'), tr('agentes')));
-    const providers = new Set(g.agents.map((a) => a.provider === 'codex' ? 'codex' : 'claude'));
+    const providers = new Set(visibleAgents.map((a) => a.provider === 'codex' ? 'codex' : 'claude'));
     const source = providers.size === 2 ? tr('Claude Code + Codex') : providers.has('codex') ? tr('Codex') : tr('Claude Code');
     setHidden(r.source, providers.size === 0);
     if (providers.size) {
@@ -317,14 +344,13 @@ export class Sidebar implements UiComponent {
     }
     setText(r.path, tr('Pasta: {0}', [shortPath(g.room.path)]));
     setTitle(r.head, tr('{0}\nClique para ver a sala', [g.room.path]));
-    setAttr(r.head, 'aria-label', `${tr('Sala {0}, {1}', [g.room.name, plural(present, tr('agente'), tr('agentes'))])}. ${providers.size ? `${source}. ` : ''}${tr('Pasta: {0}', [g.room.path])}`);
-    r.accs.sync(g.accounts.map((id) => this.ctx.account(id) ?? id));
+    r.accs.sync(g.accounts.filter(id => visibleAgents.some(a => a.account === id)).map((id) => this.ctx.account(id) ?? id));
     const selected = sel?.type === 'room' && sel.id === g.room.id;
     r.head.classList.toggle('is-selected', selected);
     setAttr(r.head, 'aria-current', selected ? 'true' : null);
     section.classList.toggle('is-empty', present === 0);
 
-    const t = g.tasks;
+    const t = aggregateTasks(visibleAgents);
     setHidden(r.tasks, t.total === 0);
     if (t.total > 0) {
       updateProgress(r.tasksBar, t.completed, t.total, t.inProgress);

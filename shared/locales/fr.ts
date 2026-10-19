@@ -2,6 +2,19 @@
 // As lacunas {0}, {1}... (e as nomeadas, como {sala}) precisam aparecer na tradução, em qualquer ordem.
 // Chave ausente = o texto fica em PT. `npm run i18n:check` lista os textos sem tradução e as chaves que sobraram.
 export const FR: Readonly<Record<string, string>> = {
+  "O que acontece nesta sala": "Ce qui se passe dans cette salle",
+  "{0}: {1}": "{0} : {1}",
+  "Atenção: {0}": "À traiter : {0}",
+  "Em andamento: {0}": "En cours : {0}",
+  "Para revisar: {0}": "À vérifier : {0}",
+  "Disponíveis: {0}": "Disponibles : {0}",
+  "Em destaque: {0} — {1}": "À la une : {0} — {1}",
+  "Nenhuma sessão ativa nesta sala.": "Aucune session active dans cette salle.",
+  "Recolher equipe": "Réduire l’équipe",
+  "Mostrar equipe": "Afficher l’équipe",
+  "Recolher equipe de {0}": "Réduire l’équipe de {0}",
+  "Mostrar equipe de {0}": "Afficher l’équipe de {0}",
+
   "1 subagente": "1 sous-agent",
   "Detalhes técnicos da sessão": "Détails techniques de la session",
   "Erros": "Erreurs",
@@ -703,7 +716,6 @@ export const FR: Readonly<Record<string, string>> = {
   "Nenhum agente nas contas selecionadas.": "Aucun agent dans les comptes sélectionnés.",
   "Nenhuma sessão aberta no momento.": "Aucune session ouverte pour le moment.",
   "agentes": "agents",
-  "Sala {0}, {1}": "Salle {0}, {1}",
   "{0}/{1} tarefas": "{0}/{1} tâches",
 
   // client/src/ui/social.ts

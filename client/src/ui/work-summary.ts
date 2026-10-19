@@ -33,3 +33,15 @@ export function nextAction(a: AgentInfo): string {
   if (workGroup(a) === 'finished') return tr('Revisar resultado');
   return tr('Abrir conversa');
 }
+
+/** Room overview uses recorded states; never infer completion from inactivity. */
+export function roomWorkSummary(agents: readonly AgentInfo[]) {
+  const present = agents.filter(a => a.status !== 'offline');
+  const counts: Record<WorkGroup, number> = { attention: 0, working: 0, finished: 0, idle: 0 };
+  for (const a of present) counts[workGroup(a)]++;
+  const priority: Record<WorkGroup, number> = { attention: 0, working: 1, finished: 2, idle: 3 };
+  const featured = [...present].sort((a, b) => priority[workGroup(a)] - priority[workGroup(b)]
+    || Number(b.kind === 'main') - Number(a.kind === 'main')
+    || a.startedAt - b.startedAt || a.id.localeCompare(b.id))[0];
+  return { counts, featured, total: present.length };
+}

@@ -2,6 +2,19 @@
 // As lacunas {0}, {1}... (e as nomeadas, como {sala}) precisam aparecer na tradução, em qualquer ordem.
 // Chave ausente = o texto fica em PT. `npm run i18n:check` lista os textos sem tradução e as chaves que sobraram.
 export const EN: Readonly<Record<string, string>> = {
+  "O que acontece nesta sala": "What’s happening in this room",
+  "{0}: {1}": "{0}: {1}",
+  "Atenção: {0}": "Needs attention: {0}",
+  "Em andamento: {0}": "In progress: {0}",
+  "Para revisar: {0}": "To review: {0}",
+  "Disponíveis: {0}": "Available: {0}",
+  "Em destaque: {0} — {1}": "Featured: {0} — {1}",
+  "Nenhuma sessão ativa nesta sala.": "No active sessions in this room.",
+  "Recolher equipe": "Collapse team",
+  "Mostrar equipe": "Show team",
+  "Recolher equipe de {0}": "Collapse {0} team",
+  "Mostrar equipe de {0}": "Show {0} team",
+
   "1 subagente": "1 subagent",
   "Detalhes técnicos da sessão": "Session technical details",
   "Erros": "Errors",
@@ -736,7 +749,6 @@ export const EN: Readonly<Record<string, string>> = {
   "Nenhum agente nas contas selecionadas.": "No agents in the selected accounts.",
   "Nenhuma sessão aberta no momento.": "No open sessions right now.",
   "agentes": "agents",
-  "Sala {0}, {1}": "Room {0}, {1}",
   "{0}/{1} tarefas": "{0}/{1} tasks",
   "Fechar o terminal": "Close the terminal",
   "Abrir o terminal de {0} ({1})": "Open {0}'s terminal ({1})",

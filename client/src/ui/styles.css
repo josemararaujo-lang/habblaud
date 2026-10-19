@@ -11477,3 +11477,29 @@ html.is-replay #world {
 @media (prefers-reduced-motion: reduce) {
   .ui-work__group-toggle::before { transition: none; }
 }
+
+/* Rooms describe the work before expanding the people who carry it out. */
+.ui-room__head { text-align: left; gap: 6px; }
+.ui-room__line { width: 100%; }
+.ui-room-overview { display: flex; flex-direction: column; gap: 7px; min-width: 0; width: 100%; }
+.ui-room-overview__statuses { display: flex; flex-wrap: wrap; gap: 4px; }
+.ui-room-overview__badge { padding: 3px 6px; border-radius: 5px; font-size: 10px; line-height: 1.35; font-weight: 600; font-variant-numeric: tabular-nums; background: var(--ui-bg-hover); color: var(--ui-muted); }
+.ui-room-overview__badge.is-attention { color: #ffd18b; background: rgba(255,183,77,.12); }
+.ui-room-overview__badge.is-working { color: #9cdbbd; background: rgba(76,195,138,.12); }
+.ui-room-overview__badge.is-finished { color: #bcd9ff; background: rgba(124,178,255,.12); }
+.ui-room-overview__goal { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-size: 12px; line-height: 1.5; color: var(--ui-text); overflow-wrap: anywhere; }
+.ui-room__path { max-width: 100%; font-size: 10px; }
+.ui-room__actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 0 10px 6px 15px; }
+.ui-room__toggle { display: inline-flex; align-items: center; gap: 6px; padding: 6px 0; min-height: 32px; font-size: 11px; font-weight: 600; color: var(--ui-accent); }
+.ui-room__toggle::before { content: '›'; font-size: 17px; line-height: 1; }
+.ui-room__toggle[aria-expanded='true']::before { transform: rotate(90deg); }
+.ui-room__toggle:disabled { opacity: 1; cursor: default; }
+.ui-room__actions .ui-room__rename { margin: 0; font-size: 10px; color: var(--ui-muted); min-height: 32px; }
+.ui-room__actions button:hover { text-decoration: underline; text-underline-offset: 3px; }
+.ui-room-brief { margin: 16px 0; padding: 12px; border: 1px solid var(--ui-line); border-radius: 10px; background: var(--ui-bg-hover); }
+.ui-room-brief__caption { font-size: 11px; color: var(--ui-muted); margin: 0 0 9px; }
+.ui-room-brief .ui-room-overview__goal { -webkit-line-clamp: 4; font-size: 13px; }
+.ui-room-featured { margin-top: 12px; max-width: 100%; white-space: normal; text-align: left; }
+@media (pointer: coarse) {
+  .ui-room__actions button { min-height: 40px; }
+}

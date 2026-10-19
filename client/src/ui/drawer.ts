@@ -1,4 +1,5 @@
 import { currentWork, sessionGoal, lastResult, nextAction } from './work-summary';
+import { RoomOverview } from './room-overview';
 // Gaveta de detalhes (direita): agente ou sala selecionados. Agente do Codex: selo "Codex", textos dele (onde
 // responder, o terminal, a aprovação no lugar do modo de permissão, sem custo) e a dica dos hooks do Codex.
 import type { Activity, AgentInfo, FeedItem, RoomInfo, ShellJob, TaskItem } from '../../../shared/types';
@@ -815,6 +816,9 @@ class KvList<K extends string> {
 
 class RoomView {
   readonly el: HTMLElement;
+  private overview = new RoomOverview();
+  private featuredId: string | null = null;
+  private featuredBtn: HTMLButtonElement;
   private id = '';
   private last: RoomInfo | null = null;
   private swatch: HTMLElement;
@@ -838,6 +842,7 @@ class RoomView {
     private ctx: UiContext,
     private pty: PtyControl,
   ) {
+    this.featuredBtn = h('button', { class: 'ui-btn ui-room-featured', type: 'button', on: { click: () => { if (this.featuredId) ctx.select({ type: 'agent', id: this.featuredId }, { focus: true }); } } });
     this.newBtn = h('button', { class: 'ui-btn', type: 'button', text: tr('Nova sessão'), title: tr('Abre um Claude Code novo nesta pasta, num terminal interativo'), on: { click: () => this.newSession() } });
     this.newMsg = h('p', { class: 'ui-actions__msg is-error', role: 'status', hidden: true });
     this.swatch = h('span', { class: 'ui-room-hero__swatch', attrs: { 'aria-hidden': 'true' } });
@@ -901,6 +906,7 @@ class RoomView {
       this.gone,
       h('div', { class: 'ui-status' }, accsEl, h('span', { class: 'ui-status__actions' }, this.newBtn, centerBtn)),
       this.newMsg,
+      h('div', { class: 'ui-room-brief' }, h('p', { class: 'ui-room-brief__caption', text: tr('O que acontece nesta sala') }), this.overview.el, this.featuredBtn),
       this.agentsSec.el,
       this.tasksSec.el,
       this.feedSec.el,
@@ -952,6 +958,10 @@ class RoomView {
 
     const snap = this.ctx.store.snapshot;
     const agents = (snap?.agents ?? []).filter((a) => a.roomId === r.id);
+    const summary = this.overview.update(agents);
+    this.featuredId = summary.featured?.id ?? null;
+    setHidden(this.featuredBtn, !summary.featured);
+    if (summary.featured) setText(this.featuredBtn, tr('{0}: {1}', [nextAction(summary.featured), summary.featured.name]));
     this.accs.sync(accountsOf(agents, snap?.accounts ?? []));
     const ordered = sortByUrgency(agents);
     setText(this.agentsSec.extra, agents.length ? String(agents.length) : '');
