@@ -11371,3 +11371,53 @@ html.is-replay #world {
 .ui-work__empty { padding: 24px 8px; color: var(--ui-muted); line-height: 1.5; }
 .ui-work__progress { display: grid; gap: 5px; }
 .ui-work__progress-text { color: var(--ui-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+
+/* Compact office toolbar: one aligned row whenever the accounts fit. Full usage details stay in the tooltip. */
+.ui-root { --top-h: 56px; }
+.ui-topbar { gap: 8px; }
+.ui-topbar .ui-brand { gap: 6px; }
+.ui-topbar .ui-brand__text { gap: 2px; }
+.ui-topbar .ui-wordmark { width: 90px; height: 16px; }
+.ui-topbar .ui-brand__mark,
+.ui-topbar .ui-brand__mark img { width: 28px; height: 28px; }
+.ui-topbar .ui-counter { flex-direction: row; align-items: center; gap: 5px; min-width: 0; min-height: 32px; padding: 5px 8px; }
+.ui-topbar .ui-counter__value { font-size: 14px; }
+.ui-topbar .ui-counter__stack { display: flex; align-items: center; gap: 5px; }
+.ui-topbar .ui-counter--waiting:disabled { display: none; }
+.ui-topbar .ui-usage { gap: 6px; }
+.ui-topbar .ui-usage-card { width: 196px; min-width: 172px; gap: 6px; padding: 3px 7px; }
+.ui-topbar .ui-usage-card > .ui-acc-chip { width: 26px; height: 30px; align-self: center; }
+.ui-topbar .ui-usage-card__body { gap: 1px; }
+.ui-topbar .ui-usage-card__head { font-size: 11px; line-height: 13px; }
+.ui-topbar .ui-usage-card__name { flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ui-topbar .ui-usage-card__email { display: none; }
+.ui-topbar .ui-usage-card__meters { grid-template-columns: 30px minmax(12px, 1fr) 30px; gap: 0 5px; }
+.ui-topbar .ui-meter { height: 13px; }
+.ui-topbar .ui-meter__reset { display: none; }
+.ui-topbar .ui-usage-card__msg { height: 26px; }
+.ui-topbar__right { margin-left: auto; gap: 6px; }
+
+@media (min-width: 601px) {
+  .ui-root.has-usage-row { --top-h: 100px; }
+  .ui-root.has-usage-row .ui-topbar { row-gap: 4px; padding-block: 4px; }
+  .ui-root.has-usage-row .ui-usage { padding-block: 0; }
+}
+@media (min-width: 601px) and (max-width: 1700px) {
+  .ui-topbar .ui-counter--rooms,
+  .ui-topbar .ui-counter--subagents { display: none; }
+}
+@media (max-width: 600px) {
+  .ui-root { --top-h: 92px; }
+  .ui-topbar { row-gap: 4px; padding-block: 4px; }
+  .ui-topbar .ui-usage-card { flex: 1 0 140px; width: auto; min-width: 140px; padding: 4px 6px; }
+  .ui-topbar .ui-usage-card > .ui-acc-chip { width: 22px; }
+}
+@media (max-width: 600px) {
+  /* Keep the direct focus action; the adjacent overview icon is redundant on the narrow toolbar. */
+  .ui-topbar__right .ui-btn-group:first-child > .ui-icon-btn { display: none; }
+  .ui-topbar .ui-counters { order: 9; margin-left: 0; }
+  .ui-topbar .ui-usage { flex: 1 1 60%; }
+}
+@media (max-width: 340px) {
+  .ui-topbar .ui-brand { display: none; }
+}

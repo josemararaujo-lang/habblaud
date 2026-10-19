@@ -12,6 +12,8 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Barra superior compacta.** Marca, indicadores e controles alinhados em uma faixa de 56 px quando as contas cabem. Cartões de consumo menores, com percentuais visíveis e renovação nos detalhes por mouse ou teclado; a segunda linha também ocupa menos altura em telas estreitas.
+
 - **Mensagens do Codex conectadas.** A ponte oferece o modo `--messages-only`, que mantém somente a entrega de mensagens ativa.
 - **Filtros e progresso na visão Agora.** Filtre agentes por estado, confira as contagens e acompanhe as tarefas concluídas diretamente nos cartões, com a sala identificada.
 - **Objetivo atualizado em conversas longas.** O carregamento recupera o pedido substancial mais recente sem substituir objetivos novos por títulos antigos.
