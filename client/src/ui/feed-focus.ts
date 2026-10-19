@@ -1,11 +1,12 @@
 import type { Activity, FeedItem } from '../../../shared/types';
+import { GITHUB_TOOL } from '../../../shared/github';
 import { shellDoneKind } from './model';
 
 export type FeedMode = 'important' | 'all';
 export type FeedRow = FeedItem & { repeatCount?: number };
 
 const IMPORTANT = new Set<Activity['kind']>([
-  'prompt', 'respond', 'edit', 'write', 'test', 'git', 'plan', 'delegate',
+  'prompt', 'respond', 'edit', 'write', 'test', 'plan', 'delegate',
   'communicate', 'ask', 'wait', 'error', 'done', 'compact',
 ]);
 const REPEATABLE = new Set<Activity['kind']>(['think', 'read', 'search', 'run', 'mcp', 'skill', 'browser', 'web']);
@@ -14,6 +15,7 @@ const REPEAT_WINDOW_MS = 60_000;
 export function isImportantFeedItem(item: FeedItem): boolean {
   const activity = item.activity;
   if (activity.error || shellDoneKind(activity)) return true;
+  if (activity.kind === 'git') return activity.tool === GITHUB_TOOL;
   if (IMPORTANT.has(activity.kind)) return true;
   // Resultados em segundo plano chegam como "other"; a vida social usa IDs próprios.
   return activity.kind === 'other' && !item.id.startsWith('social:');

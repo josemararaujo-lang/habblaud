@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ActivityKind, FeedItem } from '../../../shared/types';
+import { GITHUB_TOOL } from '../../../shared/github';
 import { feedRows, isImportantFeedItem } from './feed-focus';
 
 function event(id: string, kind: ActivityKind, text = id, at = 0, agentId = 'a'): FeedItem {
@@ -10,11 +11,13 @@ function event(id: string, kind: ActivityKind, text = id, at = 0, agentId = 'a')
 describe('feed com foco', () => {
   it('guarda pedidos, erros e fim de shell, mas tira leitura, pensamento e chamadas comuns do modo importante', () => {
     const items = [event('pedido', 'prompt'), event('pensando', 'think'), event('leitura', 'read'),
-      event('ferramenta', 'mcp'), event('erro', 'mcp'), event('shell', 'run'), event('fim', 'done')];
+      event('ferramenta', 'mcp'), event('erro', 'mcp'), event('shell', 'run'), event('git-consulta', 'git'),
+      event('push', 'git'), event('fim', 'done')];
     items[4].activity.error = true;
     items[5].activity.tool = 'ShellDone';
-    expect(items.filter(isImportantFeedItem).map((item) => item.id)).toEqual(['pedido', 'erro', 'shell', 'fim']);
-    expect(feedRows(items, 'important').map((item) => item.id)).toEqual(['pedido', 'erro', 'shell', 'fim']);
+    items[7].activity.tool = GITHUB_TOOL;
+    expect(items.filter(isImportantFeedItem).map((item) => item.id)).toEqual(['pedido', 'erro', 'shell', 'push', 'fim']);
+    expect(feedRows(items, 'important').map((item) => item.id)).toEqual(['pedido', 'erro', 'shell', 'push', 'fim']);
   });
 
   it('agrupa passos operacionais consecutivos sem juntar agentes ou pedidos independentes', () => {
