@@ -12,6 +12,10 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Mensagens do Codex conectadas.** A ponte oferece o modo `--messages-only`, que mantém somente a entrega de mensagens ativa.
+- **Filtros e progresso na visão Agora.** Filtre agentes por estado, confira as contagens e acompanhe as tarefas concluídas diretamente nos cartões, com a sala identificada.
+- **Objetivo atualizado em conversas longas.** O carregamento recupera o pedido substancial mais recente sem substituir objetivos novos por títulos antigos.
+
 - **Visão Agora.** Agentes organizados por necessidade de resposta, trabalho em andamento, conclusão e disponibilidade, com objetivo, pasta, estado atual, último resultado e próximo passo. A aba Salas mantém a organização por projeto e oferece renomeação visível.
 - **Salas duplicadas corrigidas.** Caminhos com acentos Unicode equivalentes passam a representar a mesma sala, inclusive no resumo diário, mantendo aliases e personagens salvos.
 - **Comunicação compreensível.** Estado da conexão, instruções expansíveis e cópia do comando de configuração. Colaboração registrada separada da simulação social, agora recolhida nos detalhes.

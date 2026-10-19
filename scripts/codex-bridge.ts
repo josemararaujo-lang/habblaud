@@ -39,7 +39,7 @@ export const WAIT_ROUND_MIN_MS = 500;
 export const REFUSED_RETRY_MS = 60_000;
 const REQUEST_TIMEOUT_MS = 5_000;
 
-const USAGE = tr('Uso: npm run codex:bridge [-- opções]\n\nEntrega as mensagens do escritório às sessões do Codex quando o Habblaud roda no Docker (deixe rodando no computador).\n\nOpções:\n  --port <n>   porta do Habblaud (padrão: HABBLAUD_PORT ou {0})\n  --once       faz uma rodada só e sai\n  -h, --help   mostra esta ajuda\n\nBinário do Codex: HABBLAUD_CODEX_BIN ou `codex` do PATH.', [DEFAULT_PORT]);
+const USAGE = tr('Uso: npm run codex:bridge [-- opções]\n\nEntrega as mensagens do escritório às sessões do Codex quando o Habblaud roda no Docker (deixe rodando no computador).\n\nOpções:\n  --port <n>   porta do Habblaud (padrão: HABBLAUD_PORT ou {0})\n  --once       faz uma rodada só e sai\n  --messages-only  conecta somente as mensagens do Codex\n  -h, --help   mostra esta ajuda\n\nBinário do Codex: HABBLAUD_CODEX_BIN ou `codex` do PATH.', [DEFAULT_PORT]);
 
 export interface BridgeMessage {
   id: string;
@@ -66,20 +66,22 @@ function rec(v: unknown): Rec | undefined {
 
 class FatalError extends Error {}
 
-export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env): { port: number; once: boolean } | 'help' {
+export function parseArgs(argv: string[], env: NodeJS.ProcessEnv = process.env): { port: number; once: boolean; messagesOnly?: true } | 'help' {
   const envPort = Number.parseInt(env.HABBLAUD_PORT ?? '', 10);
   let port = Number.isInteger(envPort) && envPort > 0 && envPort < 65_536 ? envPort : DEFAULT_PORT;
   let once = false;
+  let messagesOnly = false;
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '-h' || a === '--help') return 'help';
     if (a === '--once') once = true;
+    else if (a === '--messages-only') messagesOnly = true;
     else if (a === '--port') {
       port = Number(argv[++i]);
       if (!Number.isInteger(port) || port <= 0 || port >= 65_536) throw new FatalError(tr('--port precisa de um número entre 1 e 65535.'));
     } else throw new FatalError(tr('opção desconhecida: {0}\n\n{1}', [a, USAGE]));
   }
-  return { port, once };
+  return { port, once, ...(messagesOnly ? { messagesOnly: true as const } : {}) };
 }
 
 function isDir(p: string): boolean {
@@ -338,6 +340,7 @@ async function main(): Promise<void> {
     return;
   }
   const bin = findCodexBin(process.env);
+  if (parsed.messagesOnly && !bin) throw new FatalError(tr('Binário do Codex não encontrado para conectar as mensagens.'));
   const run = bin ? createCodexQueueRunner(bin) : undefined;
   const open = createOpener();
   const claudeBin = runnableClaudeBin(process.env);
@@ -345,20 +348,22 @@ async function main(): Promise<void> {
   const post = httpPost(parsed.port);
   const log = (line: string) => console.log(`[codex-bridge] ${line}`);
   log(
-    bin
+    parsed.messagesOnly ? tr('Conectando somente as mensagens do Codex ao Habblaud local.') : bin
       ? tr('Entregando as mensagens do Habblaud (http://127.0.0.1:{0}) às sessões do Codex com {1}, e começando os agentes novos pedidos no escritório. Ctrl+C para parar.', [parsed.port, bin])
       : tr('Sem o Codex (codex no PATH ou HABBLAUD_CODEX_BIN): só começo os agentes novos pedidos no Habblaud (http://127.0.0.1:{0}). Ctrl+C para parar.', [parsed.port]),
   );
-  log(cli ? tr('Agentes novos rodam em segundo plano com {0} --bg (pasta confiável; senão, no app do Claude).', [claudeBin]) : tr('Sem o claude no PATH (ou HABBLAUD_CLAUDE_BIN): agentes novos abrem no app do Claude e esperam o Enter.'));
-  const whisper = findWhisper(process.env);
+  if (!parsed.messagesOnly) log(cli ? tr('Agentes novos rodam em segundo plano com {0} --bg (pasta confiável; senão, no app do Claude).', [claudeBin]) : tr('Sem o claude no PATH (ou HABBLAUD_CLAUDE_BIN): agentes novos abrem no app do Claude e esperam o Enter.'));
   let transcribe: Transcriber | undefined;
-  if ('missing' in whisper) log(tr('Ditado desligado: falta {0}.', [whisper.missing]));
-  else {
-    log(tr('Ditado: Whisper local ({0}), idiomas {1} detectados sozinhos.', [whisper.model.split('/').pop(), whisper.langs.join('/')]));
-    transcribe = createWhisperTranscriber(whisper);
+  if (!parsed.messagesOnly) {
+    const whisper = findWhisper(process.env);
+    if ('missing' in whisper) log(tr('Ditado desligado: falta {0}.', [whisper.missing]));
+    else {
+      log(tr('Ditado: Whisper local ({0}), idiomas {1} detectados sozinhos.', [whisper.model.split('/').pop(), whisper.langs.join('/')]));
+      transcribe = createWhisperTranscriber(whisper);
+    }
   }
   // Arquivos das entregas e ditado (a pessoa está esperando): rodadas com espera, cada uma no seu laço.
-  if (!parsed.once) {
+  if (!parsed.once && !parsed.messagesOnly) {
     const waitPost = httpPost(parsed.port, HOST_WAIT_MS + 10_000);
     const accountDirs = discoverClaudeDirs(process.env);
     const roots = [...tempRoots(), attachmentsRoot()];
@@ -374,7 +379,7 @@ async function main(): Promise<void> {
   let spawnRetryAt = 0;
   let spawned: RoundResult = { state: 'ok', results: [] };
   for (;;) {
-    if (Date.now() >= spawnRetryAt) {
+    if (!parsed.messagesOnly && Date.now() >= spawnRetryAt) {
       spawned = await spawnRound(post, open, log, undefined, undefined, cli);
       if (spawned.state === 'refused') spawnRetryAt = Date.now() + REFUSED_RETRY_MS;
     }

@@ -599,6 +599,7 @@ Codex account chip is hollow and carries the **CODEX** tag.
   the session's queue and Codex picks it up when it finishes what it's doing (up to about 10 seconds later). In Node mode
   Habblaud runs the command itself; **in Docker**, keep `npm run codex:bridge` running on the Mac (the container can't
   see your Codex).
+  To connect only messaging, use `npm run codex:bridge -- --messages-only`; this mode skips the file, dictation and agent-start helpers.
 - **5-hour and weekly usage:** comes from Codex's own files and only refreshes while some session is running; the card
   shows how old the numbers are and "no quota" when the workspace has run out of credits.
 - **When the session comes in:** with the first message (that's when Codex records the project folder); a CLI that's open

@@ -597,6 +597,7 @@ chip da conta do Codex é vazado e leva o selo **CODEX**.
   na fila da sessão e o Codex a pega quando termina o que está fazendo (até uns 10 segundos depois). No modo Node o
   próprio Habblaud roda o comando; **no Docker**, deixe `npm run codex:bridge` rodando no Mac (o container não
   enxerga o seu Codex).
+  Para conectar somente as mensagens, use `npm run codex:bridge -- --messages-only`; esse modo não inicia os auxiliares de arquivos, ditado ou novos agentes.
 - **Uso de 5 horas e semanal:** vem dos próprios arquivos do Codex e só se renova enquanto alguma sessão roda; o cartão
   mostra a idade dos números e "sem cota" quando o workspace ficou sem créditos.
 - **Quando a sessão entra:** com a primeira mensagem (é quando o Codex grava a pasta do projeto); uma CLI aberta e

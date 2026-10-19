@@ -11361,3 +11361,13 @@ html.is-replay #world {
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
   .ui-root .ui-panel { background: #141821; backdrop-filter: none; }
 }
+
+/* Quick state filters keep the office's priorities visible before scrolling through agent cards. */
+.ui-work__filters { display: flex; flex-wrap: wrap; gap: 6px; padding: 14px 3px 3px; }
+.ui-work__filter { display: inline-flex; align-items: center; gap: 7px; padding: 7px 9px; min-height: 32px; border: 1px solid var(--ui-line); border-radius: 8px; color: var(--ui-muted); font-size: 11px; }
+.ui-work__filter[aria-pressed="true"] { background: var(--ui-accent-soft); border-color: var(--ui-accent); color: var(--ui-text); }
+.ui-work__filter:hover { background: var(--ui-bg-hover); }
+.ui-work__filter-count { font-weight: 700; font-variant-numeric: tabular-nums; }
+.ui-work__empty { padding: 24px 8px; color: var(--ui-muted); line-height: 1.5; }
+.ui-work__progress { display: grid; gap: 5px; }
+.ui-work__progress-text { color: var(--ui-muted); font-size: 11px; font-variant-numeric: tabular-nums; }

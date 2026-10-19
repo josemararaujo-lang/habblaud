@@ -24,7 +24,7 @@ afterEach(() => {
   cleanups = [];
 });
 
-function setup(opts: { names?: string[]; noLocks?: boolean; env?: (dirs: string[]) => NodeJS.ProcessEnv } = {}) {
+function setup(opts: { names?: string[]; noLocks?: boolean; env?: (dirs: string[]) => NodeJS.ProcessEnv; tailBytes?: number } = {}) {
   const homes = (opts.names ?? ['.codex']).map((n) => codexHome(n));
   const home = homes[0];
   cleanups.push(...homes.map((h) => h.cleanup));
@@ -44,7 +44,7 @@ function setup(opts: { names?: string[]; noLocks?: boolean; env?: (dirs: string[
   });
   late.office = office;
   const dirs = homes.map((h) => h.dir);
-  const source = new CodexSource({ accounts, office, dirs, env: opts.env?.(dirs) ?? {}, home: home.home, now, watch: false });
+  const source = new CodexSource({ accounts, office, dirs, env: opts.env?.(dirs) ?? {}, home: home.home, now, watch: false, tailBytes: opts.tailBytes });
   // Para antes de apagar as pastas (nenhum ciclo agendado roda depois).
   cleanups.unshift(() => source.stop());
   const notices: Notice[] = [];
@@ -623,4 +623,19 @@ describe('scanPrefix do Codex', () => {
       rmSync(dir, { recursive: true, force: true });
     }
   });
+});
+
+
+it('recovers the most recent substantive goal from the prefix of a long rollout', async () => {
+  const ctx = setup({ tailBytes: 256 });
+  const at = ctx.now() - 10_000;
+  ctx.home.rollout(T, [
+    R.meta(T, { at, cwd: '/projetos/app' }),
+    R.user(T, 't1', 'u1', 'Analise este projeto inicial', at + 1),
+    R.user(T, 't2', 'u2', 'Melhore a organização das equipes e das salas', at + 2),
+    ...Array.from({ length: 20 }, (_, i) => R.agent(T, 't2', `a${i}`, 'Executando uma etapa da tarefa atual', at + 3 + i)),
+  ]);
+  ctx.home.lock(T, at);
+  ctx.source.boot();
+  await vi.waitFor(() => expect(ctx.agent()?.title).toBe('Melhore a organização das equipes e das salas'));
 });

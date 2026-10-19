@@ -2,6 +2,14 @@
 // As lacunas {0}, {1}... (e as nomeadas, como {sala}) precisam aparecer na tradução, em qualquer ordem.
 // Chave ausente = o texto fica em PT. `npm run i18n:check` lista os textos sem tradução e as chaves que sobraram.
 export const FR: Readonly<Record<string, string>> = {
+  "Atenção": "Attention",
+  "Ativos": "Actifs",
+  "Revisar": "Vérifier",
+  "Nenhum agente neste estado.": "Aucun agent dans cet état.",
+  "Filtrar por estado do trabalho": "Filtrer par état du travail",
+  "Sala: {0}": "Salle : {0}",
+  "Binário do Codex não encontrado para conectar as mensagens.": "Binaire Codex introuvable pour connecter la messagerie.",
+  "Conectando somente as mensagens do Codex ao Habblaud local.": "Connexion de la messagerie Codex uniquement au Habblaud local.",
   "Conferindo a interface": "Vérification de l’interface",
   // Operational workspace
   "Selecione e copie o comando acima.": "Sélectionnez et copiez la commande ci-dessus.",
@@ -19,7 +27,6 @@ export const FR: Readonly<Record<string, string>> = {
   "Em andamento": "En cours",
   "Pronto para revisar": "Prêt à vérifier",
   "Disponíveis": "Disponibles",
-  "O trabalho de cada agente, por prioridade.": "Le travail de chaque agent, par priorité.",
   "Último resultado: {0} · {1}": "Dernier résultat : {0} · {1}",
   "Organizar escritório": "Organiser le bureau",
   "Largura do painel lateral": "Largeur du panneau latéral",
@@ -2545,7 +2552,7 @@ export const FR: Readonly<Record<string, string>> = {
   "o auxiliar do computador não confirmou": "l'auxiliaire de l'ordinateur n'a pas confirmé",
 
   // scripts/codex-bridge.ts
-  "Uso: npm run codex:bridge [-- opções]\n\nEntrega as mensagens do escritório às sessões do Codex quando o Habblaud roda no Docker (deixe rodando no computador).\n\nOpções:\n  --port <n>   porta do Habblaud (padrão: HABBLAUD_PORT ou {0})\n  --once       faz uma rodada só e sai\n  -h, --help   mostra esta ajuda\n\nBinário do Codex: HABBLAUD_CODEX_BIN ou `codex` do PATH.": "Usage : npm run codex:bridge [-- options]\n\nRemet les messages du bureau aux sessions Codex quand Habblaud tourne dans Docker (laissez-le tourner sur l'ordinateur).\n\nOptions :\n  --port <n>   port de Habblaud (par défaut : HABBLAUD_PORT ou {0})\n  --once       fait un seul passage et quitte\n  -h, --help   affiche cette aide\n\nBinaire Codex : HABBLAUD_CODEX_BIN ou `codex` du PATH.",
+  "Uso: npm run codex:bridge [-- opções]\n\nEntrega as mensagens do escritório às sessões do Codex quando o Habblaud roda no Docker (deixe rodando no computador).\n\nOpções:\n  --port <n>   porta do Habblaud (padrão: HABBLAUD_PORT ou {0})\n  --once       faz uma rodada só e sai\n  --messages-only  conecta somente as mensagens do Codex\n  -h, --help   mostra esta ajuda\n\nBinário do Codex: HABBLAUD_CODEX_BIN ou `codex` do PATH.": "Usage : npm run codex:bridge [-- options]\n\nRemet les messages du bureau aux sessions Codex quand Habblaud tourne dans Docker (laissez-le tourner sur l'ordinateur).\n\nOptions :\n  --port <n>   port de Habblaud (par défaut : HABBLAUD_PORT ou {0})\n  --once       fait un seul passage et quitte\n  --messages-only  connecte uniquement la messagerie Codex\n  -h, --help   affiche cette aide\n\nBinaire Codex : HABBLAUD_CODEX_BIN ou `codex` du PATH.",
   "anexo ilegível": "pièce jointe illisible",
   "anexo vazio ou grande demais": "pièce jointe vide ou trop volumineuse",
   "✓ agente novo rodando em segundo plano em {0}": "✓ nouvel agent dans {0} lancé en arrière-plan",

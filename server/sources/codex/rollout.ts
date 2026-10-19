@@ -379,8 +379,9 @@ export interface CodexState {
   mode?: HistoryMode;
   model?: string;
   gitBranch?: string;
-  /** Primeira instrução (título da sessão), já mascarada e cortada. */
+  /** Pedido substantivo mais recente, já mascarado e cortado. */
   title?: string;
+  titleAt?: number;
   tasks: TaskItem[];
   stats: AgentStats;
   /** Turno aberto (task_started sem task_complete/turn_aborted); undefined = nenhum evento de turno visto. */
@@ -680,6 +681,7 @@ class RolloutLineParser {
     // Short replies (continue, yes, etc.) keep the last substantive request as context.
     if (this.s.title === undefined || text.length >= 24) {
       this.s.title = truncate(maskSecrets(text.slice(0, 1_000)), TITLE_MAX);
+      this.s.titleAt = this.at;
       this.changed();
     }
     this.push(describeCodexPrompt(text), { key });

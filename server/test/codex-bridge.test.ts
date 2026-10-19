@@ -1,3 +1,6 @@
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { fileURLToPath } from 'node:url';
 // Auxiliar das mensagens ao Codex no Docker (scripts/codex-bridge.ts) contra as rotas de verdade (guard, app e
 // /api/codex/bridge/*): a trava das mensagens (recurso ligado + Host local), a rodada completa página → auxiliar →
 // codex queue (binário falso) → confirmação, e a conferência de cada mensagem antes de rodar o comando.
@@ -162,6 +165,7 @@ describe('rotas do auxiliar do Codex', () => {
     expect(parseArgs(['--port', '4851', '--once'], {})).toEqual({ port: 4851, once: true });
     expect(parseArgs([], { HABBLAUD_PORT: '4848' })).toEqual({ port: 4848, once: false });
     expect(parseArgs(['-h'], {})).toBe('help');
+    expect(parseArgs(['--messages-only', '--once'], {})).toEqual({ port: 4747, once: true, messagesOnly: true });
     expect(() => parseArgs(['--port', 'x'], {})).toThrow(/--port/);
     expect(() => parseArgs(['--xyz'], {})).toThrow(/desconhecida/);
   });
@@ -279,4 +283,21 @@ describe('spawnRound (agentes novos pelo auxiliar)', () => {
     expect(await spawnRound(async () => null, async () => ({ ok: true }))).toEqual({ state: 'down' });
     expect(await spawnRound(async () => ({ status: 403, json: { error: 'x' } }), async () => ({ ok: true }))).toEqual({ state: 'refused', status: 403 });
   });
+});
+
+
+it('messages-only startup polls messaging without enabling other host services', async () => {
+  const paths: string[] = [];
+  const server = http.createServer((req, res) => {
+    paths.push(req.url ?? '');
+    res.setHeader('content-type', 'application/json');
+    res.end(JSON.stringify({ messages: [] }));
+  });
+  await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
+  close = () => new Promise<void>((resolve, reject) => server.close(err => err ? reject(err) : resolve()));
+  const port = (server.address() as AddressInfo).port;
+  await promisify(execFile)(process.execPath, ['--import', 'tsx', fileURLToPath(new URL('../../scripts/codex-bridge.ts', import.meta.url)), '--messages-only', '--once', '--port', String(port)], {
+    env: { ...process.env, HABBLAUD_CODEX_BIN: process.execPath }, timeout: 5_000,
+  });
+  expect(paths).toEqual(['/api/codex/bridge/poll']);
 });
