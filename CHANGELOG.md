@@ -12,6 +12,8 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Botões mais claros e responsivos.** Os controles da barra superior, as ações comuns e o filtro do feed agora distinguem melhor os estados normal, ativo e pressionado, com resposta ao toque e respeito à preferência de movimento reduzido.
+
 - **Escritório maior no celular.** Em telas estreitas e verticais, a abertura amplia as salas para ocupar melhor a altura disponível; arraste para ver as laterais e use Visão geral para enquadrar o prédio inteiro.
 
 - **Feed com foco nos acontecimentos importantes.** O painel abre no modo Importantes, que mostra pedidos, mudanças,
