@@ -53,7 +53,7 @@ export interface UiContext {
   /** Leva a câmera de novo até a seleção atual (botão Centralizar). */
   focusSelection(): void;
   /** Comandos de câmera dos botões/atalhos da UI (cancelam o foco mantido). */
-  camera(action: 'overview' | 'zoomIn' | 'zoomOut'): void;
+  camera(action: 'overview' | 'focusWork' | 'zoomIn' | 'zoomOut'): void;
   /** Agenda uma renderização no próximo quadro. */
   invalidate(): void;
   /** Abre/fecha um painel (sem argumento: alterna). */

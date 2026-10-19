@@ -10,7 +10,7 @@ export const ROOM_NAME_MAX = 40;
 
 /** Chave comparável de um caminho (barras normais, sem barra final, sem diferença de maiúsculas). */
 export function pathKey(p: string): string {
-  return p.trim().replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase();
+  return p.trim().normalize('NFC').replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase();
 }
 
 export class RoomAliases {

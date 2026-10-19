@@ -112,6 +112,7 @@ export function createUI(root: HTMLElement, store: OfficeStore, world: WorldApi,
       // A gaveta passa a contar na área livre ANTES do foco: o mundo centraliza já na parte visível.
       const prev = selection;
       selection = sel;
+      adaptSelectionPanels(sel);
       area.selectingFromUi();
       applyLayout({ refocus: false });
       uiSelecting = true;
@@ -130,12 +131,13 @@ export function createUI(root: HTMLElement, store: OfficeStore, world: WorldApi,
     },
     camera(action) {
       if (inCity() && city) {
-        if (action === 'overview') city.recenter();
+        if (action === 'overview' || action === 'focusWork') city.recenter();
         else city.zoomBy(action === 'zoomIn' ? 1.25 : 1 / 1.25);
         return;
       }
       area.clearIntent();
       if (action === 'overview') world.overview();
+      else if (action === 'focusWork') world.focusWork?.();
       else world.zoomBy(action === 'zoomIn' ? 1.25 : 1 / 1.25);
     },
     invalidate: () => invalidate(),
@@ -331,6 +333,17 @@ export function createUI(root: HTMLElement, store: OfficeStore, world: WorldApi,
   }
 
   /** Aplica as classes de layout e informa ao mundo a área livre (sem esperar as transições dos painéis). */
+  let autoCollapsedSidebar = false;
+  function adaptSelectionPanels(sel: Selection): void {
+    if (sel && window.innerWidth > 900 && window.innerWidth < 1280 && panels.sidebar) {
+      panels.sidebar = false;
+      autoCollapsedSidebar = true;
+    } else if (!sel && autoCollapsedSidebar) {
+      panels.sidebar = prefs.sidebarOpen;
+      autoCollapsedSidebar = false;
+    }
+  }
+
   function applyLayout(opts: { refocus?: boolean } = {}): void {
     root.classList.toggle('has-sidebar', panels.sidebar);
     root.classList.toggle('has-feed', panels.feed);
@@ -351,6 +364,7 @@ export function createUI(root: HTMLElement, store: OfficeStore, world: WorldApi,
   world.onSelect((sel) => {
     const prev = selection;
     selection = sel;
+    adaptSelectionPanels(sel);
     // Clique no canvas (ou agente que saiu): a gaveta espera a janela do duplo clique antes de mexer na câmera.
     if (!uiSelecting) area.selectionChangedExternally(prev, sel);
     applyLayout(uiSelecting ? { refocus: false } : {});

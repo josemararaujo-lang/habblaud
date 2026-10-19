@@ -19,3 +19,9 @@ describe('enquadramento automático', () => {
     expect(automaticFrame(building, 580, 420, insets)).toEqual(overviewFrame(building, 580, 420, insets));
   });
 });
+
+import { occupiedBounds } from './camera';
+it('fits occupied rooms and preserves the fallback for an empty office', () => {
+  expect(occupiedBounds([], building)).toEqual(building);
+  expect(occupiedBounds([{ x: 200, y: 100, w: 100, h: 100 }, { x: 400, y: 100, w: 100, h: 200 }], building)).toEqual({ x: 200, y: 100, w: 300, h: 200 });
+});

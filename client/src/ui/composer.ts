@@ -56,6 +56,10 @@ export class MessageComposer {
   private box: HTMLTextAreaElement;
   private sendBtn: HTMLButtonElement;
   private hint: HTMLElement;
+  private connection: HTMLElement;
+  private setup: HTMLDetailsElement;
+  private setupCommand: HTMLElement;
+  private copyStatus: HTMLElement;
   private tip: HTMLElement | null;
   private status: HTMLElement;
   private dictate: DictationButton;
@@ -115,7 +119,16 @@ export class MessageComposer {
     this.hint = h('p', { class: 'ui-msg__hint', hidden: true });
     this.status = h('p', { class: 'ui-msg__status', role: 'status', hidden: true, attrs: { 'aria-live': 'polite' } });
     this.tip = term ? null : h('p', { class: 'ui-msg__tip', text: composerTip() });
-    this.el = h('div', { class: `ui-msg ui-msg--${variant}` }, this.hint, this.row, this.dictStatus, this.status, this.tip);
+    this.connection = h('p', { class: 'ui-msg__connection', role: 'status' });
+    this.setupCommand = h('code', { class: 'ui-msg__command' });
+    this.copyStatus = h('span', { role: 'status' });
+    const copy = h('button', { class: 'ui-btn ui-btn--sm', type: 'button', text: tr('Copiar comando'), on: { click: async () => {
+      try { await navigator.clipboard.writeText(this.setupCommand.textContent ?? ''); setText(this.copyStatus, tr('Copiado')); }
+      catch { setText(this.copyStatus, tr('Selecione e copie o comando acima.')); }
+    } } });
+    const help = h('button', { class: 'ui-link-btn', type: 'button', text: tr('Ver instruções'), on: { click: () => ctx.openHelp?.(this.provider === 'codex' ? 'codex' : 'usage') } });
+    this.setup = h('details', { class: 'ui-msg__setup' }, h('summary', { text: tr('Configurar mensagens') }), h('p', { text: tr('No terminal do computador, abra a pasta do Habblaud e execute:') }), this.setupCommand, h('div', { class: 'ui-msg__setup-actions' }, copy, help, this.copyStatus), this.hint);
+    this.el = h('div', { class: `ui-msg ui-msg--${variant}` }, this.connection, this.setup, this.row, this.dictStatus, this.status, this.tip);
   }
 
   /**
@@ -133,12 +146,19 @@ export class MessageComposer {
     const ready = mode.kind === 'ready';
     const term = this.variant === 'terminal';
     this.provider = agent?.provider === 'codex' ? 'codex' : 'claude';
+    setText(this.connection, ready ? tr('Mensagens conectadas') : mode.kind === 'hint' ? tr('Mensagens desconectadas') : mode.text);
+    this.connection.classList.toggle('is-ready', ready);
+    setHidden(this.connection, term || mode.kind === 'off');
+    setHidden(this.setup, term || mode.kind !== 'hint');
+    setText(this.setupCommand, this.provider === 'codex' ? 'npm run codex:bridge' : 'npm run mod:install');
 
     // Troca de agente (ou a caixa passou a valer/deixou de valer): o conteúdo vem do rascunho guardado.
     const shown = `${key}|${ready}`;
     if (shown !== this.shown) {
       // Gravando para outro agente: para sem transcrever (a fala era para aquele).
       this.dictate.cancel();
+      this.setup.open = false;
+      setText(this.copyStatus, '');
       this.shown = shown;
       this.agentId = key;
       this.box.value = ready ? (this.drafts.get(key) ?? '') : '';

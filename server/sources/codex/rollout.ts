@@ -1,3 +1,4 @@
+import { cleanUserText } from '../../../shared/user-text';
 // Interpretação dos rollouts do Codex (<CODEX_HOME>/sessions/AAAA/MM/DD/rollout-<hora>-<thread>.jsonl): cada linha
 // atualiza um CodexState (modelo, título, números, turno aberto...) e pode gerar atividades (o que o personagem está
 // fazendo) e sinais (turno começou/terminou, uso do plano, evento do GitHub).
@@ -457,7 +458,7 @@ export function contentText(content: unknown): { text: string; images: number } 
 
 /** Instrução de verdade (não contexto injetado), limpa; '' = nada a mostrar. */
 export function promptText(raw: string): string {
-  const text = raw.trim();
+  const text = cleanUserText(raw);
   if (!text || INJECTED.test(text)) return '';
   return text;
 }
@@ -676,7 +677,8 @@ class RolloutLineParser {
   private prompt(raw: string, images: number, key?: string): void {
     const text = promptText(raw) || (images ? tr('[imagem]') : '');
     if (!text) return;
-    if (this.s.title === undefined) {
+    // Short replies (continue, yes, etc.) keep the last substantive request as context.
+    if (this.s.title === undefined || text.length >= 24) {
       this.s.title = truncate(maskSecrets(text.slice(0, 1_000)), TITLE_MAX);
       this.changed();
     }

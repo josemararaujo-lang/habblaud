@@ -323,7 +323,7 @@ export class Office {
       return;
     }
     const roomId = normalizeCwd(p.cwd);
-    this.ensureRoom(roomId, now);
+    this.ensureRoom(roomId, now, p.cwd);
     const chosen = this.roomCharacter(roomId, p.id, p.sessionId);
     // A mesma sessão retomada noutro processo (ex.: "Assumir aqui") mantém o nome, mesmo com o processo antigo
     // ainda saindo do escritório.
@@ -1038,9 +1038,9 @@ export class Office {
     return out;
   }
 
-  private ensureRoom(roomId: string, now: number): void {
+  private ensureRoom(roomId: string, now: number, originalPath: string): void {
     if (this.rooms.has(roomId)) return;
-    this.rooms.set(roomId, { path: roomId, createdAt: now });
+    this.rooms.set(roomId, { path: originalPath.trim(), createdAt: now });
     this.recomputeRoomNames();
     this.notice('room', roomId, 'info', tr('🏗️ Nova sala: {0}', [this.roomName(roomId)]), roomId);
   }

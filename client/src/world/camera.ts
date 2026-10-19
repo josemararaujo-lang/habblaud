@@ -48,6 +48,14 @@ export function automaticFrame(
   return { ...full, zoom: Math.max(full.zoom, Math.min(heightZoom * 0.72, full.zoom * 2.2)) };
 }
 
+/** Bounding box of occupied rooms, without decorative grounds or empty wings. */
+export function occupiedBounds(rooms: readonly Bounds[], fallback: Bounds): Bounds {
+  if (!rooms.length) return fallback;
+  const x = Math.min(...rooms.map(r => r.x));
+  const y = Math.min(...rooms.map(r => r.y));
+  return { x, y, w: Math.max(...rooms.map(r => r.x + r.w)) - x, h: Math.max(...rooms.map(r => r.y + r.h)) - y };
+}
+
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 export class Camera {
@@ -117,6 +125,9 @@ export class Camera {
 
   animateTo(x: number, y: number, zoom: number, now: number, dur = 400): void {
     const tz = Math.max(Math.min(this.minZoom, ZOOM_MIN), Math.min(ZOOM_MAX, zoom));
+    if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      this.anim = null; this.x = x; this.y = y; this.zoom = tz; this.clamp(); return;
+    }
     this.anim = { fx: this.x, fy: this.y, fz: this.zoom, tx: x, ty: y, tz, t0: now, dur };
   }
 

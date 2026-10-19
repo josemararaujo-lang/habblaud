@@ -6,10 +6,10 @@ export type FeedMode = 'important' | 'all';
 export type FeedRow = FeedItem & { repeatCount?: number };
 
 const IMPORTANT = new Set<Activity['kind']>([
-  'prompt', 'respond', 'edit', 'write', 'test', 'plan', 'delegate',
-  'communicate', 'ask', 'wait', 'error', 'done', 'compact',
+  'prompt', 'edit', 'write', 'test', 'plan', 'delegate',
+  'communicate', 'ask', 'wait', 'error', 'done',
 ]);
-const REPEATABLE = new Set<Activity['kind']>(['think', 'read', 'search', 'run', 'mcp', 'skill', 'browser', 'web']);
+const REPEATABLE = new Set<Activity['kind']>(['respond', 'think', 'read', 'search', 'run', 'mcp', 'skill', 'browser', 'web']);
 const REPEAT_WINDOW_MS = 60_000;
 
 export function isImportantFeedItem(item: FeedItem): boolean {
@@ -17,8 +17,8 @@ export function isImportantFeedItem(item: FeedItem): boolean {
   if (activity.error || shellDoneKind(activity)) return true;
   if (activity.kind === 'git') return activity.tool === GITHUB_TOOL;
   if (IMPORTANT.has(activity.kind)) return true;
-  // Resultados em segundo plano chegam como "other"; a vida social usa IDs próprios.
-  return activity.kind === 'other' && !item.id.startsWith('social:');
+  // Unknown tool calls and decorative social events remain available in All.
+  return false;
 }
 
 export function feedRows(items: readonly FeedItem[], mode: FeedMode, limit = 50): FeedRow[] {

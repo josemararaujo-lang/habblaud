@@ -70,7 +70,7 @@ function panel(feed: FeedItem[] = [], agents: AgentInfo[] = []) {
   let receive!: (fresh: FeedItem[]) => void;
   let social!: (e: SocialEvent) => void;
   const snapshot = { agents, rooms: [] };
-  const prefs = { hiddenAccounts: [] as string[], feedMode: 'important' as 'important' | 'all' };
+  const prefs = { hiddenAccounts: [] as string[], feedMode: 'all' as 'important' | 'all' };
   let open = true;
   const ctx = {
     store: { feed, snapshot, on: (_event: string, cb: typeof receive) => { receive = cb; } },

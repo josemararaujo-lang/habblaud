@@ -5,7 +5,7 @@ import { TILE, type ArtModule } from '../art/api';
 import type { OfficeStore } from '../net/store';
 import { DEFAULT_WORLD_OPTIONS, seasonalThemeFor, type Selection, type SocialEvent, type SoundCue, type WorldApi, type WorldOptions, type WorldPlayback } from './api';
 import { loadWorldAssets, type WorldAssets } from './assets';
-import { Camera, automaticFrame, overviewFrame } from './camera';
+import { Camera, automaticFrame, overviewFrame, occupiedBounds } from './camera';
 import { createDebug, type WorldDebug } from './debug';
 import { BUILDING_H, COL_W } from './constants';
 import { RECEPTION_ID } from './layout/core';
@@ -111,7 +111,9 @@ export function createWorld(canvas: HTMLCanvasElement, store: OfficeStore, o: Cr
 
   const overviewTarget = () => {
     const frame = fullOverview ? overviewFrame : automaticFrame;
-    const f = frame(buildingRect(), camera.viewW, camera.viewH, camera.insets);
+    const occupied = [...sim.rooms.values()].filter(r => r.present && !r.ghost).map(({ layout: { rect: r } }) => ({ x: r.x * TILE, y: r.y * TILE, w: r.w * TILE, h: r.h * TILE }));
+    const bounds = fullOverview ? buildingRect() : occupiedBounds(occupied, buildingRect());
+    const f = frame(bounds, camera.viewW, camera.viewH, camera.insets);
     const fit = Math.max(camera.minZoom, f.zoom);
     const snapped = camera.snapZoom(fit, 'down');
     const zoom = snapped >= fit * 0.82 ? snapped : fit;
@@ -400,6 +402,11 @@ export function createWorld(canvas: HTMLCanvasElement, store: OfficeStore, o: Cr
     },
     focusAgent,
     focusRoom,
+    focusWork: () => {
+      userMoved = false;
+      fullOverview = false;
+      overview(true);
+    },
     overview: () => {
       userMoved = false;
       fullOverview = true;

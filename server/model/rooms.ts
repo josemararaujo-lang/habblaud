@@ -1,10 +1,6 @@
 // Salas do escritório: identidade (cwd normalizado), nome exibido e posição (slot) no prédio.
 
-/** cwd normalizado: sem barras repetidas nem barra final. */
-export function normalizeCwd(cwd: string): string {
-  const p = cwd.trim().replace(/\/{2,}/g, '/');
-  return p.length > 1 ? p.replace(/\/+$/, '') : p;
-}
+export { canonicalRoomId as normalizeCwd } from '../../shared/room-id';
 
 function segments(path: string): string[] {
   return path.split(/[\\/]+/).filter(Boolean);

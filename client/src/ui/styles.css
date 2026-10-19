@@ -11305,3 +11305,59 @@ html.is-replay #world {
 .ui-world-chip__visitors[hidden] {
   display: none;
 }
+
+/* Operational workspace: readable priorities, quiet motion and direct panel sizing. */
+.ui-view-tabs { display: flex; padding: 3px; gap: 3px; border-radius: 10px; background: rgba(0,0,0,.2); }
+.ui-view-tab { flex: 1; min-height: 34px; border-radius: 8px; font-weight: 600; color: var(--ui-muted); }
+.ui-view-tab[aria-pressed="true"] { background: var(--ui-bg-hover); color: var(--ui-text); box-shadow: 0 1px 3px #0003; }
+.ui-work { padding: 0 8px 16px; }
+.ui-work__intro, .ui-section-hint { color: var(--ui-muted); font-size: 12px; line-height: 1.5; margin: 12px 4px; }
+.ui-work__group > h3 { display: flex; align-items: center; justify-content: space-between; font: 600 12px/1.4 var(--font-ui); padding: 14px 4px 8px; margin: 0; }
+.ui-work__count { font-variant-numeric: tabular-nums; background: var(--ui-bg-hover); border-radius: 6px; padding: 1px 7px; }
+.ui-work__group--attention > h3 { color: var(--st-waiting); }
+.ui-work__group--working > h3 { color: var(--st-working); }
+.ui-work__group--finished > h3 { color: var(--st-done); }
+.ui-work__list { display: grid; gap: 8px; }
+.ui-work__card { border: 1px solid var(--ui-line); background: var(--ui-bg-soft); padding: 12px; border-radius: 12px; align-items: start; text-align: left; row-gap: 8px; }
+.ui-work__card.is-done { opacity: 1; }
+.ui-work__card .ui-agent__task { -webkit-line-clamp: 3; line-height: 1.45; font-size: 13px; margin-top: 5px; }
+.ui-work__card .ui-agent__top { flex-wrap: wrap; row-gap: 4px; }
+.ui-work__card .ui-agent__activity { margin-top: 5px; }
+.ui-work__context { grid-column: 1 / -1; display: grid; gap: 6px; border-top: 1px solid var(--ui-line); padding-top: 8px; }
+.ui-work__room { color: var(--ui-muted); font-size: 11px; font-weight: 600; overflow-wrap: anywhere; }
+.ui-work__result { color: var(--ui-muted); font-size: 12px; line-height: 1.5; }
+.ui-work__next { color: var(--ui-accent); font-size: 12px; font-weight: 600; }
+.ui-work-result, .ui-work-next { font-size: 13px; line-height: 1.55; overflow-wrap: anywhere; margin: 8px 0; }
+.ui-work-next { color: var(--ui-accent); }
+.ui-room__rename { display: block; margin: 0 12px 6px; padding: 5px 0; font-size: 11px; }
+.ui-msg__connection { font-size: 12px; color: var(--st-waiting); display: flex; gap: 7px; align-items: center; }
+.ui-msg__connection::before { content: ''; width: 6px; height: 6px; flex: none; border-radius: 50%; background: currentColor; }
+.ui-msg__connection.is-ready { color: var(--st-working); }
+.ui-msg__setup { border: 1px solid var(--ui-line); border-radius: 10px; padding: 12px; }
+.ui-msg__setup summary { cursor: pointer; font-weight: 600; }
+.ui-msg__setup p { line-height: 1.55; color: var(--ui-muted); font-size: 12px; }
+.ui-msg__command { display: block; user-select: all; background: #0003; border-radius: 6px; padding: 9px; margin: 10px 0; overflow-wrap: anywhere; }
+.ui-msg__setup-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.ui-msg__setup-actions [role="status"] { font-size: 11px; color: var(--ui-muted); }
+.ui-social > summary { cursor: pointer; min-height: 32px; }
+.ui-social > summary::after { content: '+'; margin-left: auto; color: var(--ui-muted); }
+.ui-social[open] > summary::after { content: '−'; }
+.ui-hero__title { font-size: 14px; line-height: 1.55; text-wrap: pretty; }
+.ui-side__resize { display: none; }
+@media (min-width: 901px) {
+  .ui-root { --side-w: var(--preferred-side-w, 336px); }
+  .ui-side__resize { display: block; position: absolute; right: -4px; top: 0; bottom: 0; width: 9px; cursor: col-resize; touch-action: none; border-radius: 6px; }
+  .ui-side__resize:hover, .ui-side__resize:focus-visible { background: var(--ui-accent-soft); outline: 1px solid var(--ui-accent); }
+}
+.ui-root .ui-view-tab, .ui-work__card { transition: background-color 150ms ease, border-color 150ms ease; }
+.ui-view-tab:active, .ui-msg__setup-actions button:active { background: var(--ui-accent-soft); }
+.ui-sidebar { transition: transform 220ms var(--ease), visibility 0s linear 220ms; }
+.has-sidebar .ui-sidebar { transition: transform 220ms var(--ease); }
+.ui-drawer { transition: transform 220ms var(--ease), visibility 0s linear 220ms; }
+.ui-drawer.is-open { transition: transform 220ms var(--ease); }
+@media (prefers-reduced-motion: reduce) {
+  .ui-root .ui-sidebar, .ui-root .ui-drawer, .ui-root .ui-work__card { transition: none; animation: none; }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .ui-root .ui-panel { background: #141821; backdrop-filter: none; }
+}

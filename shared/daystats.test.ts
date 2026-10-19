@@ -432,3 +432,21 @@ describe('histórico fictício do demo', () => {
     expect(run()).toEqual(d);
   });
 });
+
+describe('identidade canônica das salas no histórico', () => {
+  it('agrega Unicode NFC e NFD sem duplicar agentes ou perder tempo e esperas', () => {
+    const { tracker, day } = setup();
+    const path = '/p/Estruturação';
+    const agents = [agent({ id: 'a', roomId: path, status: 'waiting', statusSince: T0 }), agent({ id: 'b', roomId: path.normalize('NFD'), status: 'waiting', statusSince: T0 })];
+    const v = { ...view(...agents), rooms: [{ id: path, name: 'Estruturação' }, { id: path.normalize('NFD'), name: 'Estruturação' }] };
+    tracker.observe(v, T0);
+    tracker.observe(v, T0 + 60 * S);
+    tracker.observe(v, T0 + 120 * S);
+    const result = day();
+    expect(result.rooms).toHaveLength(1);
+    expect(result.rooms[0].id).toBe(path);
+    expect(result.rooms[0].ms.waiting).toBe(result.totals.ms.waiting);
+    expect(result.rooms[0].waits).toBe(2);
+    expect(result.waits.every(w => w.roomId === path)).toBe(true);
+  });
+});

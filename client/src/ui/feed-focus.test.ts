@@ -40,3 +40,7 @@ describe('feed com foco', () => {
     expect(feedRows([first, second, done1, done2], 'all').map((item) => item.id)).toEqual(['a1', 'a2', 'done1', 'done2']);
   });
 });
+
+it('excludes response typing, generic tools and social simulation from important events', () => {
+  expect(feedRows([event('r', 'respond'), event('tool', 'other', 'Usando webrun'), event('social:1', 'other'), event('d', 'done')], 'important').map(x => x.id)).toEqual(['d']);
+});

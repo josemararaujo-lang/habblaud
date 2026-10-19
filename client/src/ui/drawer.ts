@@ -1,3 +1,4 @@
+import { currentWork, sessionGoal, lastResult, nextAction } from './work-summary';
 // Gaveta de detalhes (direita): agente ou sala selecionados. Agente do Codex: selo "Codex", textos dele (onde
 // responder, o terminal, a aprovação no lugar do modo de permissão, sem custo) e a dica dos hooks do Codex.
 import type { Activity, AgentInfo, FeedItem, RoomInfo, ShellJob, TaskItem } from '../../../shared/types';
@@ -251,6 +252,10 @@ class AgentView {
   private teamSec: ReturnType<typeof section>;
   private team: KeyedList<AgentInfo>;
   private teamEmpty: HTMLElement;
+  private collaboration: KeyedList<Activity>;
+  private collaborationSec: ReturnType<typeof section>;
+  private resultText: HTMLElement;
+  private nextText: HTMLElement;
   private timeline: KeyedList<Activity>;
   private timelineSec: ReturnType<typeof section>;
   private timelineMore: HTMLButtonElement;
@@ -376,6 +381,12 @@ class AgentView {
       update: (row, a) => updateAgentRow(row, a, ctx.account(a.account), false, ctx.now(), ctx.store.snapshot?.agents),
     });
 
+    const collaborationList = h('ol', { class: 'ui-timeline' });
+    this.collaborationSec = section(tr('Colaboração registrada'), h('p', { class: 'ui-section-hint', text: tr('Delegações e mensagens registradas nesta sessão.') }), collaborationList);
+    this.collaboration = new KeyedList<Activity>(collaborationList, { animate: false, key: a => a.id, create: createTimelineItem, update: (li, a) => updateTimelineItem(li, a, ctx.now()) });
+    this.resultText = h('p', { class: 'ui-work-result' });
+    this.nextText = h('p', { class: 'ui-work-next' });
+    const resultSec = section(tr('Resultado e próximo passo'), this.resultText, this.nextText);
     const tl = h('ol', { class: 'ui-timeline' });
     this.timelineMore = h('button', { class: 'ui-btn ui-btn--sm', type: 'button', on: { click: () => this.showTimeline(this.timelineShown + TIMELINE_STEP) } });
     this.timelineLess = h('button', { class: 'ui-btn ui-btn--sm', type: 'button', text: tr('Mostrar menos'), on: { click: () => this.showTimeline(TIMELINE_STEP) } });
@@ -419,10 +430,12 @@ class AgentView {
       this.shellsSec.el,
       nowSec.el,
       this.msgSec.el,
-      this.social.el,
       this.tasksSec.el,
       this.teamSec.el,
+      resultSec.el,
+      this.collaborationSec.el,
       this.timelineSec.el,
+      this.social.el,
       statsSec.el,
       this.codexHint,
     );
@@ -538,9 +551,9 @@ class AgentView {
     this.character.render(a, !!live);
     setText(this.role, roleLabel(a));
     setVariant(this.role, 'ui-role--', a.kind);
-    setText(this.title, a.title ?? '');
-    setHidden(this.title, !a.title);
-    setTitle(this.title, a.title ?? '');
+    setText(this.title, sessionGoal(a));
+    setHidden(this.title, false);
+    setTitle(this.title, sessionGoal(a));
     updateAccountChip(this.accChip, account, a.account, a.provider);
     setText(this.accName, account?.name ?? a.account);
     updateProviderTag(this.accProv, provider, account?.name ?? '');
@@ -604,9 +617,12 @@ class AgentView {
     this.shells.sync(jobs);
 
     // Atividade atual.
-    const act = a.activity;
+    const act = a.status === 'working' || a.status === 'shell' || a.status === 'waiting' ? a.activity : undefined;
     setText(this.actIcon, act?.icon ?? '·');
-    setText(this.actText, act?.text ?? activityFallback(a));
+    setText(this.actText, currentWork(a));
+    const result = lastResult(a);
+    setText(this.resultText, result ? `${result.text} · ${relativeTime(result.at, now)}` : tr('Nenhum resultado registrado ainda.'));
+    setText(this.nextText, tr('Próximo passo: {0}', [nextAction(a)]));
     // A duração só entra quando o texto ainda não a traz ("Concluiu em 33s" já diz quanto levou).
     const showDuration = !!act?.durationMs && act.kind !== 'done' && !/\d\s?(?:ms|s|min|h)\b/.test(act.text);
     setText(this.actTime, act ? `${relativeTime(act.at, now)}${showDuration ? ` · levou ${formatDuration(act.durationMs!)}` : ''}` : '');
@@ -649,6 +665,9 @@ class AgentView {
     // Linha do tempo (mais recente primeiro). No replay, nada depois do instante reproduzido.
     const until = this.historyUntil();
     this.history = mergeHistory(this.history, a.recent, 200, until);
+    const collaboration = this.history.filter(x => x.kind === 'delegate' || x.kind === 'communicate').slice(-10).reverse();
+    this.collaboration.sync(collaboration);
+    setHidden(this.collaborationSec.el, collaboration.length === 0);
     const items = this.history.slice(-this.timelineShown).reverse();
     const hiddenCount = Math.max(0, this.history.length - this.timelineShown);
     setHidden(this.timelineMore, hiddenCount === 0);

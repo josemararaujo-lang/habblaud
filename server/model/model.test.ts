@@ -797,3 +797,31 @@ describe('Office: personagem do projeto', () => {
     expect(names.character('/p/api')?.owner).toBe('s2b');
   });
 });
+
+it('shares a room across Claude and Codex Unicode spellings while preserving the original folder path', () => {
+  const { office, now } = makeOffice();
+  const original = '/p/Estruturação'.normalize('NFD');
+  for (const [id, provider, cwd] of [['a', 'claude', original], ['b', 'codex', original.normalize('NFC')]] as const) {
+    office.addMain({ id, provider, account: provider, sessionId: id, cwd, role: 'Agente principal', startedAt: now(), status: 'working' });
+  }
+  const snap = office.commit().snapshot;
+  expect(snap.rooms).toHaveLength(1);
+  expect(new Set(snap.agents.map(a => a.roomId)).size).toBe(1);
+  expect(snap.rooms[0].path).toBe(original);
+});
+
+it('keeps the most recently customized character when persisted Unicode room keys converge', () => {
+  const tmp = tempDir();
+  try {
+    const file = join(tmp.dir, 'names.json');
+    const path = '/p/Estruturação';
+    writeFileSync(file, JSON.stringify({ version: 1, names: {}, rooms: {
+      [path]: { name: 'Ana', look: 'f', seed: 1, at: 1 },
+      [path.normalize('NFD')]: { name: 'Bia', look: 'f', seed: 2, at: 2 },
+    } }));
+    const names = new NameStore(file);
+    names.load();
+    expect(names.character(path)?.name).toBe('Bia');
+    expect(names.reservedNames().size).toBe(1);
+  } finally { tmp.cleanup(); }
+});

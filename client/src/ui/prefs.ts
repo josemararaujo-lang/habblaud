@@ -20,6 +20,8 @@ export interface UiPrefs {
   /** Notification do navegador para alertas com a aba oculta. */
   browserNotifications: boolean;
   sidebarOpen: boolean;
+  sidebarView: 'now' | 'rooms';
+  sidebarWidth: number;
   feedOpen: boolean;
   /** Eventos operacionais em destaque ou todos os passos do feed. */
   feedMode: 'important' | 'all';
@@ -39,6 +41,8 @@ export const DEFAULT_PREFS: UiPrefs = {
   sounds: DEFAULT_SOUND_SETTINGS,
   browserNotifications: false,
   sidebarOpen: true,
+  sidebarView: 'now',
+  sidebarWidth: 336,
   feedOpen: true,
   feedMode: 'important',
   hiddenAccounts: [],
@@ -66,6 +70,8 @@ export function sanitizePrefs(raw: unknown): UiPrefs {
     sounds: sanitizeSoundSettings(o.sounds),
     browserNotifications: bool(o.browserNotifications, d.browserNotifications),
     sidebarOpen: bool(o.sidebarOpen, d.sidebarOpen),
+    sidebarWidth: typeof o.sidebarWidth === 'number' && Number.isFinite(o.sidebarWidth) ? Math.max(300, Math.min(440, o.sidebarWidth)) : d.sidebarWidth,
+    sidebarView: oneOf(o.sidebarView, ['now', 'rooms'] as const, d.sidebarView),
     feedOpen: bool(o.feedOpen, d.feedOpen),
     feedMode: oneOf(o.feedMode, ['important', 'all'] as const, d.feedMode),
     hiddenAccounts: Array.isArray(o.hiddenAccounts) ? o.hiddenAccounts.filter((x): x is string => typeof x === 'string').slice(0, 20) : [],

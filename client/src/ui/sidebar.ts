@@ -1,3 +1,4 @@
+import { NowPanel } from './now-panel';
 // Barra lateral: busca, filtro por conta e a lista de salas -> agentes -> subagentes.
 import type { AccountInfo, AgentInfo } from '../../../shared/types';
 import { roomTheme } from '../art';
@@ -7,7 +8,7 @@ import { moveRoom, orderRooms } from './roomorder';
 import { h, iconButton, KeyedList, setAttr, setHidden, setStyleVar, setText, setTitle } from './dom';
 import { plural, shortPath } from './format';
 import { ICONS } from './icons';
-import { groupRooms, type AgentNode, type RoomGroup } from './model';
+import { groupRooms, matchesQuery, type AgentNode, type RoomGroup } from './model';
 import { officeIsEmpty } from './overlays';
 import { createAgentRow, updateAgentRow } from './rows';
 import { createAccountChip, createProgress, updateAccountChip, updateProgress } from './widgets';
@@ -56,6 +57,9 @@ export class Sidebar implements UiComponent {
   private empty: HTMLElement;
   private emptyText: HTMLElement;
   private clearBtn: HTMLButtonElement;
+  private nowPanel: NowPanel;
+  private roomList: HTMLElement;
+  private tabs: HTMLButtonElement[];
   private lastSelKey = '';
 
   constructor(private ctx: UiContext) {
@@ -108,7 +112,11 @@ export class Sidebar implements UiComponent {
 
     this.scroller = h('div', { class: 'ui-side__scroll' });
     const list = h('div', { class: 'ui-rooms', role: 'list', attrs: { 'aria-label': tr('Salas') } });
-    this.scroller.append(list);
+    this.roomList = list;
+    this.nowPanel = new NowPanel(ctx);
+    this.scroller.append(this.nowPanel.el, list);
+    this.tabs = (['now', 'rooms'] as const).map(view => h('button', { class: 'ui-view-tab', type: 'button', text: view === 'now' ? tr('Agora') : tr('Salas'), attrs: { 'aria-controls': view === 'now' ? 'ui-now-panel' : 'ui-room-list' }, on: { click: () => ctx.updatePrefs({ sidebarView: view }) } }));
+    list.id = 'ui-room-list';
     this.rooms = new KeyedList<RoomGroup>(list, {
       key: (g) => g.room.id,
       create: (g) => this.createRoom(g),
@@ -135,9 +143,28 @@ export class Sidebar implements UiComponent {
     this.el = h(
       'aside',
       { class: 'ui-panel ui-sidebar', attrs: { 'aria-label': tr('Salas e agentes'), id: 'ui-sidebar' } },
-      h('div', { class: 'ui-side__head' }, h('div', { class: 'ui-side__title' }, h('h2', { text: tr('Escritório') }), close), h('p', { class: 'ui-side__hint', text: tr('Cada sala reúne sessões abertas na mesma pasta.') }), search, this.filters),
+      h('div', { class: 'ui-side__head' }, h('div', { class: 'ui-side__title' }, h('h2', { text: tr('Escritório') }), close), h('p', { class: 'ui-side__hint', text: tr('Cada sala reúne sessões abertas na mesma pasta.') }), search, this.filters, h('div', { class: 'ui-view-tabs', role: 'group', attrs: { 'aria-label': tr('Organizar escritório') } }, ...this.tabs)),
       this.scroller,
     );
+    const grip = h('div', { class: 'ui-side__resize', role: 'separator', tabIndex: 0, attrs: { 'aria-label': tr('Largura do painel lateral'), 'aria-orientation': 'vertical', 'aria-valuemin': 300, 'aria-valuemax': 440 } });
+    this.el.append(grip);
+    let width = ctx.prefs.sidebarWidth;
+    const resize = (value: number) => {
+      width = Math.max(300, Math.min(440, value));
+      setStyleVar(ctx.root, '--preferred-side-w', `${width}px`);
+      setAttr(grip, 'aria-valuenow', String(Math.round(width)));
+    };
+    resize(width);
+    let drag: { x: number; width: number } | null = null;
+    grip.addEventListener('pointerdown', e => { if (e.button !== 0) return; e.preventDefault(); drag = { x: e.clientX, width }; grip.setPointerCapture(e.pointerId); });
+    grip.addEventListener('pointermove', e => { if (drag) resize(drag.width + e.clientX - drag.x); });
+    grip.addEventListener('lostpointercapture', () => { if (drag) { drag = null; ctx.updatePrefs({ sidebarWidth: width }); } });
+    grip.addEventListener('keydown', e => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+      e.preventDefault(); e.stopPropagation();
+      resize(e.key === 'Home' ? 300 : e.key === 'End' ? 440 : width + (e.key === 'ArrowLeft' ? -16 : 16));
+      ctx.updatePrefs({ sidebarWidth: width });
+    });
   }
 
   focusSearch(): void {
@@ -155,12 +182,18 @@ export class Sidebar implements UiComponent {
     // Ordem das salas escolhida pelo usuário (arrastando o cabeçalho da sala).
     const groups = orderRooms(groupRooms(snap, { query: this.query, hiddenAccounts: hidden }), (g) => g.room.id);
     this.shownRooms = groups.map((g) => g.room.id);
-    this.rooms.sync(groups);
+    const nowView = this.ctx.prefs.sidebarView === 'now';
+    setHidden(this.roomList, nowView);
+    setHidden(this.nowPanel.el, !nowView);
+    this.tabs.forEach((tab, i) => setAttr(tab, 'aria-pressed', String(i === (nowView ? 0 : 1))));
+    this.rooms.sync(nowView ? [] : groups);
+    const nowAgents = groups.flatMap(g => g.agents.filter(a => !hidden.has(a.account) && matchesQuery(a, g.room, this.ctx.account(a.account), this.query)));
+    this.nowPanel.render(nowView ? nowAgents : []);
 
     const filtering = this.query.trim().length > 0 || hidden.size > 0;
     const total = snap?.agents.length ?? 0;
     // Escritório vazio sem filtro: o cartão central já explica; a lista não repete o aviso.
-    const showEmpty = groups.length === 0 && (filtering || !officeIsEmpty(this.ctx));
+    const showEmpty = (nowView ? !nowAgents.some(a => a.status !== 'offline') : groups.length === 0) && (filtering || !officeIsEmpty(this.ctx));
     setHidden(this.empty, !showEmpty);
     if (showEmpty) {
       setText(
@@ -184,7 +217,7 @@ export class Sidebar implements UiComponent {
           sel.type === 'agent'
             ? this.el.querySelector<HTMLElement>(`.ui-agent[data-id="${CSS.escape(sel.id)}"]`)
             : this.el.querySelector<HTMLElement>(`.ui-room[data-key="${CSS.escape(sel.id)}"] .ui-room__head`);
-        target?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        target?.scrollIntoView({ block: 'nearest', behavior: 'instant' });
       }
     }
   }
@@ -232,7 +265,8 @@ export class Sidebar implements UiComponent {
       // Sem tema: mantém a cor padrão do CSS.
     }
     const agentsEl = h('ul', { class: 'ui-nodes' });
-    const section = h('section', { class: 'ui-room', role: 'listitem' }, head, agentsEl);
+    const rename = h('button', { class: 'ui-room__rename ui-link-btn', type: 'button', text: tr('Renomear sala'), on: { click: () => { const r = rename.getBoundingClientRect(); this.ctx.renameRoom?.(g.room.id, { x: r.left, y: r.bottom + 4 }); } } });
+    const section = h('section', { class: 'ui-room', role: 'listitem' }, head, rename, agentsEl);
     const accs = new KeyedList<AccountInfo | string>(accsEl, {
       animate: false,
       key: (a) => (typeof a === 'string' ? a : a.id),

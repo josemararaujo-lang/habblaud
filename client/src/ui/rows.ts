@@ -1,9 +1,10 @@
+import { currentWork, sessionGoal } from './work-summary';
 // Linha de agente (avatar, nome, conta, papel, status e atividade), usada na barra lateral e na gaveta.
 import type { AccountInfo, AgentInfo } from '../../../shared/types';
 import { createAvatar, updateAvatar, type AvatarSize } from './avatar';
 import { h, setAttr, setHidden, setStyleVar, setText, setTitle, setVariant } from './dom';
 import { formatDuration } from './format';
-import { activityFallback, shellLine, shellWaitIn, statusLabel } from './model';
+import { shellLine, shellWaitIn, statusLabel } from './model';
 import {
   createAccountChip,
   createActivityLine,
@@ -75,7 +76,7 @@ export function updateAgentRow(
   setText(r.name, agent.name);
   updateAccountChip(r.chip, account, agent.account, agent.provider);
   updateRoleBadge(r.role, agent);
-  const title = agent.title?.trim() ?? '';
+  const title = sessionGoal(agent);
   setText(r.task, title);
   setTitle(r.task, title);
   setHidden(r.task, !title);
@@ -91,12 +92,12 @@ export function updateAgentRow(
   const status = wait ? 'shell' : agent.status;
   updateStatusDot(r.dot, status);
   if (wait) updateShellActivityLine(r.activity, wait, now);
-  else updateActivityLine(r.activity, agent.activity, activityFallback(agent));
+  else updateActivityLine(r.activity, agent.status === 'working' || agent.status === 'shell' ? agent.activity : undefined, currentWork(agent));
   setVariant(row, 'is-', status);
   row.classList.toggle('is-selected', selected);
   setAttr(row, 'aria-current', selected ? 'true' : null);
   // Para leitores de tela, o tempo em minutos (o cronômetro mudaria o rótulo a cada segundo).
-  const doing = wait ? tr('{0}, há {1}', [shellLine(wait, now).label, formatDuration(now - wait.since)]) : agent.activity?.text;
+  const doing = wait ? tr('{0}, há {1}', [shellLine(wait, now).label, formatDuration(now - wait.since)]) : currentWork(agent);
   setAttr(
     row,
     'aria-label',

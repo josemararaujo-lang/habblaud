@@ -38,6 +38,7 @@ export class FeedPanel implements UiComponent {
   constructor(private ctx: UiContext) {
     this.list = h('ol', { class: 'ui-feed__list', role: 'log', attrs: { 'aria-label': tr('Eventos recentes'), 'aria-live': 'off' } });
     this.rows = new KeyedList<FeedRow>(this.list, {
+      animate: false,
       key: (f) => f.id,
       create: (f) => this.createRow(f),
       update: (li, f) => this.updateRow(li, f),
@@ -228,7 +229,7 @@ export class FeedPanel implements UiComponent {
     setHidden(chip, !acc);
     setText(room, f.roomName);
     setText(icon, f.activity.icon);
-    setText(text, f.repeatCount && f.repeatCount > 1 ? `${f.activity.text} ×${f.repeatCount}` : f.activity.text);
+    setText(text, f.id.startsWith('social:') ? `${tr('Simulação social')}: ${f.activity.text}` : f.repeatCount && f.repeatCount > 1 ? `${f.activity.text} ×${f.repeatCount}` : f.activity.text);
     li.classList.toggle('is-error', !!f.activity.error);
     li.classList.toggle('is-social', f.id.startsWith('social:'));
     // Fim de um shell (✅ terminou / ❌ falhou ou foi interrompido): linha com destaque próprio.

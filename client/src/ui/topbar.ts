@@ -122,6 +122,7 @@ export class TopBar implements UiComponent {
       'div',
       { class: 'ui-btn-group', role: 'group', attrs: { 'aria-label': tr('Câmera') } },
       iconButton(ICONS.overview, tr('Visão geral (O)'), () => ctx.camera('overview')),
+      h('button', { class: 'ui-btn ui-btn--sm', type: 'button', text: tr('Focar salas'), on: { click: () => ctx.camera('focusWork') } }),
       iconButton(ICONS.zoomOut, tr('Afastar (−)'), () => ctx.camera('zoomOut')),
       iconButton(ICONS.zoomIn, tr('Aproximar (+)'), () => ctx.camera('zoomIn')),
     );

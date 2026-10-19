@@ -45,6 +45,7 @@ describe('descarte do mundo', () => {
     const removed = vi.spyOn(fonts, 'removeEventListener');
     vi.stubGlobal('document', Object.assign(new EventTarget(), { fonts }));
     vi.stubGlobal('window', new EventTarget());
+    vi.stubGlobal('Image', class { src = ''; complete = false; naturalWidth = 0; });
     vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
     vi.stubGlobal('cancelAnimationFrame', vi.fn());
     vi.stubGlobal('fetch', vi.fn(async () => new Response(null, { status: 404 })));

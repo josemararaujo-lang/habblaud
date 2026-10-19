@@ -12,6 +12,12 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Visão Agora.** Agentes organizados por necessidade de resposta, trabalho em andamento, conclusão e disponibilidade, com objetivo, pasta, estado atual, último resultado e próximo passo. A aba Salas mantém a organização por projeto e oferece renomeação visível.
+- **Salas duplicadas corrigidas.** Caminhos com acentos Unicode equivalentes passam a representar a mesma sala, inclusive no resumo diário, mantendo aliases e personagens salvos.
+- **Comunicação compreensível.** Estado da conexão, instruções expansíveis e cópia do comando de configuração. Colaboração registrada separada da simulação social, agora recolhida nos detalhes.
+- **Menos ruído.** Contexto técnico do navegador removido dos pedidos; o modo Importantes deixa de repetir digitação de respostas e ferramentas genéricas. Agentes ociosos mostram que aguardam uma nova instrução.
+- **Mais espaço para acompanhar.** Enquadramento das salas presentes, botão Focar salas, painel lateral redimensionável pelo mouse e teclado, recolhimento ao abrir detalhes em telas médias e transições curtas com movimento reduzido respeitado.
+
 - **Contas identificadas pelas marcas oficiais.** Os chips agora exibem os símbolos do Claude e do Codex, inclusive nos filtros, cartões, estatísticas e etiquetas dos personagens; a borda continua com a cor de cada conta.
 
 - **Salas explicadas na lista.** O painel agora informa que salas representam pastas com sessões abertas, mostra a pasta de trabalho com rótulo e identifica claramente Claude Code e Codex em cada sala e nos filtros. Títulos de tarefa aparecem com mais espaço.

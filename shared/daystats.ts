@@ -1,3 +1,4 @@
+import { canonicalRoomId } from './room-id';
 // "Onde foi meu dia": estatísticas do dia (tempo por status, contagens, tokens, custo e esperas).
 // Código puro (sem Node nem DOM): o servidor acumula e persiste (server/history/daystats.ts) e o navegador
 // reaproveita a mesma lógica no ?mock=1 (ui/daystats.ts). O protocolo de GET /api/stats também mora aqui.
@@ -792,7 +793,7 @@ export function queryDay(datas: readonly DayData[], dayKey: string, tz: string, 
   const hours = new Map<number, HourBucket>();
   let updatedAt = 0;
   for (const d of sorted) {
-    for (const [id, n] of d.rooms) roomNames.set(id, n);
+    for (const [id, n] of d.rooms) roomNames.set(canonicalRoomId(id), n);
     for (const [id, m] of d.accounts) accMeta.set(id, m);
     for (const [t, b] of d.hours) if (hourInRange(t, start, end)) hours.set(t, b);
   }
@@ -806,7 +807,7 @@ export function queryDay(datas: readonly DayData[], dayKey: string, tz: string, 
     addCountsTo(total.counts, b.counts);
     waitWallMs += b.waitWallMs;
     for (const [id, p] of b.rooms) {
-      const a = aggOf(rooms, id);
+      const a = aggOf(rooms, canonicalRoomId(id));
       addMsTo(a.ms, p.ms);
       addCountsTo(a.counts, p.counts);
     }
@@ -817,7 +818,7 @@ export function queryDay(datas: readonly DayData[], dayKey: string, tz: string, 
     }
     for (const [k, [room, acc]] of b.agents) {
       total.agents.add(k);
-      aggOf(rooms, room).agents.add(k);
+      aggOf(rooms, canonicalRoomId(room)).agents.add(k);
       aggOf(accounts, acc).agents.add(k);
     }
     for (const d of sorted) if (d.hours.get(b.t) === b && d.updatedAt > updatedAt) updatedAt = d.updatedAt;
@@ -837,7 +838,7 @@ export function queryDay(datas: readonly DayData[], dayKey: string, tz: string, 
   }
   for (const w of waits) {
     const ms = w.end - w.start;
-    for (const a of [total, aggOf(rooms, w.roomId), aggOf(accounts, w.account)]) {
+    for (const a of [total, aggOf(rooms, canonicalRoomId(w.roomId)), aggOf(accounts, w.account)]) {
       a.waits++;
       if (ms > a.longestWaitMs) a.longestWaitMs = ms;
     }
@@ -850,7 +851,7 @@ export function queryDay(datas: readonly DayData[], dayKey: string, tz: string, 
     hourList.push({ t, hour: localHourOf(Math.max(t, start), tz), ms: roundMs(hours.get(t)?.ms ?? zeroMs()) });
   }
 
-  const roomName = (id: string) => roomNames.get(id) ?? basename(id);
+  const roomName = (id: string) => roomNames.get(canonicalRoomId(id)) ?? basename(id);
   const roomList: RoomDayStats[] = [...rooms]
     .map(([id, a]) => ({ id, name: roomName(id), ...finishAgg(a) }))
     .sort((a, b) => b.ms.waiting - a.ms.waiting || totalMs(b.ms) - totalMs(a.ms) || a.name.localeCompare(b.name));
@@ -874,7 +875,7 @@ export function queryDay(datas: readonly DayData[], dayKey: string, tz: string, 
       const item: WaitDayStats = {
         agentId: w.agentId,
         agentName: w.agentName,
-        roomId: w.roomId,
+        roomId: canonicalRoomId(w.roomId),
         roomName: roomName(w.roomId),
         account: w.account,
         start: w.start,
