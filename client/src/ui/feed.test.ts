@@ -70,13 +70,14 @@ function panel(feed: FeedItem[] = [], agents: AgentInfo[] = []) {
   let receive!: (fresh: FeedItem[]) => void;
   let social!: (e: SocialEvent) => void;
   const snapshot = { agents, rooms: [] };
-  const prefs = { hiddenAccounts: [] as string[] };
+  const prefs = { hiddenAccounts: [] as string[], feedMode: 'important' as 'important' | 'all' };
   let open = true;
   const ctx = {
     store: { feed, snapshot, on: (_event: string, cb: typeof receive) => { receive = cb; } },
     world: { onSocialEvent: (cb: typeof social) => { social = cb; } },
     prefs, agent: (id: string) => snapshot.agents.find((a) => a.id === id), account: () => undefined,
     invalidate: () => {}, togglePanel: () => {}, isPanelOpen: () => open,
+    updatePrefs: (patch: Partial<typeof prefs>) => Object.assign(prefs, patch),
   } as unknown as UiContext;
   const view = new FeedPanel(ctx);
   view.render();
@@ -94,7 +95,7 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('FeedPanel pausado', () => {
-  it.each(['SSE', 'social'])('guarda só os 50 eventos mais novos de %s, sem perder a contagem por conta', (source) => {
+  it.each(['SSE', 'social'])('guarda até 200 eventos pausados de %s e filtra a contagem por conta', (source) => {
     const shown = agent('visível');
     const hidden = agent('oculto', '.claude-2');
     const old = item('antes', shown);
@@ -106,8 +107,8 @@ describe('FeedPanel pausado', () => {
     else for (const f of fresh) p.social({ id: f.id, agentId: f.agentId, at: f.activity.at, icon: f.activity.icon, text: f.activity.text, place: f.roomName });
     // A retenção é observada só para comprovar o teto de memória, além da saída do painel.
     const retained = (p.view as unknown as { pending: FeedItem[] }).pending;
-    expect(retained).toHaveLength(50);
-    expect(retained.map((f) => f.id)).toEqual(fresh.slice(70).map((f) => f.id));
+    expect(retained).toHaveLength(120);
+    expect(retained.map((f) => f.id)).toEqual(fresh.map((f) => f.id));
     p.view.render();
     expect(p.list.children.map((e) => e.dataset.key)).toEqual(['antes']);
     expect(p.pill.textContent).toBe('99 novas');
@@ -133,13 +134,13 @@ describe('FeedPanel pausado', () => {
     const meta = (p.view as unknown as { meta: Map<string, Pick<AgentInfo, 'seed' | 'account'>> }).meta;
     p.scroller.scrollTop = 0;
     p.scroller.fire('scroll');
-    for (let i = 0; i < 51; i++) {
+    for (let i = 0; i < 201; i++) {
       const a = agent(`sessão-${i}`);
       p.snapshot.agents = [a];
       p.receive([item(`novo-${i}`, a)]);
       p.view.render();
     }
-    const retainedIds = ['antigo', ...Array.from({ length: 50 }, (_, i) => `sessão-${i + 1}`)];
+    const retainedIds = ['antigo', ...Array.from({ length: 200 }, (_, i) => `sessão-${i + 1}`)];
     expect([...meta.keys()]).toEqual(retainedIds);
     // A saída do agente não apaga a aparência/conta de um evento que ainda está guardado; quem está no escritório
     // fica mesmo sem evento (o render recriaria a cada quadro).

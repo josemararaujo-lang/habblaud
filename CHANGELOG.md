@@ -10,6 +10,12 @@ do meio (0.**3**.0).
 
 ## [Não lançado]
 
+### Melhorado
+
+- **Feed com foco nos acontecimentos importantes.** O painel abre no modo Importantes, que mostra pedidos, mudanças,
+  testes, erros e conclusões; o botão Tudo revela os passos detalhados. Eventos operacionais idênticos em sequência
+  aparecem agrupados com uma contagem, e a escolha fica salva no navegador.
+
 ## [1.0.3] - 2026-10-16
 
 ### Corrigido

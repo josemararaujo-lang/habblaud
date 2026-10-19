@@ -301,6 +301,8 @@ export const EN: Readonly<Record<string, string>> = {
   "Os eventos dos agentes aparecem aqui assim que acontecem.": "Agent events show up here as soon as they happen.",
   "Feed de atividade": "Activity feed",
   "Atividade": "Activity",
+  "Filtrar atividade": "Filter activity",
+  "Nenhum evento importante recente.": "No recent important events.",
   "1 nova": "1 new",
   "{0} novas": "{0} new",
   "Nenhum evento das contas selecionadas.": "No events from the selected accounts.",

@@ -21,6 +21,8 @@ export interface UiPrefs {
   browserNotifications: boolean;
   sidebarOpen: boolean;
   feedOpen: boolean;
+  /** Eventos operacionais em destaque ou todos os passos do feed. */
+  feedMode: 'important' | 'all';
   /** Contas ocultas na barra lateral (AccountInfo.id). */
   hiddenAccounts: string[];
   /** Habblaud World: aviso quando o primeiro visitante entra no seu prédio (a cada conexão). Ligado por padrão. */
@@ -38,6 +40,7 @@ export const DEFAULT_PREFS: UiPrefs = {
   browserNotifications: false,
   sidebarOpen: true,
   feedOpen: true,
+  feedMode: 'important',
   hiddenAccounts: [],
   worldVisitNotify: true,
 };
@@ -64,6 +67,7 @@ export function sanitizePrefs(raw: unknown): UiPrefs {
     browserNotifications: bool(o.browserNotifications, d.browserNotifications),
     sidebarOpen: bool(o.sidebarOpen, d.sidebarOpen),
     feedOpen: bool(o.feedOpen, d.feedOpen),
+    feedMode: oneOf(o.feedMode, ['important', 'all'] as const, d.feedMode),
     hiddenAccounts: Array.isArray(o.hiddenAccounts) ? o.hiddenAccounts.filter((x): x is string => typeof x === 'string').slice(0, 20) : [],
     worldVisitNotify: bool(o.worldVisitNotify, d.worldVisitNotify),
   };
