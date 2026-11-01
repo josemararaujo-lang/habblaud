@@ -48,12 +48,15 @@ export function isWorldId(id: string): boolean {
   return id.startsWith(WORLD_ID_PREFIX);
 }
 
+/** Ferramentas que existem no mundo (o Grok Bot fica só no escritório local: ver projection.ts). */
+type WorldProvider = WorldAgent['provider'];
+
 /** Contas fictícias da visita, uma por ferramenta: só o nome da ferramenta, a letra e a cor (sem e-mail nem uso). */
-export const WORLD_TOOL_ACCOUNTS: Readonly<Record<Provider, { short: string; name: string; color: string }>> = {
+export const WORLD_TOOL_ACCOUNTS: Readonly<Record<WorldProvider, { short: string; name: string; color: string }>> = {
   claude: { short: 'C', name: 'Claude Code', color: '#f08a3c' },
   codex: { short: 'X', name: 'Codex', color: '#a77bf3' },
 };
-const PROVIDERS: readonly Provider[] = ['claude', 'codex'];
+const PROVIDERS: readonly WorldProvider[] = ['claude', 'codex'];
 /** Status que existem no mundo; um que esta versão não conhece vira 'idle' (passeia, sem prometer nada). */
 const STATUSES: readonly AgentStatus[] = ['working', 'waiting', 'idle', 'shell'];
 

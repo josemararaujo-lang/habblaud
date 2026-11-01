@@ -7,12 +7,19 @@ import { shortcutHint } from './model';
 import { tr } from '../../../shared/i18n';
 
 /** Nome de cada ferramenta como aparece nos textos. */
-export const PROVIDER_NAME: Record<Provider, string> = { claude: 'Claude Code', codex: 'Codex' };
+export const PROVIDER_NAME: Record<Provider, string> = { claude: 'Claude Code', codex: 'Codex', grok: 'Grok Bot' };
 
 /** Ferramenta de um agente, conta, sessão ou pedido (ausente = Claude Code). */
 export function providerOf(x: { provider?: Provider } | null | undefined): Provider {
   return x?.provider ?? 'claude';
 }
+
+/** Símbolo de cada ferramenta (chip da conta e etiquetas do escritório). */
+export const PROVIDER_LOGO: Record<Provider, string> = {
+  claude: '/assets/providers/claude.svg',
+  codex: '/assets/providers/codex.png',
+  grok: '/assets/providers/grok.png',
+};
 
 export function isCodex(x: { provider?: Provider } | null | undefined): boolean {
   return x?.provider === 'codex';
@@ -47,16 +54,17 @@ export function fallbackShort(id: string, provider: Provider = accountProvider(u
   return provider === 'codex' ? 'X' : '?';
 }
 
-/** O selo "Codex" ao lado do nome da conta (não repete quando o nome já diz "Codex"). */
+/** O selo da ferramenta ("Codex", "Grok Bot") ao lado do nome da conta (não repete quando o nome já diz qual é). */
 export function showsProviderTag(provider: Provider, accountName = ''): boolean {
-  return provider === 'codex' && !/codex/i.test(accountName);
+  if (provider === 'claude') return false;
+  return !accountName.toLowerCase().includes(provider);
 }
 
 /** Rótulo do chip da conta (dica e leitores de tela): "Conta C (dev@x.com)", "Codex · plano Team". */
 export function accountChipLabel(account: Pick<AccountInfo, 'name' | 'email' | 'plan' | 'provider'> | undefined, fallbackId: string, provider: Provider): string {
-  if (!account) return fallbackId ? `${fallbackId}${provider === 'codex' ? ' · Codex' : ''}` : tr('Conta desconhecida');
-  if (provider !== 'codex') return `${account.name}${account.email ? ` (${account.email})` : ''}`;
-  const tag = showsProviderTag(provider, account.name) ? ' · Codex' : '';
+  if (!account) return fallbackId ? `${fallbackId}${provider !== 'claude' ? ` · ${PROVIDER_NAME[provider]}` : ''}` : tr('Conta desconhecida');
+  if (provider === 'claude') return `${account.name}${account.email ? ` (${account.email})` : ''}`;
+  const tag = showsProviderTag(provider, account.name) ? ` · ${PROVIDER_NAME[provider]}` : '';
   return `${account.name}${tag}${account.plan ? tr(' · plano {0}', [account.plan]) : ''}`;
 }
 

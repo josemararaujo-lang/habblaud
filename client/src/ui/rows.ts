@@ -16,6 +16,7 @@ import {
   updateShellActivityLine,
   updateStatusDot,
 } from './widgets';
+import { PROVIDER_NAME } from './provider';
 import { tr } from '../../../shared/i18n';
 
 interface RowRefs {
@@ -101,6 +102,6 @@ export function updateAgentRow(
   setAttr(
     row,
     'aria-label',
-    `${agent.name}, ${agent.kind === 'main' ? tr('agente principal') : tr('subagente {0}', [agent.role])}, ${account?.name ?? agent.account}${agent.provider === 'codex' ? ' (Codex)' : ''}, ${statusLabel(status)}${doing ? `: ${doing}` : ''}`,
+    `${agent.name}, ${agent.kind === 'main' ? tr('agente principal') : tr('subagente {0}', [agent.role])}, ${account?.name ?? agent.account}${agent.provider && agent.provider !== 'claude' ? ` (${PROVIDER_NAME[agent.provider]})` : ''}, ${statusLabel(status)}${doing ? `: ${doing}` : ''}`,
   );
 }

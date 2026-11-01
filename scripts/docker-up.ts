@@ -40,6 +40,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { AccountInfo, SourceInfo } from '../shared/types';
 import { codexDirsRefused, detectAccounts, discoverClaudeDirs, type DetectedAccount } from '../server/accounts/detect';
 import { detectCodexAccounts, discoverCodexDirs } from '../server/sources/codex/accounts';
+import { detectGrokAccounts, discoverGrokDirs } from '../server/sources/grok/source';
+import { PERSISTENCE_DIR as GROK_PERSISTENCE_DIR } from '../server/sources/grok/replica';
 import { describeStateMigration, LEGACY_NAME, legacyEnvWarning, migrateLegacyStateDir } from '../server/legacy';
 import { makeClaudeRunner, MIN_CLAUDE_VERSION, readPackageVersion, updateInstalledMods, type ModUpdateResult } from './mod-install';
 import { tr } from '../shared/i18n';
@@ -64,6 +66,8 @@ const SERVICE = 'habblaud';
 const CONTAINER_ROOT = '/claude';
 /** Somente estas subpastas de cada conta entram no container. */
 const MOUNTED_SUBDIRS = ['projects', 'sessions'] as const;
+/** Raiz das montagens do Grok Bot dentro do container: /grok/<conta>/sand-client-persistence. */
+const GROK_CONTAINER_ROOT = '/grok';
 /** Raiz das montagens do Codex dentro do container: /codex/<conta>/{sessions,archived_sessions,thread-writer-locks}. */
 const CODEX_CONTAINER_ROOT = '/codex';
 /**
@@ -166,8 +170,8 @@ type CachedUsage = { fetchedAtMs: unknown; utilization: Partial<Record<(typeof U
 
 export interface AccountPayload {
   id: string;
-  /** Só nas contas do Codex (ausente = Claude Code). */
-  provider?: 'codex';
+  /** Só nas contas do Codex e do Grok Bot (ausente = Claude Code). */
+  provider?: 'codex' | 'grok';
   configDir: string;
   mountDir: string;
   short: string;
@@ -238,6 +242,32 @@ export function codexAccountsPayload(mounts: AccountMount[]): AccountPayload[] {
   });
 }
 
+/**
+ * Monta só a pasta sand-client-persistence/ de cada pasta do Grok Bot (a réplica da lista de agentes, das conversas e
+ * do uso), em /grok/<id>. Nunca sand-secrets.json, cookies nem o resto da pasta do app.
+ */
+export function planGrokMounts(dirs: string[], accounts: DetectedAccount[], resolveDir: (p: string) => string | undefined = realDir): AccountMount[] {
+  const out: AccountMount[] = [];
+  dirs.forEach((hostDir, i) => {
+    const account = accounts[i];
+    const mountDir = posix.join(GROK_CONTAINER_ROOT, account.id);
+    const source = resolveDir(join(hostDir, GROK_PERSISTENCE_DIR));
+    if (source) out.push({ account, hostDir, mountDir, binds: [{ source, target: posix.join(mountDir, GROK_PERSISTENCE_DIR) }] });
+  });
+  return out;
+}
+
+/** Metadados das contas do Grok Bot para HABBLAUD_ACCOUNTS: `provider: 'grok'` e a pasta do HOST em `configDir`. */
+export function grokAccountsPayload(mounts: AccountMount[]): AccountPayload[] {
+  return mounts.map(({ account: a, hostDir, mountDir }) => ({ id: a.id, provider: 'grok', configDir: hostDir, mountDir, short: a.short, name: a.name, color: a.color }));
+}
+
+/** HABBLAUD_GROK desligado (0, false, off, no) no ambiente de quem roda o docker:up. */
+export function grokDisabled(env: NodeJS.ProcessEnv): boolean {
+  const v = env.HABBLAUD_GROK?.trim();
+  return !!v && !/^(1|true|yes|sim|on)$/i.test(v);
+}
+
 /** HABBLAUD_CODEX desligado (0, false, off, no) no ambiente de quem roda o docker:up. */
 export function codexDisabled(env: NodeJS.ProcessEnv): boolean {
   const v = env.HABBLAUD_CODEX?.trim();
@@ -306,7 +336,7 @@ export function hostTimeZone(env: NodeJS.ProcessEnv = process.env): string | und
 /**
  * `usageDir`: pasta do host com o uso capturado pelo tap de statusline (já existente; caminho real),
  * montada somente leitura em /usage. `timeZone`: fuso do host, repassado como TZ. `codex`: montagens das contas do
- * Codex (planCodexMounts).
+ * Codex (planCodexMounts). `grok`: montagens do Grok Bot (planGrokMounts).
  */
 export function renderOverride(
   mounts: AccountMount[],
@@ -316,12 +346,14 @@ export function renderOverride(
   codex: AccountMount[] = [],
   remoteTlsDir?: string,
   extraPorts: string[] = [],
+  grok: AccountMount[] = [],
 ): string {
   const env: Array<[string, string]> = [
     ['HABBLAUD_CLAUDE_DIRS', mounts.map((m) => m.mountDir).join(',')],
-    ['HABBLAUD_ACCOUNTS', JSON.stringify([...accountsPayload(mounts), ...codexAccountsPayload(codex)])],
+    ['HABBLAUD_ACCOUNTS', JSON.stringify([...accountsPayload(mounts), ...codexAccountsPayload(codex), ...grokAccountsPayload(grok)])],
   ];
   if (codex.length) env.push(['HABBLAUD_CODEX_DIRS', codex.map((m) => m.mountDir).join(',')]);
+  if (grok.length) env.push(['HABBLAUD_GROK_DIRS', grok.map((m) => m.mountDir).join(',')]);
   if (usageDir) env.push(['HABBLAUD_USAGE_DIR', CONTAINER_USAGE_DIR]);
   if (timeZone) env.push(['TZ', timeZone]);
   const lines = [
@@ -329,6 +361,7 @@ export function renderOverride(
     '# Contém caminhos do host e e-mails das contas: fica fora do git e com permissão 600.',
     '# Montagens: SOMENTE <conta>/projects, <conta>/sessions e a pasta do uso do statusline, todas somente leitura.',
     ...(codex.length ? ['# Codex: SOMENTE <pasta>/sessions, <pasta>/archived_sessions e <pasta>/thread-writer-locks, somente leitura.'] : []),
+    ...(grok.length ? ['# Grok Bot: SOMENTE <pasta do app>/sand-client-persistence, somente leitura.'] : []),
     'services:',
     `  ${SERVICE}:`,
     '    environment:',
@@ -336,7 +369,7 @@ export function renderOverride(
   ];
   // O Compose junta estas portas às do docker-compose.yml.
   if (extraPorts.length) lines.push('    ports:', ...extraPorts.map((p) => `      - ${yamlString(p)}`));
-  const binds = [...mounts, ...codex].flatMap((m) => m.binds);
+  const binds = [...mounts, ...codex, ...grok].flatMap((m) => m.binds);
   if (usageDir) binds.push({ source: usageDir, target: CONTAINER_USAGE_DIR });
   // Acesso remoto: SÓ a pasta do certificado do servidor (a chave da CA fica no host).
   if (remoteTlsDir) binds.push({ source: remoteTlsDir, target: CONTAINER_REMOTE_TLS_DIR });
@@ -706,6 +739,10 @@ async function up(opts: Options, port: number): Promise<void> {
       warn(tr('{0} ainda não tem thread-writer-locks/: no container, sessão aberta = conversa modificada nos últimos 30 min (rode o docker:up de novo depois de usar o Codex).', [tildify(m.hostDir)]));
     }
   }
+  // Grok Bot: só a réplica local (lista de agentes, conversas e uso), somente leitura.
+  const grokDirs = grokDisabled(process.env) ? [] : discoverGrokDirs(process.env, HOME);
+  const grokMounts = planGrokMounts(grokDirs, detectGrokAccounts(grokDirs, process.env, HOME));
+  for (const m of grokMounts) say(tr('Grok Bot ({0}): monta {1} de {2}, somente leitura.', [m.account.id, GROK_PERSISTENCE_DIR, tildify(m.hostDir)]));
 
   migrateStateDir();
   const usageDir = ensureUsageDir();
@@ -713,7 +750,7 @@ async function up(opts: Options, port: number): Promise<void> {
   const remoteTlsDir = prepareRemoteTls();
   const remotePorts = remoteTlsDir || remoteInsecure() ? remotePortsToPublish() : [];
   const tmp = `${OVERRIDE_FILE}.tmp`;
-  writeFileSync(tmp, renderOverride(mounts, new Date(), usageDir, hostTimeZone(), codexMounts, remoteTlsDir, remotePorts), { mode: 0o600 });
+  writeFileSync(tmp, renderOverride(mounts, new Date(), usageDir, hostTimeZone(), codexMounts, remoteTlsDir, remotePorts, grokMounts), { mode: 0o600 });
   chmodSync(tmp, 0o600);
   renameSync(tmp, OVERRIDE_FILE);
   say(tr('docker-compose.override.yml gerado.'));
@@ -740,6 +777,12 @@ async function up(opts: Options, port: number): Promise<void> {
     const usage = health.accounts?.find((a) => a.id === m.account.id)?.usageStatus;
     const state = src.ok ? plural(src.sessions, tr('sessão aberta'), tr('sessões abertas')) : tr('erro ao ler ({0})', [src.error ?? tr('desconhecido')]);
     say(`  Codex ${m.account.short} (${m.account.id}): ${state}${usage ? ` · ${USAGE_STATUS[usage]}` : ''}`);
+  }
+  for (const m of grokMounts) {
+    const src = health.sources?.find((s) => s.label === m.account.id && s.provider === 'grok');
+    if (!src) continue;
+    const state = src.ok ? plural(src.sessions, tr('agente no escritório'), tr('agentes no escritório')) : tr('erro ao ler ({0})', [src.error ?? tr('desconhecido')]);
+    say(`  Grok Bot (${m.account.id}): ${state}`);
   }
   for (const line of modHint(updateMods(dirs, accounts))) say(line);
   // Com a cópia falha, os dados só existem no volume antigo: nada de sugerir apagá-lo.

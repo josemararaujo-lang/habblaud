@@ -10,6 +10,10 @@ do meio (0.**3**.0).
 
 ## [Não lançado]
 
+### Novo
+
+- **Agentes do Grok Bot no escritório.** O Habblaud lê a cópia local que o app Grok Bot guarda no Mac e mostra os agentes com atividade recente (padrão: última hora, `HABBLAUD_GROK_RECENT_MIN`), cada um na sala com o nome dele, com o que respondeu, perguntou ou pediu, e o uso semanal do plano. É só leitura: os agentes rodam na nuvem, então mensagens, aprovações e terminal continuam no app, e eles nunca vão para o Habblaud World. O `docker:up` monta só a pasta `sand-client-persistence/`, somente leitura; `HABBLAUD_GROK=0` desliga.
+
 ### Melhorado
 
 - **Salas com contexto.** Resumo dos estados e do trabalho em destaque em cada sala, equipes expansíveis e atalho para o agente que precisa de atenção nos detalhes. A busca revela as equipes correspondentes automaticamente.

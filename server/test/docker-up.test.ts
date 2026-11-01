@@ -10,9 +10,12 @@ import {
   copyVolumeArgs,
   type DockerState,
   envFileKeys,
+  grokAccountsPayload,
+  grokDisabled,
   hostTimeZone,
   parseArgs,
   planCodexMounts,
+  planGrokMounts,
   planMounts,
   planUp,
   renderOverride,
@@ -130,6 +133,23 @@ describe('docker-up', () => {
     expect(codexDisabled({ HABBLAUD_CODEX: 'off' })).toBe(true);
     expect(codexDisabled({ HABBLAUD_CODEX: '1' })).toBe(false);
     expect(codexDisabled({})).toBe(false);
+  });
+
+  it('Grok Bot: monta SÓ sand-client-persistence/ (somente leitura); nunca os segredos nem os cookies do app', () => {
+    const host = '/Users/fulano/Library/Application Support/Grok Bot';
+    const exists = new Set([`${host}/sand-client-persistence`, `${host}/sand-secrets.json`, `${host}/Cookies`]);
+    const grokAcc: DetectedAccount = { id: 'grok', provider: 'grok', configDir: host, short: 'G', name: 'Grok Bot', color: '#5cc97b' };
+    const grok = planGrokMounts([host, '/Users/fulano/sem-grok'], [grokAcc, { ...grokAcc, id: 'grok-2' }], (p) => (exists.has(slash(p)) ? `/real${slash(p)}` : undefined));
+    expect(grok.map((m) => m.binds)).toEqual([[{ source: `/real${host}/sand-client-persistence`, target: '/grok/grok/sand-client-persistence' }]]);
+    expect(grokAccountsPayload(grok)).toEqual([{ id: 'grok', provider: 'grok', configDir: host, mountDir: '/grok/grok', short: 'G', name: 'Grok Bot', color: '#5cc97b' }]);
+    const claude = planMounts(['/Users/fulano/.claude'], [acc('.claude')], slash);
+    const yml = renderOverride(claude, new Date(0), undefined, undefined, [], undefined, [], grok);
+    expect(yml).toContain('HABBLAUD_GROK_DIRS: "/grok/grok"');
+    expect(yml).toContain(`target: "/grok/grok/sand-client-persistence"\n        read_only: true`);
+    for (const secret of ['sand-secrets', 'Cookies']) expect(yml).not.toContain(secret);
+    expect(renderOverride(claude)).not.toContain('HABBLAUD_GROK_DIRS');
+    expect(grokDisabled({ HABBLAUD_GROK: '0' })).toBe(true);
+    expect(grokDisabled({})).toBe(false);
   });
 
   it('fuso do host vai para o container como TZ', () => {

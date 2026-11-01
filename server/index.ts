@@ -37,6 +37,7 @@ import { ClaudeWatcher } from './sources/watcher';
 import { discoverCodexDirs } from './sources/codex/accounts';
 import { CodexHistory } from './sources/codex/history';
 import { CodexSource } from './sources/codex/source';
+import { discoverGrokDirs, GrokSource } from './sources/grok/source';
 import { createBuildReader, readBuildInfo } from './build';
 import { UpdateChecker } from './updates/checker';
 import { getLocale, tr } from '../shared/i18n';
@@ -138,6 +139,10 @@ const agents = new SourceSet([claude]);
 const codexDirs = config.codex ? discoverCodexDirs(process.env, config.home) : [];
 const codex = codexDirs.length ? new CodexSource({ accounts, office, dirs: codexDirs, env: process.env, home: config.home }) : undefined;
 if (codex) agents.add(codex);
+// Grok Bot: só leitura da cópia local do app (sources/grok/); HABBLAUD_GROK=0 desliga.
+const grokDirs = config.grok ? discoverGrokDirs(process.env, config.home) : [];
+const grok = grokDirs.length ? new GrokSource({ accounts, office, dirs: grokDirs, env: process.env, home: config.home }) : undefined;
+if (grok) agents.add(grok);
 // Eventos dos hooks do Codex (POST /api/codex/events, mod/habblaud-codex/hook.mjs): vão para a fonte do Codex ao vivo
 // (CodexLive); sem ela (nenhuma pasta do Codex ou HABBLAUD_CODEX=0) a rota responde {ok: false}.
 const codexLive: CodexLive | undefined = codex;
@@ -490,6 +495,12 @@ server.listen(config.port, config.host, () => {
     }
   } else {
     log.info(tr('   Codex: {0}.', [config.codex ? tr('nenhuma pasta do Codex encontrada (defina HABBLAUD_CODEX_DIRS)') : tr('desligado (HABBLAUD_CODEX=0)')]));
+  }
+  if (grok) {
+    const open = grok.sources().reduce((n, s) => n + s.sessions, 0);
+    log.info(tr('   Grok Bot: {0} agente(s) no escritório (só leitura) · {1}', [open, grok.accountEntries().map((a) => a.detected.configDir).join(', ')]));
+  } else {
+    log.info(tr('   Grok Bot: {0}.', [config.grok ? tr('nenhuma pasta do Grok Bot encontrada (defina HABBLAUD_GROK_DIRS)') : tr('desligado (HABBLAUD_GROK=0)')]));
   }
   if (office.isDemo()) log.info(tr('   Modo demonstração ligado (agentes simulados misturados aos reais).'));
   if (config.terminal) log.info(tr('   Terminal: ligado (acesso só local).'));
