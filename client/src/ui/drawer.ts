@@ -714,6 +714,17 @@ class AgentView {
   }
 
   private renderTerminalButton(live: boolean, provider = providerOf(this.last)): void {
+    if (provider === 'grok') {
+      // Grok Bot: o agente roda na nuvem e a conversa fica no app; não há transcript para o terminal acompanhar.
+      setText(this.termRo, '');
+      setText(this.termLabel, tr('Abrir terminal'));
+      setAttr(this.termBtn, 'aria-disabled', 'true');
+      this.termBtn.classList.add('is-disabled');
+      setAttr(this.termBtn, 'aria-pressed', 'false');
+      this.termBtn.classList.remove('is-on');
+      setTitle(this.termBtn, tr('Agentes do Grok Bot não têm terminal aqui: a conversa fica no app'));
+      return;
+    }
     const router = this.ctx.terminals;
     const available = (router ? router.available : !!this.ctx.store.snapshot?.meta.terminal) && access().terminal;
     const open = (router ? router.openAgentId : this.terminal.agentId) === this.id;

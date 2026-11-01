@@ -3385,4 +3385,6 @@ export const ES: Readonly<Record<string, string>> = {
   "Grok Bot ({0}): monta {1} de {2}, somente leitura.": "Grok Bot ({0}): monta {1} de {2}, solo lectura.",
   "agente no escritório": "agente en la oficina",
   "agentes no escritório": "agentes en la oficina",
+  "Agentes do Grok Bot não têm terminal aqui: a conversa fica no app": "Los agentes de Grok Bot no tienen terminal aquí: la conversación queda en la app",
+  "Ver no Grok Bot": "Ver en Grok Bot",
 };
