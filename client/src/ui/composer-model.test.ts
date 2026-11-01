@@ -52,6 +52,10 @@ describe('caixa de mensagem (peças puras)', () => {
     expect(PLUGIN_HINT).toBe('Para mandar mensagens daqui: npm run mod:install (plugin habblaud-mensagens)');
   });
 
+  it('composerMode: agente do Grok Bot é só leitura (responda no app)', () => {
+    expect(composerMode(agent({ provider: 'grok' }), ON)).toEqual({ kind: 'off', text: 'Para responder, use o Grok Bot' });
+  });
+
   it('composerMode: quando não dá, diz por quê (a gaveta esconde, o terminal mostra o motivo)', () => {
     const off = (a: AgentInfo | undefined, env: Partial<ComposerEnv> = {}) => {
       const m = composerMode(a, { ...ON, ...env });
