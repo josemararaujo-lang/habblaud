@@ -7,6 +7,7 @@ import { DEFAULT_WORLD_OPTIONS } from '../world/api';
 export const PREFS_KEY = 'habblaud:prefs';
 
 export interface UiPrefs {
+  colorMode: 'auto' | 'light' | 'dark';
   showNames: boolean;
   bubbles: WorldOptions['bubbles'];
   liveliness: WorldOptions['liveliness'];
@@ -35,6 +36,7 @@ export interface UiPrefs {
 }
 
 export const DEFAULT_PREFS: UiPrefs = {
+  colorMode: 'auto',
   showNames: DEFAULT_WORLD_OPTIONS.showNames,
   bubbles: DEFAULT_WORLD_OPTIONS.bubbles,
   liveliness: DEFAULT_WORLD_OPTIONS.liveliness,
@@ -66,6 +68,7 @@ export function sanitizePrefs(raw: unknown): UiPrefs {
   const o = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
   const d = DEFAULT_PREFS;
   return {
+    colorMode: oneOf(o.colorMode, ['auto', 'light', 'dark'] as const, d.colorMode),
     showNames: bool(o.showNames, d.showNames),
     bubbles: oneOf(o.bubbles, ['all', 'important', 'none'] as const, d.bubbles),
     liveliness: oneOf(o.liveliness, ['calm', 'normal', 'lively'] as const, d.liveliness),

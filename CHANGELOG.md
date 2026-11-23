@@ -12,6 +12,8 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Interface clara, escura ou automática.** Escolha salva nas Configurações, independente do cenário do escritório. Menus, botões, filtros, campos e interruptores compartilham estados e contraste consistentes; indicadores adaptam as cores ao tema.
+
 - **Esteira compacta e janelas móveis.** A esteira pode acompanhar o escritório sem bloqueá-lo. Diálogos podem ser arrastados pelo cabeçalho e redimensionados pelas bordas ou pelo teclado; posição e tamanho são lembrados, com restauração e texto adaptado à largura da janela.
 
 - **Glass em todo o escritório.** Barra, lateral, detalhes, feed, configurações, histórico, ajuda, Meu dia e esteira compartilham material, tipografia e controles. Listas mais calmas, foco visível e fallback opaco para maior contraste.

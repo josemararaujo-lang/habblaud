@@ -1321,6 +1321,8 @@ inventados. Os cartões da rotina por arquivos continuam sendo uma evidência di
 
 ### Minha esteira
 
+Em **Configurações → Aparência → Cor da interface**, escolha **Claro**, **Escuro** ou **Automático**. A troca é imediata e fica salva neste navegador. Automático acompanha a aparência do sistema; o tema sazonal e o ciclo dia/noite do escritório continuam independentes.
+
 **Compactar** transforma a esteira em uma janela flutuante dentro do Habblaud, mantendo o escritório utilizável. **Expandir** volta à leitura completa com fontes e comprovantes. Arraste o cabeçalho para mover; puxe as bordas ou o canto inferior direito para redimensionar. O botão de restauração (ou duplo clique no cabeçalho) devolve tamanho e posição ao padrão. As escolhas ficam salvas neste navegador. Cabeçalhos e a alça do canto também aceitam as setas do teclado; Shift aumenta o passo. Diálogos como Ajuda, Meu dia e Configurações usam o mesmo mecanismo. O texto se reorganiza pela largura de cada janela, inclusive em um monitor amplo.
 
 O botão **Esteira** (ou `/?esteira=1`) abre a programação em leitura: **Manhã**

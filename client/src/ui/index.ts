@@ -10,7 +10,9 @@ import '@fontsource/pixelify-sans/600.css';
 import '@fontsource/pixelify-sans/700.css';
 import './styles.css';
 import './glass.css';
+import './themes.css';
 import { DialogWindows } from './dialog-windows';
+import { ColorMode } from './color-mode';
 
 import type { OfficeStore } from '../net/store';
 import type { Selection, WorldApi } from '../world/api';
@@ -65,6 +67,7 @@ function isTypingTarget(t: EventTarget | null): boolean {
 export function createUI(root: HTMLElement, store: OfficeStore, world: WorldApi, city?: CitySceneHost): void {
   const storage = safeLocalStorage();
   let prefs: UiPrefs = loadPrefs(storage);
+  const colorMode = new ColorMode(root, () => prefs.colorMode);
   let selection: Selection = world.getSelection();
   let skew = 0;
   const narrowMq = typeof matchMedia === 'function' ? matchMedia(NARROW_QUERY) : null;
@@ -101,6 +104,7 @@ export function createUI(root: HTMLElement, store: OfficeStore, world: WorldApi,
       if (patch.focusMode === undefined && (patch.bubbles !== undefined || patch.liveliness !== undefined)) patch = { ...patch, focusMode: false };
       prefs = { ...prefs, ...patch };
       savePrefs(storage, prefs);
+      colorMode.apply();
       world.setOptions(worldOptionsFrom(prefs));
       invalidate();
     },

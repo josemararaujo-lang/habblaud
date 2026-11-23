@@ -5,12 +5,14 @@ Direção autorizada por Josemar em 22/11/2026: aplicar o visual Glass aprovado 
 ## Sistema
 - Escritório e personagens em pixel art; interface de operação com fonte de sistema do macOS.
 - Uma camada de vidro escuro por painel flutuante. Listas e blocos de leitura usam superfícies sólidas discretas, sem blur em cada linha.
-- Tokens, material, cantos e tipografia centralizados em `client/src/ui/glass.css`; geometria e estados em `styles.css`.
+- Material, cantos e tipografia em `client/src/ui/glass.css`; paletas e controles em `themes.css`; geometria e estados em `styles.css`.
 - Texto principal #f0f5fb, secundário #b2c0d0, foco azul #90ceff. Camisas Claude laranja, Codex azul, Grok preta e Gemini amarela. Nomes Hunter × Hunter abaixo dos avatares.
 - Cantos 20 px nas superfícies, 11–13 px nos controles e linhas. Sombra direcional e borda luminosa discreta.
 - Preservar estados reais, nomes, ações, seleções, horários e comprovantes. Estado desconhecido nunca vira ociosidade.
 - Interfaces estreitas continuam navegáveis; foco visível e fallback opaco com redução de transparência/maior contraste. Movimento reduzido respeitado.
 - Diálogos móveis usam o mecanismo Movable, com limites que mantêm cabeçalho e controles na tela. Refluxo por container queries, sem encolher texto até ficar ilegível. A esteira compacta é uma janela não modal dentro do Habblaud; detalhes de auditoria ficam na visualização completa. Posição e tamanho são locais a cada navegador.
+- Aparência clara, escura ou automática nas Configurações. Automático acompanha o sistema em tempo real; escolha explícita tem precedência e fica salva no navegador. Cor da interface não altera tema sazonal nem ciclo dia/noite do cenário.
+- Modo claro: texto #172c40, secundário #4c6175, foco #075fa8 sobre superfícies claras. Estados usam verde #167344, âmbar #865000 e erro #a8322b. Marcas dos provedores preservam as cores originais em suas próprias bases.
 
 ## Evidência e limites
 Referências e decisões em `docs/design/liquid-glass.md`. A adaptação web usa blur e translucidez, sem alegar refração nativa. Figma indisponível pelo limite já registrado; a revisão visual é feita no app local real.
