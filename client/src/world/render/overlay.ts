@@ -19,11 +19,10 @@ import { tr } from '../../../../shared/i18n';
 // A Pixelify Sans tem o "C" maiúsculo quase fechado (lê-se "Oopa" em vez de "Copa") em qualquer
 // peso/tamanho usado no canvas; os textos do mundo usam a fonte do sistema, sempre legível.
 const UI_FONT = 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif';
-const LABEL_FONT = `600 10.5px ${UI_FONT}`;
+const LABEL_FONT = `600 12px ${UI_FONT}`;
 const BUBBLE_FONT = `500 11.5px ${UI_FONT}`;
 const SAY_FONT = `500 10.5px ${UI_FONT}`;
 const FLOAT_FONT = `800 12px ${UI_FONT}`;
-const CHIP_FONT = `700 8px ${UI_FONT}`;
 const BADGE_FONT = `700 8px ${UI_FONT}`;
 const ROOM_FONT = `700 12px ${UI_FONT}`;
 const CORE_FONT = `600 11px ${UI_FONT}`;
@@ -34,7 +33,7 @@ const signFont = (size: number) => `700 ${size}px ${UI_FONT}`;
 export const BUBBLE_MAX_W = 220;
 export const ALERT_MAX_W = 340;
 const BUBBLE_H = 20;
-const LABEL_H = 15;
+const LABEL_H = 21;
 const RECENT_MS = 4000;
 /** Altura mínima (px CSS) da placa na tela para escrever o nome nela. */
 const SIGN_MIN_PX = 14;
@@ -105,8 +104,6 @@ type Item = Bubble | Label;
 
 /** Fundo dos pontos pequenos de conta nas salas. */
 const CODEX_CHIP_BG = '#161b26';
-/** Selo "CODEX" das etiquetas: discreto (vidro claro), sem a cor de ninguém. */
-const CODEX_BADGE = 'CODEX';
 
 /**
  * Bolinha minúscula de uma conta (placas e pílulas das salas): cheia no Claude Code, vazada no Codex.
@@ -160,8 +157,6 @@ export function rationBubbles(items: readonly { room: string; prio: number; chan
 }
 
 export class Overlay {
-  private readonly claudeLogo = new Image();
-  private readonly codexLogo = new Image();
   private widths = new Map<string, number>();
   private fitted = new Map<string, string>();
   private placed: number[] = [];
@@ -185,8 +180,6 @@ export class Overlay {
     private readonly renderer: Renderer,
     private readonly camera: Camera,
   ) {
-    this.claudeLogo.src = '/assets/providers/claude.svg';
-    this.codexLogo.src = '/assets/providers/codex.png';
   }
 
   /** Descarta medições (ex.: depois que uma fonte carregou). */
@@ -305,7 +298,7 @@ export class Overlay {
       // o visitante (cena Visita) sempre com o nome e o crachá
       const visitor = ch === this.sim.visitor;
       const labeled = selected || hovered || ch.mode === 'wait' || showAll || visitor;
-      const above = labeled && this.labelAbove(ch);
+      const above = labeled && visitor && this.labelAbove(ch);
       const b = this.bubbleFor(ch, head, now, opts, selected, hovered);
       if (b) {
         b.extraLift = above ? LABEL_H + 3 : 0;
@@ -851,23 +844,18 @@ export class Overlay {
   // =================================================================== etiquetas
 
   /** Larguras das partes da etiqueta. O selo "CODEX" (como o "SUB") só aparece fora do modo compacto. */
-  private labelWidth(l: Label): { nameW: number; chipW: number; badgeW: number; codexW: number } {
-    const ch = l.ch;
-    const acc = this.sim.accounts.get(ch.info.account);
-    const nameW = this.measure(LABEL_FONT, ch.info.name);
-    const chipW = acc ? 15 : 0;
-    const visitor = ch === this.sim.visitor;
-    const badgeW = visitor ? this.measure(BADGE_FONT, visitorBadge()) + 7 : ch.info.kind === 'sub' && !l.compact ? this.measure(BADGE_FONT, 'SUB') + 7 : 0;
-    const codexW = ch.info.provider === 'codex' && !l.compact ? this.measure(BADGE_FONT, CODEX_BADGE) + 7 : 0;
-    return { nameW, chipW, badgeW, codexW };
+  private labelWidth(l: Label): { nameW: number; badgeW: number } {
+    const nameW = this.measure(LABEL_FONT, this.fit(LABEL_FONT, l.ch.info.name, 170));
+    const badgeW = l.ch === this.sim.visitor ? this.measure(BADGE_FONT, visitorBadge()) + 7 : 0;
+    return { nameW, badgeW };
   }
 
   /** Posiciona a etiqueta: nos pés (ou acima da cabeça); se colidir, tenta o outro lado. */
   private placeLabel(l: Label): boolean {
-    const { nameW, chipW, badgeW, codexW } = this.labelWidth(l);
-    const w = Math.round(nameW + 10 + chipW + (badgeW ? badgeW + 3 : 0) + (codexW ? codexW + 3 : 0));
+    const { nameW, badgeW } = this.labelWidth(l);
+    const w = Math.round(nameW + 16 + (badgeW ? badgeW + 3 : 0));
     const h = LABEL_H;
-    const x = Math.round(this.sx(l.head.x) - w / 2);
+    const x = Math.max(4, Math.min(this.camera.viewW - w - 4, Math.round(this.sx(l.head.x) - w / 2)));
     const below = Math.round(this.sy(l.head.feetY) + 3);
     const iconLift = this.iconLift(l.ch) * this.zoom;
     const over = Math.round(this.sy(l.head.y) - iconLift - h - 3);
@@ -886,68 +874,37 @@ export class Overlay {
 
   private drawLabel(l: Label, sel: { agent: string | null; hover: string | null }): void {
     const { ctx } = this;
-    const ch = l.ch;
-    const acc = this.sim.accounts.get(ch.info.account);
-    const sub = ch.info.kind === 'sub';
-    const codex = ch.info.provider === 'codex' || acc?.provider === 'codex';
-    const { nameW, chipW, badgeW, codexW } = this.labelWidth(l);
-    const { x, y, w, h } = l;
+    const { x, y, w, h, ch } = l;
+    const { nameW, badgeW } = this.labelWidth(l);
     const selected = sel.agent === ch.id;
-    ctx.fillStyle = selected ? 'rgba(18,96,140,0.95)' : ch.mode === 'wait' ? 'rgba(120,78,0,0.92)' : 'rgba(22,26,38,0.82)';
+    const glass = ctx.createLinearGradient(x, y, x, y + h);
+    glass.addColorStop(0, selected ? '#f3f9ff' : ch.mode === 'wait' ? '#fff6de' : 'rgba(255,255,255,0.96)');
+    glass.addColorStop(1, selected ? '#ddecfb' : ch.mode === 'wait' ? '#f9e8be' : 'rgba(231,239,245,0.94)');
+    ctx.fillStyle = glass;
+    ctx.shadowColor = 'rgba(16,30,44,0.22)';
+    ctx.shadowOffsetY = 2;
+    ctx.shadowBlur = 6;
     ctx.beginPath();
-    ctx.roundRect(x, y, w, h, 7.5);
+    ctx.roundRect(x, y, w, h, 9);
     ctx.fill();
-    let cx = x + 4;
-    if (acc) {
-      const logo = codex ? this.codexLogo : this.claudeLogo;
-      ctx.beginPath();
-      ctx.roundRect(cx, y + h / 2 - 6.5, 13, 13, 3);
-      ctx.fillStyle = '#171b24';
-      ctx.fill();
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = acc.color;
-      ctx.stroke();
-      if (logo.complete && logo.naturalWidth) {
-        ctx.drawImage(logo, cx + 1, y + h / 2 - 5.5, 11, 11);
-      } else {
-        ctx.font = CHIP_FONT;
-        ctx.textAlign = 'center';
-        ctx.fillStyle = acc.color;
-        ctx.fillText(acc.short.slice(0, 1), cx + 6.5, y + h / 2 + 0.5);
-        ctx.textAlign = 'left';
-      }
-      cx += chipW;
-    }
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+    if (selected) { ctx.strokeStyle = '#307fc1'; ctx.lineWidth = 1.2; ctx.stroke(); }
     ctx.font = LABEL_FONT;
-    ctx.fillStyle = '#f5f7fb';
-    ctx.fillText(ch.info.name, cx + 1, y + h / 2 + 0.5);
-    cx += nameW + 4;
+    ctx.fillStyle = '#233443';
+    ctx.fillText(this.fit(LABEL_FONT, ch.info.name, 170), x + 8, y + h / 2 + 0.5);
     if (badgeW) {
+      const cx = x + nameW + 11;
       ctx.fillStyle = ch.appearance.lanyard ?? '#f2b33d';
       ctx.beginPath();
       ctx.roundRect(cx, y + 3, badgeW, h - 6, 4);
       ctx.fill();
       ctx.font = BADGE_FONT;
       ctx.fillStyle = '#2a2000';
-      ctx.fillText(ch === this.sim.visitor ? visitorBadge() : 'SUB', cx + 3.5, y + h / 2 + 0.5);
-      cx += badgeW + 3;
-    } else if (sub) {
-      // selo compacto: pontinho na cor do crachá
-      ctx.fillStyle = ch.appearance.lanyard ?? '#f2b33d';
-      ctx.beginPath();
-      ctx.arc(x + w - 3, y + 3, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    if (codexW) {
-      ctx.fillStyle = 'rgba(255,255,255,0.16)';
-      ctx.beginPath();
-      ctx.roundRect(cx, y + 3, codexW, h - 6, 3);
-      ctx.fill();
-      ctx.font = BADGE_FONT;
-      ctx.fillStyle = '#e8ecf5';
-      ctx.fillText(CODEX_BADGE, cx + 3.5, y + h / 2 + 0.5);
+      ctx.fillText(visitorBadge(), cx + 3.5, y + h / 2 + 0.5);
     }
   }
+
 }
 
 /** Ícone da fala quando ela vira só um chip (visão geral): o primeiro emoji da frase, ou 💬. */

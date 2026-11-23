@@ -12,6 +12,12 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Equipes pela camisa, nomes compactos.** Claude laranja, Codex azul, Grok preta e Gemini amarela. Etiquetas mais legíveis abaixo dos personagens, sem ícones ou selos de provedor disputando espaço; identificação completa nos detalhes.
+
+
+- **Estudo visual Liquid Glass.** Prévia local independente com etiquetas dos personagens, temas claro/escuro e controles de contraste. O escritório principal continua preservado enquanto o desenho é revisado.
+
+
 - **Personagens Grok Bot e Gemini.** Observação local a cada 2 s, com identidade dos bots do Grok, sala por app e estado desconhecido explícito; streaming só quando registrado recentemente. Conteúdo criptografado do Gemini não é lido.
 
 

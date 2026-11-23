@@ -24,6 +24,7 @@ import type {
   TaskItem,
   UpdateStatus,
 } from '../../shared/types';
+import { teamUniform } from '../../shared/team-uniform';
 import { SHELL_WAIT_TOOL, SPECIAL, type ShellOutcome } from '../../shared/activity';
 import { nameKey, type AppearanceParts } from '../../shared/appearance';
 import { DemoSimulator } from '../../shared/demo/simulator';
@@ -175,7 +176,7 @@ function zeroStats(): AgentStats {
 function cloneAgent(a: AgentInfo): AgentInfo {
   const c: AgentInfo = { ...a, recent: a.recent.slice(), tasks: a.tasks.map((t) => ({ ...t })), stats: { ...a.stats } };
   if (a.shells) c.shells = a.shells.map((j) => ({ ...j }));
-  if (a.parts) c.parts = { ...a.parts };
+  c.parts = teamUniform(a.provider, a.parts);
   return c;
 }
 
@@ -287,7 +288,7 @@ export class Office {
 
   /** Agentes reais presentes (inclusive em período de graça). */
   list(): AgentInfo[] {
-    return [...this.agents.values()].map((r) => r.info);
+    return [...this.agents.values()].map((r) => ({ ...r.info, parts: teamUniform(r.info.provider, r.info.parts) }));
   }
 
   /** Pasta do projeto da sala (cwd original, sem normalizar). */
@@ -997,7 +998,7 @@ export class Office {
       const { canMessage: _off, ...rest } = a;
       return rest;
     });
-    const trim = (a: AgentInfo): AgentInfo => (a.recent.length > SNAPSHOT_RECENT ? { ...a, recent: a.recent.slice(-SNAPSHOT_RECENT) } : a);
+    const trim = (a: AgentInfo): AgentInfo => ({ ...a, parts: teamUniform(a.provider, a.parts), recent: a.recent.length > SNAPSHOT_RECENT ? a.recent.slice(-SNAPSHOT_RECENT) : a.recent });
     const sessions = new Map<string, number>();
     for (const a of real) if (a.kind === 'main' && a.status !== 'offline') sessions.set(a.account, (sessions.get(a.account) ?? 0) + 1);
     const ptys = this.deps.ptys?.();
