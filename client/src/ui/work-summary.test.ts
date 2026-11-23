@@ -25,7 +25,7 @@ it('prioritizes a real request for attention, excludes offline agents and keeps 
     agent({ id: 'closed', status: 'offline', startedAt: 0 }),
   ]);
   expect(summary.total).toBe(4);
-  expect(summary.counts).toEqual({ attention: 1, working: 1, finished: 1, idle: 1 });
+  expect(summary.counts).toEqual({ attention: 1, working: 1, finished: 1, idle: 1, unknown: 0 });
   expect(summary.featured?.id).toBe('sub');
 });
 it('keeps the featured main session stable when activity timestamps change', () => {
@@ -34,4 +34,11 @@ it('keeps the featured main session stable when activity timestamps change', () 
   expect(roomWorkSummary([newer, older]).featured?.id).toBe('a');
   expect(roomWorkSummary([{ ...newer, lastEventAt: 200 }, older]).featured?.id).toBe('a');
   expect(roomWorkSummary([]).featured).toBeUndefined();
+});
+
+it('keeps unsupported desktop states out of attention, availability and completion', () => {
+  const a = agent({ status: 'unknown' });
+  expect(workGroup(a)).toBe('unknown');
+  expect(currentWork(a)).toBe('Estado não informado pelo app');
+  expect(roomWorkSummary([a]).counts).toEqual({ attention: 0, working: 0, finished: 0, idle: 0, unknown: 1 });
 });

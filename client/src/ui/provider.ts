@@ -7,7 +7,7 @@ import { shortcutHint } from './model';
 import { tr } from '../../../shared/i18n';
 
 /** Nome de cada ferramenta como aparece nos textos. */
-export const PROVIDER_NAME: Record<Provider, string> = { claude: 'Claude Code', codex: 'Codex' };
+export const PROVIDER_NAME: Record<Provider, string> = { claude: 'Claude Code', codex: 'Codex', 'grok-bot': 'Grok Bot', gemini: 'Gemini' };
 
 /** Ferramenta de um agente, conta, sessão ou pedido (ausente = Claude Code). */
 export function providerOf(x: { provider?: Provider } | null | undefined): Provider {
@@ -49,7 +49,7 @@ export function fallbackShort(id: string, provider: Provider = accountProvider(u
 
 /** O selo "Codex" ao lado do nome da conta (não repete quando o nome já diz "Codex"). */
 export function showsProviderTag(provider: Provider, accountName = ''): boolean {
-  return provider === 'codex' && !/codex/i.test(accountName);
+  return provider !== 'claude' && !accountName.toLowerCase().includes(PROVIDER_NAME[provider].toLowerCase());
 }
 
 /** Rótulo do chip da conta (dica e leitores de tela): "Conta C (dev@x.com)", "Codex · plano Team". */

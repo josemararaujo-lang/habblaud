@@ -100,6 +100,7 @@ export interface TranscriptSummary {
 
 export interface MainInput {
   id: string;
+  displayName?: string;
   /** Ferramenta do agente (AgentInfo.provider); ausente = 'claude'. Os subagentes herdam a do principal. */
   provider?: Provider;
   account: string;
@@ -334,7 +335,7 @@ export class Office {
       id: p.id,
       kind: 'main',
       roomId,
-      name: person.name,
+      name: p.displayName ?? person.name,
       look: person.look,
       role: p.role,
       sessionId: p.sessionId,
@@ -363,6 +364,18 @@ export class Office {
   }
 
   /** Mesmo processo, sessão nova (/clear, /resume): o personagem continua, tarefas e números zeram. */
+  observeDesktop(p: MainInput, name: string, eventAt: number): void {
+    this.addMain({ ...p, displayName: name });
+    const info = this.agents.get(p.id)!.info;
+    const text = p.status === 'working' ? tr('Resposta em transmissão no app') : p.status === 'waiting' ? tr('Responder no app') : tr('Estado não informado pelo app');
+    if (info.name === name && info.lastEventAt === eventAt && info.activity?.text === text) return;
+    info.name = name;
+    info.title = tr('Metadados locais · sem cópia do conteúdo');
+    info.lastEventAt = eventAt;
+    info.activity = { id: `${p.id}:${eventAt}:${p.status}`, at: eventAt, kind: 'other', icon: '◉', text };
+    this.markDirty();
+  }
+
   switchSession(id: string, sessionId: string): void {
     const rec = this.agents.get(id);
     if (!rec || rec.info.sessionId === sessionId) return;

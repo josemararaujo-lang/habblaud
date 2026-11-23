@@ -2,6 +2,17 @@
 // As lacunas {0}, {1}... (e as nomeadas, como {sala}) precisam aparecer na tradução, em qualquer ordem.
 // Chave ausente = o texto fica em PT. `npm run i18n:check` lista os textos sem tradução e as chaves que sobraram.
 export const EN: Readonly<Record<string, string>> = {
+  "Resultados da rotina da manhã · atualização a cada 30 s.": "Morning routine results · updates every 30 s.",
+  "Nenhuma pendência confirmada. Há agentes sem sinal de estado.": "No confirmed pending requests. Some agents do not report their state.",
+  "Estado não informado pelo app": "State not reported by the app",
+  "Sem sinal": "No signal",
+  "Sem sinal: {0}": "No signal: {0}",
+  "Observação local do app": "Local app observation",
+  "Resposta em transmissão no app": "Response streaming in the app",
+  "Responder no app": "Reply in the app",
+  "Metadados locais · sem cópia do conteúdo": "Local metadata · no content copied",
+  "App fechado": "App closed",
+
   "Grok Bot e Gemini": "Grok Bot and Gemini",
   "Rotina por arquivos · atualização a cada 30 s. Outras conversas não são acompanhadas.": "File-based routine · updates every 30 s. Other conversations are not tracked.",
   "Sem repasse válido hoje": "No valid handoff today",

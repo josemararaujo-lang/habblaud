@@ -15,7 +15,7 @@ export type AgentKind = 'main' | 'sub';
  * - claude: Claude Code;
  * - codex: OpenAI Codex (CLI `codex` e o app desktop, que gravam no mesmo CODEX_HOME).
  */
-export type Provider = 'claude' | 'codex';
+export type Provider = 'claude' | 'codex' | 'grok-bot' | 'gemini';
 
 /**
  * Estado de alto nível de um agente — é o que dirige o comportamento do personagem.
@@ -28,7 +28,7 @@ export type Provider = 'claude' | 'codex';
  * - done: subagente concluiu. Entrega o resultado ao agente principal e vai embora.
  * - offline: sessão encerrada. Vai embora (se for o último da sala, apaga a luz).
  */
-export type AgentStatus = 'working' | 'waiting' | 'idle' | 'shell' | 'done' | 'offline';
+export type AgentStatus = 'working' | 'waiting' | 'idle' | 'shell' | 'done' | 'offline' | 'unknown';
 
 /** Um comando de shell que o agente está esperando terminar. */
 export interface ShellJob {

@@ -12,6 +12,9 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Personagens Grok Bot e Gemini.** Observação local a cada 2 s, com identidade dos bots do Grok, sala por app e estado desconhecido explícito; streaming só quando registrado recentemente. Conteúdo criptografado do Gemini não é lido.
+
+
 - **Grok Bot e Gemini no Agora.** Mostra a rotina local por arquivos, com data e ID conferidos, sem confundir resultado antigo ou repasse pendente com execução atual.
 
 

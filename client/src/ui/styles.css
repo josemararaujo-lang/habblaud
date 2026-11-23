@@ -11507,3 +11507,7 @@ html.is-replay #world {
 @media (pointer: coarse) {
   .ui-room__actions button { min-height: 40px; }
 }
+
+/* Missing app telemetry is neutral, never an idle or success claim. */
+.ui-status-dot.is-unknown { background: var(--ui-muted); opacity: .7; }
+.ui-work__group--unknown > h3 { color: var(--ui-muted); }

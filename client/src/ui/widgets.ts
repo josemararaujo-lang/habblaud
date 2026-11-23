@@ -4,7 +4,7 @@ import type { AccountInfo, Activity, AgentInfo, AgentStatus, Provider } from '..
 import { h, setAttr, setHidden, setStyleVar, setText, setTitle, setVariant } from './dom';
 import { WORDMARK } from './icons';
 import { shellDoneKind, shellLine, shellStage, statusLabel, type ShellWait } from './model';
-import { accountChipLabel, accountProvider, showsProviderTag } from './provider';
+import { accountChipLabel, accountProvider, showsProviderTag, PROVIDER_NAME } from './provider';
 import { tr } from '../../../shared/i18n';
 
 /**
@@ -19,7 +19,7 @@ export function setAccountChipBrand(chip: HTMLElement, provider: Provider, color
   setStyleVar(chip, '--acc', color);
   setAttr(chip, 'data-provider', provider);
   const img = chip.firstElementChild;
-  if (img) setAttr(img, 'src', provider === 'codex' ? '/assets/providers/codex.png' : '/assets/providers/claude.svg');
+  if (img) setAttr(img, 'src', provider === 'codex' ? '/assets/providers/codex.png' : provider === 'claude' ? '/assets/providers/claude.svg' : `/assets/providers/${provider}.svg`);
 }
 
 /** `provider` = dica para quando a conta não está no snapshot (ex.: a sessão do histórico diz de que ferramenta é). */
@@ -38,6 +38,7 @@ export function createProviderTag(extra = ''): HTMLElement {
 
 /** Mostra o selo só para o Codex (e não repete quando o nome da conta já diz "Codex"). */
 export function updateProviderTag(tag: HTMLElement, provider: Provider, accountName = ''): void {
+  setText(tag, PROVIDER_NAME[provider]);
   setHidden(tag, !showsProviderTag(provider, accountName));
 }
 

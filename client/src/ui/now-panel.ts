@@ -7,6 +7,7 @@ import { lastResult, nextAction, workGroup, type WorkGroup } from './work-summar
 import { createProgress, updateProgress } from './widgets';
 import { taskProgress } from './model';
 import { relativeTime } from './format';
+import { PROVIDER_NAME } from './provider';
 import { ExternalAgentsPanel } from './external-agents';
 
 const GROUPS: { key: WorkGroup; label: string; short: string }[] = [
@@ -14,6 +15,7 @@ const GROUPS: { key: WorkGroup; label: string; short: string }[] = [
   { key: 'working', short: tr('Ativos'), label: tr('Em andamento') },
   { key: 'finished', short: tr('Revisar'), label: tr('Pronto para revisar') },
   { key: 'idle', short: tr('Disponíveis'), label: tr('Disponíveis') },
+  { key: 'unknown', short: tr('Sem sinal'), label: tr('Estado não informado pelo app') },
 ];
 
 /** A stable, keyboard-accessible operational view; all statuses come from the live snapshot. */
@@ -78,7 +80,7 @@ export class NowPanel {
           const agents = ctx.store.snapshot?.agents ?? [];
           const parent = agents.find(x => x.id === a.parentId);
           const children = agents.filter(x => x.parentId === a.id && x.status !== 'offline').length;
-          const provider = a.provider === 'codex' ? tr('Codex') : tr('Claude Code');
+          const provider = PROVIDER_NAME[a.provider ?? 'claude'];
           const team = parent ? tr('Equipe de {0}', [parent.name]) : a.kind !== 'main' ? tr('Subagente') : children === 1 ? tr('1 subagente') : children ? tr('{0} subagentes', [children]) : '';
           setText(r.team, team ? `${provider} · ${team}` : provider);
           const progress = taskProgress(a.tasks);
@@ -106,7 +108,7 @@ export class NowPanel {
     this.external.render(this.ctx.store.snapshot?.externalAgents ?? []);
     const present = agents.filter(a => a.status !== 'offline');
     setText(this.emptyMessage, this.selected === 'attention'
-      ? tr('Nenhuma resposta sua pendente nas sessões acompanhadas.')
+      ? (present.some(a => a.status === 'unknown') ? tr('Nenhuma pendência confirmada. Há agentes sem sinal de estado.') : tr('Nenhuma resposta sua pendente nas sessões acompanhadas.'))
       : tr('Nenhum agente neste estado.'));
     for (const [key, f] of this.filters) {
       setText(f.count, String(key === null ? present.length : present.filter(a => workGroup(a) === key).length));

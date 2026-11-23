@@ -1,3 +1,4 @@
+import { PROVIDER_NAME } from './provider';
 import { NowPanel } from './now-panel';
 import { RoomOverview } from './room-overview';
 // Barra lateral: busca, filtro por conta e a lista de salas -> agentes -> subagentes.
@@ -110,9 +111,9 @@ export class Sidebar implements UiComponent {
       update: (b, a) => {
         const hidden = this.ctx.prefs.hiddenAccounts.includes(a.id);
         updateAccountChip(b.firstElementChild as HTMLElement, a);
-        const provider = a.provider === 'codex' ? tr('Codex') : tr('Claude Code');
+        const provider = PROVIDER_NAME[a.provider ?? 'claude'];
         setText(b.lastElementChild!, a.name === provider ? provider : `${provider} · ${a.name}`);
-        setAttr(b, 'data-provider', a.provider === 'codex' ? 'codex' : 'claude');
+        setAttr(b, 'data-provider', a.provider ?? 'claude');
         setAttr(b, 'aria-pressed', String(!hidden));
         setTitle(b, hidden ? tr('Mostrar a {0} na lista, no feed e nos avisos', [a.name]) : tr('Ocultar a {0} na lista, no feed e nos avisos (o escritório continua mostrando todos)', [a.name]));
         b.classList.toggle('is-off', hidden);
@@ -335,12 +336,12 @@ export class Sidebar implements UiComponent {
     const present = summary.total;
     setText(r.count, String(present));
     setTitle(r.count, plural(present, tr('agente'), tr('agentes')));
-    const providers = new Set(visibleAgents.map((a) => a.provider === 'codex' ? 'codex' : 'claude'));
-    const source = providers.size === 2 ? tr('Claude Code + Codex') : providers.has('codex') ? tr('Codex') : tr('Claude Code');
+    const providers = new Set(visibleAgents.map((a) => a.provider ?? 'claude'));
+    const source = [...providers].map(p => PROVIDER_NAME[p]).join(' + ');
     setHidden(r.source, providers.size === 0);
     if (providers.size) {
       setText(r.source, source);
-      setAttr(r.source, 'data-provider', providers.size === 2 ? 'mixed' : providers.has('codex') ? 'codex' : 'claude');
+      setAttr(r.source, 'data-provider', providers.size > 1 ? 'mixed' : [...providers][0]);
     }
     setText(r.path, tr('Pasta: {0}', [shortPath(g.room.path)]));
     setTitle(r.head, tr('{0}\nClique para ver a sala', [g.room.path]));

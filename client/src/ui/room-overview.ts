@@ -10,7 +10,7 @@ export class RoomOverview {
   private goal = h('span', { class: 'ui-room-overview__goal' });
   private badges = new Map<WorkGroup, HTMLElement>();
   constructor() {
-    for (const group of ['attention', 'working', 'finished', 'idle'] as const) {
+    for (const group of ['attention', 'working', 'finished', 'idle', 'unknown'] as const) {
       const badge = h('span', { class: `ui-room-overview__badge is-${group}`, hidden: true });
       this.badges.set(group, badge);
       this.status.append(badge);
@@ -24,6 +24,7 @@ export class RoomOverview {
       working: tr('Em andamento: {0}', [summary.counts.working]),
       finished: tr('Para revisar: {0}', [summary.counts.finished]),
       idle: tr('Disponíveis: {0}', [summary.counts.idle]),
+      unknown: tr('Sem sinal: {0}', [summary.counts.unknown]),
     };
     for (const [key, badge] of this.badges) {
       setText(badge, labels[key]);

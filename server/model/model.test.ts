@@ -825,3 +825,17 @@ it('keeps the most recently customized character when persisted Unicode room key
     expect(names.reservedNames().size).toBe(1);
   } finally { tmp.cleanup(); }
 });
+
+it('keeps real desktop identities and invalidates streaming without reporting completion', () => {
+  const { office, now } = makeOffice();
+  const input = { id: 'gemini:desktop', provider: 'gemini' as const, account: 'gemini', sessionId: 'gemini:desktop', cwd: '/Applications/Gemini.app', role: 'Observação local do app', startedAt: now(), status: 'working' as const };
+  office.observeDesktop(input, 'Gemini', now() - 1000);
+  expect(office.commit().snapshot.agents[0]).toMatchObject({ name: 'Gemini', provider: 'gemini', status: 'working' });
+  office.observeDesktop({ ...input, status: 'unknown' }, 'Gemini', now() - 1000);
+  const result = office.commit();
+  expect(result.snapshot.agents[0]).toMatchObject({ name: 'Gemini', status: 'unknown', lastEventAt: now() - 1000 });
+  expect(result.snapshot.agents[0].activity?.text).toBe('Estado não informado pelo app');
+  expect(result.feed.some(f => f.activity.kind === 'done')).toBe(false);
+  office.closeMain(input.id);
+  expect(office.commit().snapshot.agents[0].status).toBe('offline');
+});

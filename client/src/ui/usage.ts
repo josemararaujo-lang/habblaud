@@ -381,7 +381,7 @@ export class UsageCards {
     setText(r.msgLong, msgLong);
     setText(r.msgShort, msgShort);
     setHidden(r.msg, state !== 'empty' && state !== 'noquota');
-    setHidden(r.how, state === 'noquota');
+    setHidden(r.how, state === 'noquota' || a.provider === 'gemini' || a.provider === 'grok-bot');
     r.msg.classList.toggle('is-noquota', state === 'noquota');
     setTitle(r.msg, state === 'noquota' ? codexUsageNote(a, now) : '');
     setText(r.howLong, codex ? tr('Como funciona') : tr('Como ativar'));

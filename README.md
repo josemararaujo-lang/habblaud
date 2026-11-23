@@ -1296,3 +1296,24 @@ o ID `manha-AAAA-MM-DD-{gemini,grok-bot}` nas duas pontas. Sem resultado validad
 não declara execução nem conclusão. Não lê bancos privados dos apps, não dispara
 repasses e não envia mensagens. Os cartões cobrem essa rotina; outras conversas
 não têm telemetria. Nenhum personagem ou consumo é inventado no escritório/World.
+
+### Personagens dos apps desktop (macOS)
+
+As fontes locais Grok Bot e Gemini observam os caches existentes a cada 2 s e verificam
+se o processo do app está aberto. Não operam a interface, não chamam endpoints privados
+e não enviam prompts. Fechar o app retira seus personagens. Falha de leitura invalida
+o estado anterior. O cache pode atrasar em relação à nuvem; a frequência de consulta
+não é garantia de que o fornecedor persista todos os eventos ao vivo.
+
+Grok Bot: nomes e IDs vêm do roster local (bots visíveis, com atividade nos últimos
+7 dias); `isStreaming` recente é necessário para mostrar trabalho, e pedido humano
+exige flag explícita recente. Gemini: um personagem representa o app; somente a data
+de atualização não criptografada é lida de `ChatInfo2.store`, aberto em modo somente
+leitura. O conteúdo criptografado não é lido nem decifrado. O cache do Gemini não
+fornece status de execução: ele aparece em **Sem sinal**, com **Estado não informado
+pelo app**, mesmo que uma conversa esteja rodando na nuvem. Portanto, essa integração
+ainda não oferece a mesma precisão de execução do Claude/Codex.
+
+Os metadados ficam no escritório local; esses personagens são excluídos do uplink
+do Habblaud World. Não há transcrição, permissão de envio, consumo ou conclusão
+inventados. Os cartões da rotina por arquivos continuam sendo uma evidência distinta.

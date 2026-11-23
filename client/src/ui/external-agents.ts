@@ -6,7 +6,7 @@ export class ExternalAgentsPanel {
   readonly el = h('section', { class: 'ui-external', attrs: { 'aria-label': tr('Grok Bot e Gemini') } });
   private rows = new Map<string, { status: HTMLElement; evidence: HTMLElement }>();
   constructor() {
-    this.el.append(h('h3', { text: tr('Grok Bot e Gemini') }), h('p', { class: 'ui-section-hint', text: tr('Rotina por arquivos · atualização a cada 30 s. Outras conversas não são acompanhadas.') }));
+    this.el.append(h('h3', { text: tr('Grok Bot e Gemini') }), h('p', { class: 'ui-section-hint', text: tr('Resultados da rotina da manhã · atualização a cada 30 s.') }));
     for (const [id, name] of [['grok-bot', 'Grok Bot'], ['gemini', 'Gemini']]) {
       const status = h('p');
       const evidence = h('p', { class: 'ui-work__room' });
