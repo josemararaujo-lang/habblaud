@@ -2,6 +2,9 @@
 // As lacunas {0}, {1}... (e as nomeadas, como {sala}) precisam aparecer na tradução, em qualquer ordem.
 // Chave ausente = o texto fica em PT. `npm run i18n:check` lista os textos sem tradução e as chaves que sobraram.
 export const EN: Readonly<Record<string, string>> = {
+  "Este app não informa dados de uso ao Habblaud.": "This app does not report usage data to Habblaud.",
+  "Etiqueta com o nome abaixo de cada personagem.": "A name tag below each character.",
+  "O visual Glass também está aplicado aos painéis e à esteira do escritório.": "The Glass design is also applied to the office panels and pipeline.",
   "Esteira": "Pipeline",
   "Minha esteira: agentes, rotinas e horários": "My pipeline: agents, routines and schedules",
   "Filtrar rotinas": "Filter routines",

@@ -30,7 +30,7 @@ document.body.innerHTML = `
   </div>
   <section class="design-notes"><h2>${tr('A mesma linguagem, em todo o Habblaud.')}</h2><div class="notes"><article><h3>${tr('Nomes e salas')}</h3><p>${tr('Etiquetas arredondadas, nomes legíveis e destaque suave para a pessoa selecionada.')}</p></article><article><h3>${tr('Painéis e controles')}</h3><p>${tr('Vidro nos elementos flutuantes. Listas mais sólidas, espaçamento consistente e menos contornos concorrendo.')}</p></article><article><h3>${tr('Movimento e acesso')}</h3><p>${tr('Transições curtas, foco de teclado visível e respeito à redução de transparência e movimento.')}</p></article></div></section>
   <section class="references"><h2>${tr('Referências da Apple')}</h2><a href="https://developer.apple.com/design/human-interface-guidelines/materials" target="_blank" rel="noopener"><strong>Materials · Human Interface Guidelines</strong><span>${tr('Material, profundidade e legibilidade')}</span></a><a href="https://developer.apple.com/videos/play/wwdc2025/219/" target="_blank" rel="noopener"><strong>Meet Liquid Glass · WWDC25</strong><span>${tr('Controles flutuantes e uso moderado do vidro')}</span></a><a href="https://developer.apple.com/design/human-interface-guidelines/typography" target="_blank" rel="noopener"><strong>Typography · Human Interface Guidelines</strong><span>${tr('Hierarquia, peso e clareza dos nomes')}</span></a></section>
-  <footer>${tr('Estudo de design. Cores de equipe e nomes compactos aprovados por Josemar. A repaginada geral dos painéis continua em proposta.')}</footer>
+  <footer>${tr('O visual Glass também está aplicado aos painéis e à esteira do escritório.')}</footer>
 </main>`;
 let selected = 0;
 const list = document.querySelector('.people')!;

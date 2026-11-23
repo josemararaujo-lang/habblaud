@@ -12,6 +12,8 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Glass em todo o escritório.** Barra, lateral, detalhes, feed, configurações, histórico, ajuda, Meu dia e esteira compartilham material, tipografia e controles. Listas mais calmas, foco visível e fallback opaco para maior contraste.
+
 - **Símbolos Grok e Gemini.** Marcas vetoriais reconhecíveis substituem a letra provisória; ícones com escala consistente nos painéis e na prévia. A barra compacta mantém as duas contas visíveis.
 
 - **Elenco Hunter × Hunter.** Novos nomes dos personagens usam o elenco do anime, inclusive Grok Bot e Gemini; a identidade original do app fica nos detalhes e a cor da equipe permanece na camisa.

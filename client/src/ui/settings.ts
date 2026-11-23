@@ -201,7 +201,7 @@ export class SettingsPopover implements UiComponent {
         'div',
         { class: 'ui-set-group' },
         h('h3', { text: tr('Escritório') }),
-        sw('showNames', tr('Mostrar nomes'), tr('Etiqueta com o nome acima de cada personagem.'), flip('showNames')),
+        sw('showNames', tr('Mostrar nomes'), tr('Etiqueta com o nome abaixo de cada personagem.'), flip('showNames')),
         this.bubbles.row,
         this.liveliness.row,
         this.daylight.row,

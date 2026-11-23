@@ -419,6 +419,13 @@ export class UsageCards {
     }
     syncRows(r.tipRows, rows);
 
+    if (a.provider === 'grok-bot' || a.provider === 'gemini') {
+      setText(r.tipNote, tr('Este app não informa dados de uso ao Habblaud.'));
+      setHidden(r.tipNote, false);
+      setHidden(r.tipSetup, true);
+      return;
+    }
+
     // Codex: a explicação dele, sem o passo a passo do Claude Code (não há o que instalar para o uso).
     if (codex) {
       const note = codexUsageNote(a, now);
