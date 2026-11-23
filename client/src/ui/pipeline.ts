@@ -5,6 +5,8 @@ import { tr, getLocale } from '../../../shared/i18n';
 import { PROVIDER_NAME } from './provider';
 import { h, setAttr, setHidden, setText } from './dom';
 import type { UiComponent, UiContext } from './context';
+import { dialogWindow } from './dialog-windows';
+import type { Movable } from './movable';
 
 const dateTime = (at: number) => new Intl.DateTimeFormat(getLocale(), { timeZone: 'America/Bahia', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).format(at);
 const date = (value: string) => value.split('-').reverse().join('/');
@@ -18,12 +20,19 @@ export class PipelinePanel implements UiComponent {
   private data?: PipelineView;
   private busy = false;
   private timer?: ReturnType<typeof setInterval>;
+  private compact = false;
+  private switching = 0;
+  private movable?: Movable;
+  private compactButton = h('button', { class: 'ui-btn ui-pipeline__compact', type: 'button', text: tr('Compactar'), title: tr('Janela compacta: acompanhar sem bloquear o escritório'), attrs: { 'aria-pressed': 'false' }, on: { click: () => this.setCompact(!this.compact) } });
   constructor(private ctx: UiContext) {
     const close = h('button', { class: 'ui-btn', type: 'button', text: tr('Fechar'), on: { click: () => this.el.close() } });
     const refresh = h('button', { class: 'ui-btn', type: 'button', text: tr('Atualizar'), on: { click: () => void this.load() } });
     this.el = h('dialog', { class: 'ui-dialog ui-pipeline', attrs: { 'aria-labelledby': 'pipeline-title' } },
-      h('header', { class: 'ui-pipeline__header' }, h('div', {}, h('h2', { text: tr('Minha esteira'), attrs: { id: 'pipeline-title' } }), this.note), h('div', { class: 'ui-pipeline__actions' }, refresh, close)),
+      h('header', { class: 'ui-pipeline__header' }, h('div', {}, h('h2', { text: tr('Minha esteira'), attrs: { id: 'pipeline-title' } }), this.note), h('div', { class: 'ui-pipeline__actions' }, refresh, this.compactButton, close)),
       this.filters, this.content);
+    this.movable = dialogWindow(this.el);
+    try { this.compact = localStorage.getItem('habblaud.pipeline.compact') === 'true'; } catch { /* Storage is optional. */ }
+    this.syncMode();
     for (const [key, label] of [['morning', tr('Manhã')], ['all', tr('Todas as rotinas')]] as const) {
       const b = h('button', { type: 'button', text: label, attrs: { 'aria-pressed': key === this.filter ? 'true' : 'false' }, on: { click: () => {
         this.filter = key;
@@ -32,12 +41,41 @@ export class PipelinePanel implements UiComponent {
       } } }); this.filters.append(b);
     }
     this.button.addEventListener('click', () => this.open());
-    this.el.addEventListener('close', () => { clearInterval(this.timer); setAttr(this.button, 'aria-expanded', 'false'); this.button.focus(); });
+    this.el.addEventListener('close', () => {
+      if (this.switching) { this.switching--; return; }
+      clearInterval(this.timer); setAttr(this.button, 'aria-expanded', 'false'); this.button.focus();
+    });
+    this.el.addEventListener('keydown', e => {
+      if (this.compact && e.key === 'Escape') { e.stopPropagation(); this.el.close(); }
+    });
   }
   open(): void {
-    if (this.el.open || this.ctx.store.mock) return;
-    this.el.showModal(); setAttr(this.button, 'aria-expanded', 'true');
+    if (this.ctx.store.mock) return;
+    if (this.el.open) { this.el.querySelector<HTMLButtonElement>('.ui-pipeline__compact')?.focus(); return; }
+    this.compact ? this.el.show() : this.el.showModal();
+    this.movable?.refresh();
+    setAttr(this.button, 'aria-expanded', 'true');
     void this.load(); this.timer = setInterval(() => void this.load(), 30_000);
+  }
+  private syncMode(): void {
+    this.el.classList.toggle('is-compact', this.compact);
+    this.el.toggleAttribute('data-nonmodal', this.compact);
+    setAttr(this.compactButton, 'aria-pressed', String(this.compact));
+    setText(this.compactButton, this.compact ? tr('Expandir') : tr('Compactar'));
+  }
+  private setCompact(compact: boolean): void {
+    if (this.compact === compact) return;
+    const open = this.el.open;
+    const rect = this.el.getBoundingClientRect();
+    if (open) { this.switching++; this.el.close(); }
+    this.compact = compact;
+    this.syncMode();
+    try { localStorage.setItem('habblaud.pipeline.compact', String(compact)); } catch { /* Storage is optional. */ }
+    if (open) {
+      this.compact ? this.el.show() : this.el.showModal();
+      this.movable?.place({ x: rect.left, y: rect.top, w: compact ? 360 : 920, h: compact ? 500 : Math.min(820, innerHeight - 40) });
+      this.compactButton.focus();
+    }
   }
   render(): void { setHidden(this.button, this.ctx.store.mock); }
   private async load(): Promise<void> {

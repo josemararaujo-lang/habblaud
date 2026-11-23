@@ -1321,6 +1321,8 @@ inventados. Os cartões da rotina por arquivos continuam sendo uma evidência di
 
 ### Minha esteira
 
+**Compactar** transforma a esteira em uma janela flutuante dentro do Habblaud, mantendo o escritório utilizável. **Expandir** volta à leitura completa com fontes e comprovantes. Arraste o cabeçalho para mover; puxe as bordas ou o canto inferior direito para redimensionar. O botão de restauração (ou duplo clique no cabeçalho) devolve tamanho e posição ao padrão. As escolhas ficam salvas neste navegador. Cabeçalhos e a alça do canto também aceitam as setas do teclado; Shift aumenta o passo. Diálogos como Ajuda, Meu dia e Configurações usam o mesmo mecanismo. O texto se reorganiza pela largura de cada janela, inclusive em um monitor amplo.
+
 O botão **Esteira** (ou `/?esteira=1`) abre a programação em leitura: **Manhã**
 e **Todas as rotinas**, agente executor, horário em America/Bahia, previsão do
 próximo disparo e resultado com ID correspondente ao repasse. Um resultado antigo

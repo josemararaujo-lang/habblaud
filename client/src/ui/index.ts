@@ -10,6 +10,7 @@ import '@fontsource/pixelify-sans/600.css';
 import '@fontsource/pixelify-sans/700.css';
 import './styles.css';
 import './glass.css';
+import { DialogWindows } from './dialog-windows';
 
 import type { OfficeStore } from '../net/store';
 import type { Selection, WorldApi } from '../world/api';
@@ -311,6 +312,7 @@ export function createUI(root: HTMLElement, store: OfficeStore, world: WorldApi,
   if (scene) components.push(scene);
   root.append(worldSocial.el);
   components.push(worldSocial);
+  new DialogWindows(root);
 
   // ---------------------------------------------------------------- renderização agrupada por quadro
   let rafId = 0;
@@ -407,7 +409,7 @@ export function createUI(root: HTMLElement, store: OfficeStore, world: WorldApi,
     // Na cidade os atalhos do escritório ficam desligados: Esc fecha o cartão aberto ou volta ao escritório.
     if (inCity()) {
       if (e.key === 'Escape') {
-        if (help.isOpen || settings.isOpen || worldDialog.isOpen || history.isOpen || document.querySelector('dialog[open], :not(dialog)[aria-modal="true"]')) return;
+        if (help.isOpen || settings.isOpen || worldDialog.isOpen || history.isOpen || document.querySelector('dialog[open]:not([data-nonmodal]), :not(dialog)[aria-modal="true"]')) return;
         e.preventDefault();
         if (!city?.escape()) scene?.close();
       } else if (e.key === '?' && !isTypingTarget(e.target) && !help.isOpen) {

@@ -12,6 +12,8 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Esteira compacta e janelas móveis.** A esteira pode acompanhar o escritório sem bloqueá-lo. Diálogos podem ser arrastados pelo cabeçalho e redimensionados pelas bordas ou pelo teclado; posição e tamanho são lembrados, com restauração e texto adaptado à largura da janela.
+
 - **Glass em todo o escritório.** Barra, lateral, detalhes, feed, configurações, histórico, ajuda, Meu dia e esteira compartilham material, tipografia e controles. Listas mais calmas, foco visível e fallback opaco para maior contraste.
 
 - **Símbolos Grok e Gemini.** Marcas vetoriais reconhecíveis substituem a letra provisória; ícones com escala consistente nos painéis e na prévia. A barra compacta mantém as duas contas visíveis.

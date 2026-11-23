@@ -10,6 +10,7 @@ Direção autorizada por Josemar em 22/11/2026: aplicar o visual Glass aprovado 
 - Cantos 20 px nas superfícies, 11–13 px nos controles e linhas. Sombra direcional e borda luminosa discreta.
 - Preservar estados reais, nomes, ações, seleções, horários e comprovantes. Estado desconhecido nunca vira ociosidade.
 - Interfaces estreitas continuam navegáveis; foco visível e fallback opaco com redução de transparência/maior contraste. Movimento reduzido respeitado.
+- Diálogos móveis usam o mecanismo Movable, com limites que mantêm cabeçalho e controles na tela. Refluxo por container queries, sem encolher texto até ficar ilegível. A esteira compacta é uma janela não modal dentro do Habblaud; detalhes de auditoria ficam na visualização completa. Posição e tamanho são locais a cada navegador.
 
 ## Evidência e limites
 Referências e decisões em `docs/design/liquid-glass.md`. A adaptação web usa blur e translucidez, sem alegar refração nativa. Figma indisponível pelo limite já registrado; a revisão visual é feita no app local real.
