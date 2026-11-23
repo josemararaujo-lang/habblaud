@@ -13,6 +13,8 @@ import './glass.css';
 import './themes.css';
 import './refinement.css';
 import './navigation-glass.css';
+import './controls-glass.css';
+import { GlassControls } from './glass-selection';
 import { DialogWindows } from './dialog-windows';
 import { ColorMode } from './color-mode';
 
@@ -319,6 +321,7 @@ export function createUI(root: HTMLElement, store: OfficeStore, world: WorldApi,
   root.append(worldSocial.el);
   components.push(worldSocial);
   new DialogWindows(root);
+  new GlassControls(root);
 
   // ---------------------------------------------------------------- renderização agrupada por quadro
   let rafId = 0;

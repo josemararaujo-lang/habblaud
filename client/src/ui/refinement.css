@@ -27,7 +27,7 @@
 .ui-root .ui-settings .ui-seg { display: grid; }
 .ui-root .ui-settings .ui-set { padding-block: 10px; }
 .ui-root .ui-settings .ui-set--stack { align-items: stretch; gap: 6px; }
-.ui-root .ui-settings .ui-seg:has(> :nth-child(4)):not(:has(> :nth-child(5))) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ui-root .ui-settings .ui-seg:has(> button:nth-of-type(4)):not(:has(> button:nth-of-type(5))) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .ui-root .ui-settings h3 { margin-top: 16px; margin-bottom: 8px; }
 .ui-root .ui-settings .ui-set__label { font-weight: 600; }
 .ui-root .ui-settings .ui-popover__head { padding-block: 15px; }

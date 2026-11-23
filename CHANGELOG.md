@@ -12,6 +12,8 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Glass consistente em toda a interface.** Configurações, Meu dia, ajuda, detalhes, menus e controles compartilham materiais, brilho e estados. Seleções de filtros e opções deslizam, interruptores têm resposta fluida e menus abrem suavemente, com adaptação aos dois temas e às preferências de acessibilidade.
+
 - **Navegação e esteira com movimento Glass.** Seleção desliza entre opções; a esteira completa conecta a navegação lateral à área de leitura e se reorganiza na janela compacta, com expansão suave. Símbolos e cores dos agentes preservados, com acabamento para os temas claro e escuro e alternativas para movimento e transparência reduzidos.
 
 - **Mais espaço para acompanhar o trabalho.** Esteira com ações compactas e metadados agrupados; filtros alinhados, recibos mais discretos e feed com duas linhas. Cabeçalhos, textos longos e opções das Configurações se adaptam à largura de cada janela, nos dois temas.
