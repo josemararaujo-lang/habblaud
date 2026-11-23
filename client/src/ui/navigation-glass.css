@@ -24,7 +24,7 @@
 .ui-root .ui-topbar :is(.ui-icon-btn, .ui-btn, .ui-pipeline-button) {
   transition: background-color 160ms ease-out, color 160ms ease-out, transform 160ms ease-out;
 }
-.ui-root .ui-topbar :is(.ui-icon-btn, .ui-btn):active:not(:disabled) { transform: scale(.94); }
+.ui-root .ui-topbar :is(.ui-icon-btn, .ui-btn):active:not(:disabled, [aria-disabled='true']) { transform: scale(.94); }
 .ui-root .ui-topbar [aria-expanded='true'],
 .ui-root .ui-topbar .ui-icon-btn[aria-pressed='true'] {
   background: var(--nav-selection) !important;

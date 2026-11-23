@@ -122,7 +122,11 @@ export class TopBar implements UiComponent {
       'div',
       { class: 'ui-btn-group', role: 'group', attrs: { 'aria-label': tr('Câmera') } },
       iconButton(ICONS.overview, tr('Visão geral (O)'), () => ctx.camera('overview')),
-      h('button', { class: 'ui-btn ui-btn--sm', type: 'button', text: tr('Focar salas'), on: { click: () => ctx.camera('focusWork') } }),
+      (() => {
+        const glyph = h('span', { class: 'ui-camera-focus__icon', attrs: { 'aria-hidden': 'true' } });
+        glyph.innerHTML = ICONS.center;
+        return h('button', { class: 'ui-btn ui-btn--sm ui-camera-focus', type: 'button', title: tr('Focar salas'), attrs: { 'aria-label': tr('Focar salas') }, on: { click: () => ctx.camera('focusWork') } }, glyph, h('span', { class: 'ui-camera-focus__label', text: tr('Focar salas') }));
+      })(),
       iconButton(ICONS.zoomOut, tr('Afastar (−)'), () => ctx.camera('zoomOut')),
       iconButton(ICONS.zoomIn, tr('Aproximar (+)'), () => ctx.camera('zoomIn')),
     );

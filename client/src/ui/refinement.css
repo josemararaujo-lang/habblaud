@@ -3,6 +3,49 @@
   --space-panel: 18px;
   --space-row: 12px;
 }
+.ui-root .ui-camera-focus { display: inline-flex; align-items: center; gap: 6px; }
+.ui-root .ui-camera-focus__icon { display: none; width: 18px; height: 18px; }
+.ui-root .ui-camera-focus__icon svg { width: 100%; height: 100%; }
+/* Text and minor actions follow the same rhythm as the main controls. */
+.ui-root :is(.ui-room__actions, .ui-char__actions) { gap: 8px; flex-wrap: wrap; }
+.ui-root :is(.ui-room__path, .ui-rename__hint, .ui-hist__hint, .ui-hist__foot, .ui-day__note) { font-size: 12px; line-height: 1.55; overflow-wrap: anywhere; color: var(--ui-muted); }
+.ui-root :is(.ui-rename__hint.is-error, .ui-char__error) { color: var(--ui-danger); }
+.ui-root .ui-room-overview__badge { font-size: 11px; padding: 3px 7px; }
+.ui-root .ui-room__actions { padding-block: 4px; }
+.ui-root .ui-link-btn { min-height: 28px; line-height: 1.4; text-underline-offset: 3px; border-radius: 5px; }
+.ui-root .ui-char__chip { height: auto; min-height: 30px; padding: 5px 9px; line-height: 1.35; }
+.ui-root .ui-char__row { grid-template-columns: 64px minmax(0, 1fr); }
+.ui-root .ui-char__opts { gap: 6px; }
+.ui-root .ui-rename { width: min(300px, calc(100vw - 16px)); padding: 14px; border-radius: 14px; }
+.ui-root .ui-rename__input { min-height: 36px; }
+.ui-root .ui-day__hero { box-shadow: none; border-color: color-mix(in srgb, var(--day-waiting) 45%, var(--ui-line)); }
+.ui-root .ui-help .ui-dialog__body { gap: 22px 26px; }
+.ui-root .ui-help .ui-dialog__body h3 { margin-bottom: 10px; }
+.ui-root :is(.ui-dialog__head, .ui-popover__head, .ui-drawer__bar) > .ui-icon-btn { flex-shrink: 0; }
+.ui-root .ui-popover > .ui-popover__head {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: var(--ui-bg-solid);
+  border-radius: 19px 19px 0 0;
+  box-shadow: 0 7px 12px -12px rgba(3, 15, 30, .45);
+}
+.ui-root .ui-popover { scroll-padding-block: 76px 16px; }
+.ui-root :is(.ui-spawn__label, .ui-rename__label, .ui-char__label, .ui-set__label) { line-height: 1.4; }
+.ui-root :is(.ui-set__hint, .ui-pipeline__intro, .ui-help__intro p) { text-wrap: pretty; }
+@media (max-width: 600px) {
+  .ui-root .ui-camera-focus__icon { display: inline-flex; }
+  .ui-root .ui-camera-focus__label { display: none; }
+  .ui-root .ui-camera-focus { width: 32px; height: 32px; min-width: 32px; padding: 6px; justify-content: center; }
+  .ui-root .ui-topbar { align-content: start; }
+  .ui-root .ui-topbar__right { flex-shrink: 0; }
+}
+@media (max-width: 360px) {
+  .ui-root .ui-topbar .ui-topbar__right .ui-btn-group { padding: 2px; gap: 2px; border-width: 0; }
+  .ui-root .ui-topbar__right { gap: 4px; }
+  .ui-root .ui-topbar__right .ui-icon-btn { min-width: 28px; width: 28px; min-height: 32px; }
+  .ui-root .ui-camera-focus { width: 30px; min-width: 30px; }
+}
 .ui-root :is(.ui-panel, .ui-window) { text-rendering: optimizeLegibility; }
 .ui-root :is(.ui-side__title, .ui-agent__main, .ui-hero, .ui-set__text, .ui-day__controls) { min-width: 0; }
 .ui-root :is(.ui-dialog__head, .ui-popover__head, .ui-drawer__bar) { gap: 8px; }

@@ -51,11 +51,11 @@
   transition: background-color 140ms ease-out, border-color 140ms ease-out;
 }
 .ui-root .ui-btn-group .ui-icon-btn { background: transparent; border-color: transparent; }
-.ui-root :is(.ui-btn, .ui-icon-btn):hover:not(:disabled) {
+.ui-root :is(.ui-btn, .ui-icon-btn):hover:not(:disabled, [aria-disabled='true']) {
   background: var(--ui-bg-hover);
   border-color: var(--ui-line-strong);
 }
-.ui-root :is(.ui-btn, .ui-icon-btn):active:not(:disabled) { background: var(--ui-accent-soft); }
+.ui-root :is(.ui-btn, .ui-icon-btn):active:not(:disabled, [aria-disabled='true']) { background: var(--ui-accent-soft); }
 .ui-root :is(.ui-btn, .ui-icon-btn)[aria-expanded='true'],
 .ui-root .ui-icon-btn[aria-pressed='true'] {
   background: var(--ui-accent-soft);
