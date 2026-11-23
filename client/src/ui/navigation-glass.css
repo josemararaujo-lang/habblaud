@@ -1,0 +1,167 @@
+/* Glass is structural chrome; reading surfaces stay quiet and provider marks stay intact. */
+.ui-root {
+  --nav-selection: #eef5fd;
+  --nav-ink: #172c40;
+  --nav-pane: rgba(20, 30, 44, .92);
+  --nav-pane-solid: #141e2c;
+  --nav-sheen: rgba(238, 247, 255, .18);
+  --nav-motion: 320ms cubic-bezier(.22, 1, .36, 1);
+}
+.ui-root[data-color-mode='light'] {
+  --nav-selection: #fff;
+  --nav-ink: #123c60;
+  --nav-pane: rgba(249, 252, 255, .94);
+  --nav-pane-solid: #f9fcff;
+  --nav-sheen: rgba(255, 255, 255, .9);
+}
+.ui-root .ui-topbar {
+  background: var(--glass-surface);
+  box-shadow: 0 8px 24px -8px rgba(3, 15, 30, .3), inset 0 1px 0 var(--nav-sheen);
+  backdrop-filter: blur(28px) saturate(145%);
+  -webkit-backdrop-filter: blur(28px) saturate(145%);
+}
+.ui-root .ui-topbar .ui-btn-group { padding: 3px; gap: 3px; border-radius: 14px; background: var(--ui-track); }
+.ui-root .ui-topbar :is(.ui-icon-btn, .ui-btn, .ui-pipeline-button) {
+  transition: background-color 160ms ease-out, color 160ms ease-out, transform 160ms ease-out;
+}
+.ui-root .ui-topbar :is(.ui-icon-btn, .ui-btn):active:not(:disabled) { transform: scale(.94); }
+.ui-root .ui-topbar [aria-expanded='true'],
+.ui-root .ui-topbar .ui-icon-btn[aria-pressed='true'] {
+  background: var(--nav-selection) !important;
+  color: var(--nav-ink);
+  box-shadow: 0 3px 9px -3px rgba(3, 15, 30, .24);
+  border-color: transparent;
+}
+.ui-root .ui-sidebar {
+  background: var(--glass-surface);
+  box-shadow: var(--glass-shadow);
+  transition: transform var(--nav-motion), visibility 0s linear 320ms;
+}
+.ui-root.has-sidebar .ui-sidebar { transition: transform var(--nav-motion); }
+.ui-root .ui-glass-nav { position: relative; isolation: isolate; }
+.ui-root .ui-glass-nav > button { position: relative; z-index: 1; }
+.ui-root .ui-glass-selection {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  border-radius: 10px;
+  background: var(--nav-selection);
+  box-shadow: 0 3px 9px -4px rgba(3, 15, 30, .25), inset 0 1px 0 var(--nav-sheen);
+}
+.ui-root .ui-glass-nav.is-measured > .ui-glass-selection {
+  transition: transform var(--nav-motion), width var(--nav-motion), height var(--nav-motion);
+}
+.ui-root .ui-glass-nav:is(.ui-view-tabs, .ui-pipeline__filters) > button[aria-pressed='true'] {
+  background: transparent;
+  box-shadow: none;
+  color: var(--nav-ink);
+}
+
+/* The selected tab and the reading plane form a single silhouette on wide windows. */
+.ui-root .ui-pipeline__workspace {
+  display: grid;
+  grid-template-columns: 164px minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+  margin: 0 10px 10px;
+}
+.ui-root .ui-pipeline .ui-pipeline__filters {
+  flex-direction: column;
+  align-self: stretch;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  padding: 16px 0 16px 8px;
+  gap: 8px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+.ui-root .ui-pipeline .ui-pipeline__filters button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 10px 12px;
+  text-align: left;
+  white-space: normal;
+  border-radius: 13px 0 0 13px;
+}
+.ui-root .ui-pipeline__nav-icon { flex: none; display: inline-flex; width: 18px; height: 18px; }
+.ui-root .ui-pipeline__nav-icon svg { width: 100%; height: 100%; }
+.ui-root .ui-pipeline .ui-glass-selection {
+  background: var(--nav-pane);
+  border-radius: 13px 0 0 13px;
+  box-shadow: none;
+}
+.ui-root .ui-pipeline .ui-glass-selection::before,
+.ui-root .ui-pipeline .ui-glass-selection::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  width: 14px;
+  height: 14px;
+}
+.ui-root .ui-pipeline .ui-glass-selection::before {
+  top: -14px;
+  background: radial-gradient(circle at 0 0, transparent 14px, var(--nav-pane) 14.5px);
+}
+.ui-root .ui-pipeline .ui-glass-selection::after {
+  bottom: -14px;
+  background: radial-gradient(circle at 0 100%, transparent 14px, var(--nav-pane) 14.5px);
+}
+.ui-root .ui-pipeline .ui-pipeline__filters > button[aria-pressed='true'] { color: var(--ui-text); }
+.ui-root .ui-pipeline .ui-pipeline__content {
+  background: var(--nav-pane);
+  border-radius: 16px;
+  padding: 20px 22px;
+  max-height: none;
+  min-height: 0;
+  scrollbar-color: var(--ui-line-strong) transparent;
+}
+.ui-root .ui-pipeline__row:first-child { border-top: 0; padding-top: 0; }
+.ui-root .ui-pipeline__time { color: var(--ui-text); }
+.ui-root .ui-pipeline__owner::before { display: none; }
+.ui-root .ui-pipeline__owner .ui-acc-chip { width: 19px; height: 19px; flex: none; }
+.ui-root .ui-pipeline__owner .ui-acc-chip img { width: 15px; height: 15px; }
+.ui-root .ui-pipeline__state { padding: 3px 8px; border-radius: 7px; background: var(--ui-bg-hover); }
+.ui-root .ui-pipeline__row-head h3 { flex-basis: 180px; }
+.ui-root .ui-pipeline__intro { max-width: 65ch; }
+.ui-root .ui-pipeline[open]:not(.is-floating) { animation: ui-glass-arrive 260ms cubic-bezier(.22, 1, .36, 1); }
+@keyframes ui-glass-arrive { from { opacity: .5; translate: 0 8px; } to { opacity: 1; translate: 0 0; } }
+
+/* A compact monitor uses horizontal tabs, leaving every pixel of width for the routines. */
+@container floating-window (max-width: 620px) {
+  .ui-root .ui-pipeline .ui-pipeline__workspace { display: flex; flex-direction: column; margin: 0 6px 6px; }
+  .ui-root .ui-pipeline .ui-pipeline__filters {
+    flex-direction: row;
+    align-self: flex-start;
+    margin: 0 8px 10px;
+    padding: 3px;
+    max-width: calc(100% - 16px);
+    gap: 3px;
+    background: var(--ui-track);
+    border-radius: 12px;
+  }
+  .ui-root .ui-pipeline .ui-pipeline__filters button { min-height: 36px; padding: 7px 10px; gap: 7px; border-radius: 9px; }
+  .ui-root .ui-pipeline .ui-glass-selection { background: var(--nav-selection); border-radius: 9px; }
+  .ui-root .ui-pipeline .ui-glass-selection::before,
+  .ui-root .ui-pipeline .ui-glass-selection::after { display: none; }
+  .ui-root .ui-pipeline .ui-pipeline__filters > button[aria-pressed='true'] { color: var(--nav-ink); }
+  .ui-root .ui-pipeline .ui-pipeline__content { padding: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-root .ui-glass-nav.is-measured > .ui-glass-selection,
+  .ui-root .ui-sidebar, .ui-root.has-sidebar .ui-sidebar { transition: none; }
+  .ui-root .ui-pipeline[open]:not(.is-floating) { animation: none; }
+  .ui-root .ui-topbar :is(.ui-icon-btn, .ui-btn):active:not(:disabled) { transform: none; }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .ui-root { --nav-pane: var(--nav-pane-solid); }
+  .ui-root .ui-topbar { background: var(--ui-bg-solid); backdrop-filter: none; -webkit-backdrop-filter: none; }
+}
+@media (prefers-contrast: more) {
+  .ui-root .ui-glass-nav { outline: 1px solid var(--ui-line-strong); outline-offset: -1px; }
+}

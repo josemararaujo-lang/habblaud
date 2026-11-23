@@ -8,6 +8,8 @@ import type { UiComponent, UiContext } from './context';
 import { dialogWindow } from './dialog-windows';
 import type { Movable } from './movable';
 import { ICONS } from './icons';
+import { glassSelection } from './glass-selection';
+import { createAccountChip, setAccountChipBrand } from './widgets';
 
 const dateTime = (at: number) => new Intl.DateTimeFormat(getLocale(), { timeZone: 'America/Bahia', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).format(at);
 const date = (value: string) => value.split('-').reverse().join('/');
@@ -23,6 +25,7 @@ export class PipelinePanel implements UiComponent {
   private timer?: ReturnType<typeof setInterval>;
   private compact = false;
   private switching = 0;
+  private modeAnimation?: Animation;
   private movable?: Movable;
   private compactButton = h('button', { class: 'ui-btn ui-pipeline__compact', type: 'button', text: tr('Compactar'), title: tr('Janela compacta: acompanhar sem bloquear o escritório'), attrs: { 'aria-pressed': 'false' }, on: { click: () => this.setCompact(!this.compact) } });
   constructor(private ctx: UiContext) {
@@ -30,17 +33,32 @@ export class PipelinePanel implements UiComponent {
     const refresh = iconButton('<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M5.3 7a7.5 7.5 0 0 1 12.4-2L20 8M4 16l2.3 3A7.5 7.5 0 0 0 18.7 17"/></svg>', tr('Atualizar'), () => void this.load());
     this.el = h('dialog', { class: 'ui-dialog ui-pipeline', attrs: { 'aria-labelledby': 'pipeline-title' } },
       h('header', { class: 'ui-pipeline__header' }, h('div', {}, h('h2', { text: tr('Minha esteira'), attrs: { id: 'pipeline-title' } }), this.note), h('div', { class: 'ui-pipeline__actions' }, refresh, this.compactButton, close)),
-      this.filters, this.content);
+      h('div', { class: 'ui-pipeline__workspace' }, this.filters, this.content));
     this.movable = dialogWindow(this.el);
     try { this.compact = localStorage.getItem('habblaud.pipeline.compact') === 'true'; } catch { /* Storage is optional. */ }
     this.syncMode();
     for (const [key, label] of [['morning', tr('Manhã')], ['all', tr('Todas as rotinas')]] as const) {
       const b = h('button', { type: 'button', text: label, attrs: { 'aria-pressed': key === this.filter ? 'true' : 'false' }, on: { click: () => {
         this.filter = key;
-        for (const option of this.filters.children) setAttr(option, 'aria-pressed', String(option === b));
+        for (const option of this.filters.querySelectorAll('button')) setAttr(option, 'aria-pressed', String(option === b));
         this.draw();
       } } }); this.filters.append(b);
+      const glyph = h('span', { class: 'ui-pipeline__nav-icon', attrs: { 'aria-hidden': 'true' } });
+      glyph.innerHTML = key === 'morning' ? ICONS.overview : ICONS.feed;
+      const caption = h('span', { text: label });
+      b.replaceChildren(glyph, caption);
     }
+    glassSelection(this.filters, 'button[aria-pressed="true"]');
+    const interruptModeChange = () => {
+      if (this.modeAnimation?.playState !== 'running') return;
+      const rect = this.el.getBoundingClientRect();
+      this.modeAnimation.cancel();
+      this.movable?.place({ x: rect.left, y: rect.top, w: rect.width, h: rect.height });
+    };
+    this.el.addEventListener('pointerdown', interruptModeChange, { capture: true });
+    this.el.addEventListener('keydown', event => {
+      if (event.key.startsWith('Arrow')) interruptModeChange();
+    }, { capture: true });
     this.button.addEventListener('click', () => this.open());
     this.el.addEventListener('close', () => {
       if (this.switching) { this.switching--; return; }
@@ -68,6 +86,7 @@ export class PipelinePanel implements UiComponent {
     if (this.compact === compact) return;
     const open = this.el.open;
     const rect = this.el.getBoundingClientRect();
+    this.modeAnimation?.cancel();
     if (open) { this.switching++; this.el.close(); }
     this.compact = compact;
     this.syncMode();
@@ -75,6 +94,13 @@ export class PipelinePanel implements UiComponent {
     if (open) {
       this.compact ? this.el.show() : this.el.showModal();
       this.movable?.place({ x: rect.left, y: rect.top, w: compact ? 360 : 920, h: compact ? 500 : Math.min(820, innerHeight - 40) });
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const target = this.el.getBoundingClientRect();
+        this.modeAnimation = this.el.animate([
+          { width: `${rect.width}px`, height: `${rect.height}px`, left: `${rect.left}px`, top: `${rect.top}px` },
+          { width: `${target.width}px`, height: `${target.height}px`, left: `${target.left}px`, top: `${target.top}px` },
+        ], { duration: 360, easing: 'cubic-bezier(.22, 1, .36, 1)' });
+      }
       this.compactButton.focus();
     }
   }
@@ -103,6 +129,9 @@ export class PipelinePanel implements UiComponent {
     const time = h('div', { class: 'ui-pipeline__time', text: r.time ? `${r.approximate ? '~' : ''}${r.time}` : '—' });
     const owner = h('span', { class: 'ui-pipeline__owner', text: r.runner === r.agent ? PROVIDER_NAME[r.agent] : `${PROVIDER_NAME[r.agent]} · ${tr('via')} ${PROVIDER_NAME[r.runner]}` });
     owner.style.setProperty('--team', TEAM_SHIRTS[r.agent]);
+    const brand = createAccountChip('sm');
+    setAccountChipBrand(brand, r.agent, TEAM_SHIRTS[r.agent]);
+    owner.prepend(brand);
     const meta = h('div', { class: 'ui-pipeline__meta' }, owner);
     const info = h('div', { class: 'ui-pipeline__info' }, h('div', { class: 'ui-pipeline__row-head' }, h('h3', { text: r.title }), h('span', { class: `ui-pipeline__state is-${r.state}`, text: states[r.state] })), meta);
     const weekdays: Record<string, string> = { MO: tr('Segunda'), TU: tr('Terça'), WE: tr('Quarta'), TH: tr('Quinta'), FR: tr('Sexta'), SA: tr('Sábado'), SU: tr('Domingo') };

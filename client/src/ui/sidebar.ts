@@ -15,6 +15,7 @@ import { officeIsEmpty } from './overlays';
 import { createAgentRow, updateAgentRow } from './rows';
 import { createAccountChip, createProgress, updateAccountChip, updateProgress } from './widgets';
 import { tr } from '../../../shared/i18n';
+import { glassSelection } from './glass-selection';
 
 interface RoomRefs {
   overview: RoomOverview;
@@ -163,6 +164,7 @@ export class Sidebar implements UiComponent {
     );
     const grip = h('div', { class: 'ui-side__resize', role: 'separator', tabIndex: 0, attrs: { 'aria-label': tr('Largura do painel lateral'), 'aria-orientation': 'vertical', 'aria-valuemin': 300, 'aria-valuemax': 440 } });
     this.el.append(grip);
+    glassSelection(this.el.querySelector<HTMLElement>('.ui-view-tabs')!, '.ui-view-tab[aria-pressed="true"]');
     let width = ctx.prefs.sidebarWidth;
     const resize = (value: number) => {
       width = Math.max(300, Math.min(440, value));

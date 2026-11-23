@@ -12,6 +12,7 @@ import './styles.css';
 import './glass.css';
 import './themes.css';
 import './refinement.css';
+import './navigation-glass.css';
 import { DialogWindows } from './dialog-windows';
 import { ColorMode } from './color-mode';
 

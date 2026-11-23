@@ -19,4 +19,6 @@ Direção autorizada por Josemar em 22/11/2026: aplicar o visual Glass aprovado 
 - Refinamento de leitura em `client/src/ui/refinement.css`: espaçamento de 12–18 px, títulos sem quebra no meio de palavras, metadados de rotina em linha com refluxo, ações da esteira com ícones acessíveis, feed com duas linhas adaptado por container e configurações com opções que cabem na janela. Recibos externos são linhas simples; a prioridade visual permanece nas decisões humanas.
 
 ## Evidência e limites
+Refinamento de 23/11: `navigation-glass.css` aplica a referência Glassy Sidebar V10 aprovada na conversa. Uma superfície deslizante acompanha a seleção, sem substituir os botões acessíveis. A esteira usa navegação vertical conectada ao plano de leitura acima de 620 px e horizontal abaixo; expansão dura até 360 ms, sem bloquear interação, e é estática com movimento reduzido. Símbolos de todos os provedores aparecem nas rotinas junto às suas cores. Paletas usam tokens semânticos.
+
 Referências e decisões em `docs/design/liquid-glass.md`. A adaptação web usa blur e translucidez, sem alegar refração nativa. Figma indisponível pelo limite já registrado; a revisão visual é feita no app local real.
