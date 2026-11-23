@@ -3,10 +3,11 @@ import type { PipelineRoutine, PipelineView, PipelineResult } from '../../../sha
 import { TEAM_SHIRTS } from '../../../shared/team-uniform';
 import { tr, getLocale } from '../../../shared/i18n';
 import { PROVIDER_NAME } from './provider';
-import { h, setAttr, setHidden, setText } from './dom';
+import { h, iconButton, setAttr, setHidden, setText } from './dom';
 import type { UiComponent, UiContext } from './context';
 import { dialogWindow } from './dialog-windows';
 import type { Movable } from './movable';
+import { ICONS } from './icons';
 
 const dateTime = (at: number) => new Intl.DateTimeFormat(getLocale(), { timeZone: 'America/Bahia', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).format(at);
 const date = (value: string) => value.split('-').reverse().join('/');
@@ -25,8 +26,8 @@ export class PipelinePanel implements UiComponent {
   private movable?: Movable;
   private compactButton = h('button', { class: 'ui-btn ui-pipeline__compact', type: 'button', text: tr('Compactar'), title: tr('Janela compacta: acompanhar sem bloquear o escritório'), attrs: { 'aria-pressed': 'false' }, on: { click: () => this.setCompact(!this.compact) } });
   constructor(private ctx: UiContext) {
-    const close = h('button', { class: 'ui-btn', type: 'button', text: tr('Fechar'), on: { click: () => this.el.close() } });
-    const refresh = h('button', { class: 'ui-btn', type: 'button', text: tr('Atualizar'), on: { click: () => void this.load() } });
+    const close = iconButton(ICONS.close, tr('Fechar'), () => this.el.close());
+    const refresh = iconButton('<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M5.3 7a7.5 7.5 0 0 1 12.4-2L20 8M4 16l2.3 3A7.5 7.5 0 0 0 18.7 17"/></svg>', tr('Atualizar'), () => void this.load());
     this.el = h('dialog', { class: 'ui-dialog ui-pipeline', attrs: { 'aria-labelledby': 'pipeline-title' } },
       h('header', { class: 'ui-pipeline__header' }, h('div', {}, h('h2', { text: tr('Minha esteira'), attrs: { id: 'pipeline-title' } }), this.note), h('div', { class: 'ui-pipeline__actions' }, refresh, this.compactButton, close)),
       this.filters, this.content);
@@ -102,10 +103,11 @@ export class PipelinePanel implements UiComponent {
     const time = h('div', { class: 'ui-pipeline__time', text: r.time ? `${r.approximate ? '~' : ''}${r.time}` : '—' });
     const owner = h('span', { class: 'ui-pipeline__owner', text: r.runner === r.agent ? PROVIDER_NAME[r.agent] : `${PROVIDER_NAME[r.agent]} · ${tr('via')} ${PROVIDER_NAME[r.runner]}` });
     owner.style.setProperty('--team', TEAM_SHIRTS[r.agent]);
-    const info = h('div', { class: 'ui-pipeline__info' }, h('div', { class: 'ui-pipeline__row-head' }, h('h3', { text: r.title }), h('span', { class: `ui-pipeline__state is-${r.state}`, text: states[r.state] })), owner);
+    const meta = h('div', { class: 'ui-pipeline__meta' }, owner);
+    const info = h('div', { class: 'ui-pipeline__info' }, h('div', { class: 'ui-pipeline__row-head' }, h('h3', { text: r.title }), h('span', { class: `ui-pipeline__state is-${r.state}`, text: states[r.state] })), meta);
     const weekdays: Record<string, string> = { MO: tr('Segunda'), TU: tr('Terça'), WE: tr('Quarta'), TH: tr('Quinta'), FR: tr('Sexta'), SA: tr('Sábado'), SU: tr('Domingo') };
-    if (r.time) info.append(h('p', { text: r.note === 'monday' ? tr('Segundas-feiras · horário documentado') : r.weekly ? r.days?.map(day => weekdays[day]).join(', ') || tr('Recorrência semanal') : tr('Diariamente') }));
-    if (r.nextAt) info.append(h('p', { class: 'ui-pipeline__next', text: `${tr('Próximo previsto')}: ${dateTime(r.nextAt)}` }));
+    if (r.time) meta.append(h('p', { text: r.note === 'monday' ? tr('Segundas-feiras · horário documentado') : r.weekly ? r.days?.map(day => weekdays[day]).join(', ') || tr('Recorrência semanal') : tr('Diariamente') }));
+    if (r.nextAt) meta.append(h('p', { class: 'ui-pipeline__next', text: `${tr('Próximo previsto')}: ${dateTime(r.nextAt)}` }));
     if (r.note === 'claude-time') info.append(h('p', { class: 'ui-pipeline__notice', text: tr('O app exibe ~07:32; o contrato da esteira prevê 07:45. O histórico do app aparece abaixo. Nenhum horário foi alterado.') }));
     if (r.lastRun) info.append(h('p', { text: `${tr('Histórico do app')}: ${date(r.lastRun.date)} ${r.lastRun.time} · ${r.lastRun.completed ? tr('Execução concluída') : tr('Estado não confirmado')}` }));
     if (r.result) info.append(h('p', { class: `ui-pipeline__result is-${r.result.state}`, text: `${tr('Resultado de hoje')}: ${this.resultText(r.result)}` }));
@@ -124,6 +126,7 @@ export class PipelinePanel implements UiComponent {
     const scroll = this.content.scrollTop;
     const expanded = new Set(Array.from(this.content.querySelectorAll<HTMLDetailsElement>('details[open]')).map(el => el.dataset.routineId!));
     setText(this.note, `${data.timeZone} · ${tr('Consulta')}: ${dateTime(data.collectedAt)}`);
+    this.note.title = this.note.textContent ?? '';
     this.content.replaceChildren();
     const rows = data.routines.filter(r => this.filter === 'all' || r.group === 'morning');
     this.content.append(h('p', { class: 'ui-pipeline__intro', text: tr('Veja quem executa cada etapa, o horário programado e os comprovantes disponíveis. Esta tela apenas consulta a esteira.') }));

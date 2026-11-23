@@ -12,6 +12,8 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Mais espaço para acompanhar o trabalho.** Esteira com ações compactas e metadados agrupados; filtros alinhados, recibos mais discretos e feed com duas linhas. Cabeçalhos, textos longos e opções das Configurações se adaptam à largura de cada janela, nos dois temas.
+
 - **Nomes dos projetos mais discretos.** Mesmo balão compacto dos locais, sem contagens ou bolinhas. Trabalho em andamento pulsa suavemente na cor da equipe; equipes simultâneas compartilham o contorno. Movimento reduzido mantém a borda estática.
 
 - **Interface clara, escura ou automática.** Escolha salva nas Configurações, independente do cenário do escritório. Menus, botões, filtros, campos e interruptores compartilham estados e contraste consistentes; indicadores adaptam as cores ao tema.

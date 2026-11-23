@@ -16,5 +16,7 @@ Direção autorizada por Josemar em 22/11/2026: aplicar o visual Glass aprovado 
 
 - Etiquetas de projetos usam o mesmo balão de 18 px dos locais. Apenas agentes em `working` ou `shell`, presentes na sala atribuída, acrescentam contorno nas cores das camisas. Equipes simultâneas dividem a borda; pulso de 2,8 s preserva texto estável. Movimento reduzido usa destaque estático.
 
+- Refinamento de leitura em `client/src/ui/refinement.css`: espaçamento de 12–18 px, títulos sem quebra no meio de palavras, metadados de rotina em linha com refluxo, ações da esteira com ícones acessíveis, feed com duas linhas adaptado por container e configurações com opções que cabem na janela. Recibos externos são linhas simples; a prioridade visual permanece nas decisões humanas.
+
 ## Evidência e limites
 Referências e decisões em `docs/design/liquid-glass.md`. A adaptação web usa blur e translucidez, sem alegar refração nativa. Figma indisponível pelo limite já registrado; a revisão visual é feita no app local real.

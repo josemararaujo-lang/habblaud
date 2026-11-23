@@ -11,6 +11,7 @@ import '@fontsource/pixelify-sans/700.css';
 import './styles.css';
 import './glass.css';
 import './themes.css';
+import './refinement.css';
 import { DialogWindows } from './dialog-windows';
 import { ColorMode } from './color-mode';
 
