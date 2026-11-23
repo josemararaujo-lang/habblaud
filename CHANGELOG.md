@@ -12,6 +12,8 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Depende de mim ao abrir.** A visão Agora começa nas sessões que aguardam uma resposta humana; quando não há nenhuma, explica isso sem confundir atividade com pendência. Modo Foco ligado e feed recolhido por padrão; todos os estados continuam acessíveis.
+
 - **Salas com contexto.** Resumo dos estados e do trabalho em destaque em cada sala, equipes expansíveis e atalho para o agente que precisa de atenção nos detalhes. A busca revela as equipes correspondentes automaticamente.
 
 - **Acompanhamento mais claro.** Cartões compactos ajustáveis, resumo do escritório, filtro de agentes principais e grupos recolhíveis para conclusões e disponibilidade. Equipe e provedor aparecem juntos nos cartões; os filtros de estado permanecem visíveis durante a rolagem.

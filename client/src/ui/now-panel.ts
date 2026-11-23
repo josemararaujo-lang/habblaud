@@ -9,7 +9,7 @@ import { taskProgress } from './model';
 import { relativeTime } from './format';
 
 const GROUPS: { key: WorkGroup; label: string; short: string }[] = [
-  { key: 'attention', short: tr('Atenção'), label: tr('Precisa de você') },
+  { key: 'attention', short: tr('Depende de mim'), label: tr('Precisa de você') },
   { key: 'working', short: tr('Ativos'), label: tr('Em andamento') },
   { key: 'finished', short: tr('Revisar'), label: tr('Pronto para revisar') },
   { key: 'idle', short: tr('Disponíveis'), label: tr('Disponíveis') },
@@ -19,10 +19,11 @@ const GROUPS: { key: WorkGroup; label: string; short: string }[] = [
 export class NowPanel {
   readonly el = h('div', { class: 'ui-work', attrs: { id: 'ui-now-panel' } });
   private groups = new Map<WorkGroup, { el: HTMLElement; count: HTMLElement; toggle: HTMLButtonElement; body: HTMLElement; list: KeyedList<AgentInfo> }>();
-  private selected: WorkGroup | null = null;
+  private selected: WorkGroup | null = 'attention';
   private collapsed = new Set<WorkGroup>(['finished', 'idle']);
   private filters = new Map<WorkGroup | null, { button: HTMLButtonElement; count: HTMLElement }>();
-  private empty = h('p', { class: 'ui-work__empty', text: tr('Nenhum agente neste estado.'), hidden: true });
+  private empty = h('p', { class: 'ui-work__empty', hidden: true });
+  private emptyMessage = h('span');
   private refs = new WeakMap<HTMLElement, { room: HTMLElement; team: HTMLElement; row: HTMLElement; result: HTMLElement; next: HTMLElement; progressBox: HTMLElement; progress: HTMLElement; progressText: HTMLElement }>();
   constructor(private ctx: UiContext) {
     const filters = h('div', { class: 'ui-work__filters', role: 'group', attrs: { 'aria-label': tr('Filtrar por estado do trabalho') } });
@@ -33,7 +34,7 @@ export class NowPanel {
       this.filters.set(g.key, { button, count });
     }
     const reset = h('button', { class: 'ui-link-btn', type: 'button', text: tr('Ver todos os estados'), on: { click: () => { this.resetFilters(); ctx.invalidate(); } } });
-    this.empty.append(' ', reset);
+    this.empty.append(this.emptyMessage, ' ', reset);
     this.el.append(filters, this.empty);
     for (const g of GROUPS) {
       const count = h('span', { class: 'ui-work__count' });
@@ -100,6 +101,9 @@ export class NowPanel {
   resetFilters(): void { this.selected = null; }
   render(agents: readonly AgentInfo[]): void {
     const present = agents.filter(a => a.status !== 'offline');
+    setText(this.emptyMessage, this.selected === 'attention'
+      ? tr('Nenhuma resposta sua pendente nas sessões acompanhadas.')
+      : tr('Nenhum agente neste estado.'));
     for (const [key, f] of this.filters) {
       setText(f.count, String(key === null ? present.length : present.filter(a => workGroup(a) === key).length));
       setAttr(f.button, 'aria-pressed', String(this.selected === key));

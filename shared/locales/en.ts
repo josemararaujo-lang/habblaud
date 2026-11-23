@@ -2,6 +2,9 @@
 // As lacunas {0}, {1}... (e as nomeadas, como {sala}) precisam aparecer na tradução, em qualquer ordem.
 // Chave ausente = o texto fica em PT. `npm run i18n:check` lista os textos sem tradução e as chaves que sobraram.
 export const EN: Readonly<Record<string, string>> = {
+  "Depende de mim": "Needs me",
+  "Nenhuma resposta sua pendente nas sessões acompanhadas.": "No response from you is pending in the tracked sessions.",
+
   "O que acontece nesta sala": "What’s happening in this room",
   "{0}: {1}": "{0}: {1}",
   "Atenção: {0}": "Needs attention: {0}",
