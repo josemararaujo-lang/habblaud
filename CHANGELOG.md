@@ -12,6 +12,8 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Símbolos Grok e Gemini.** Marcas vetoriais reconhecíveis substituem a letra provisória; ícones com escala consistente nos painéis e na prévia. A barra compacta mantém as duas contas visíveis.
+
 - **Elenco Hunter × Hunter.** Novos nomes dos personagens usam o elenco do anime, inclusive Grok Bot e Gemini; a identidade original do app fica nos detalhes e a cor da equipe permanece na camisa.
 
 - **Minha esteira.** Linha do tempo local com agentes, horários, próximo disparo previsto e resultados com ID validado. Distingue agenda confirmada, rotina documentada e definição sem agendamento.

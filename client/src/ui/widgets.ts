@@ -11,7 +11,7 @@ import { tr } from '../../../shared/i18n';
  * Símbolo oficial da ferramenta dentro do chip; a borda conserva a cor própria da conta.
  */
 export function createAccountChip(size: 'sm' | 'md' | 'lg' = 'sm'): HTMLElement {
-  return h('span', { class: `ui-acc-chip ui-acc-chip--${size}` }, h('img', { attrs: { src: '/assets/providers/claude.svg', alt: '', 'aria-hidden': 'true' } }));
+  return h('span', { class: `ui-acc-chip ui-acc-chip--${size}` }, h('img', { attrs: { src: '/assets/providers/claude.svg', width: '24', height: '24', alt: '', 'aria-hidden': 'true' } }));
 }
 
 /** Atualiza apenas a identidade visual; também serve aos resumos históricos sem AccountInfo completo. */

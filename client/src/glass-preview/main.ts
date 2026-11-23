@@ -57,7 +57,11 @@ function select(index: number) {
   for (const [i, button] of Array.from(list.children).entries()) button.setAttribute('aria-pressed', String(i === selected));
   const p = people[index];
   document.querySelector('#person-name')!.textContent = p.name;
-  document.querySelector('#person-provider')!.textContent = p.provider;
+  const provider = document.querySelector('#person-provider')!;
+  const symbol = document.createElement('img');
+  symbol.src = `/assets/providers/${p.team === 'codex' ? 'codex.png' : `${p.team}.svg`}`;
+  symbol.alt = ''; symbol.width = 18; symbol.height = 18;
+  provider.replaceChildren(symbol, document.createTextNode(p.provider));
   document.querySelector('#person-state')!.textContent = p.state;
   document.querySelector('.status')!.classList.toggle('attention', index === 0);
   document.querySelector('.status')!.classList.toggle('unknown', index > 1);

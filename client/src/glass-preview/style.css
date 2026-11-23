@@ -92,3 +92,6 @@ footer { margin: 38px 0 16px; max-width: 80ch; font-size: 10px; color: var(--mut
 @media (prefers-reduced-motion: reduce) { *, *::before { transition: none !important; } .person:hover .avatar { transform: none; } }
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .glass, .name-tag { backdrop-filter: none; -webkit-backdrop-filter: none; background: #f8fafb; } .dark .glass, .dark .name-tag { background: #202e3a; } }
 @supports not (backdrop-filter: blur(1px)) { .glass { background: #f8fafb; } .dark .glass { background: #202e3a; } }
+
+#person-provider { display: flex; align-items: center; gap: 7px; min-height: 24px; }
+#person-provider img { box-sizing: content-box; width: 18px; height: 18px; padding: 3px; border-radius: 6px; background: #171b24; object-fit: contain; flex: none; }

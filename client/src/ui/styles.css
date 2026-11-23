@@ -11511,3 +11511,17 @@ html.is-replay #world {
 /* Missing app telemetry is neutral, never an idle or success claim. */
 .ui-status-dot.is-unknown { background: var(--ui-muted); opacity: .7; }
 .ui-work__group--unknown > h3 { color: var(--ui-muted); }
+
+/* External app accounts have no quota meters. Keep both identities visible in the compact toolbar. */
+.ui-acc-chip[data-provider='grok-bot'] img,
+.ui-acc-chip[data-provider='gemini'] img { width: 78%; height: 78%; }
+@media (max-width: 600px) {
+  .ui-root .ui-topbar .ui-usage-card[data-provider] { flex: 1 0 120px; min-width: 120px; }
+  .ui-root .ui-topbar .ui-usage-card[data-provider='grok-bot'],
+  .ui-root .ui-topbar .ui-usage-card[data-provider='gemini'] {
+    flex: 0 0 36px; width: 36px; min-width: 36px; padding: 4px 6px;
+    grid-template-columns: minmax(0, 1fr); justify-items: center;
+  }
+  .ui-root .ui-topbar .ui-usage-card[data-provider='grok-bot'] .ui-usage-card__body,
+  .ui-root .ui-topbar .ui-usage-card[data-provider='gemini'] .ui-usage-card__body { display: none; }
+}
