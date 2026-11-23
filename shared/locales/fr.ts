@@ -2,6 +2,16 @@
 // As lacunas {0}, {1}... (e as nomeadas, como {sala}) precisam aparecer na tradução, em qualquer ordem.
 // Chave ausente = o texto fica em PT. `npm run i18n:check` lista os textos sem tradução e as chaves que sobraram.
 export const FR: Readonly<Record<string, string>> = {
+  "Grok Bot e Gemini": "Grok Bot et Gemini",
+  "Rotina por arquivos · atualização a cada 30 s. Outras conversas não são acompanhadas.": "Routine par fichiers · mise à jour toutes les 30 s. Les autres conversations ne sont pas suivies.",
+  "Sem repasse válido hoje": "Aucune transmission valide aujourd’hui",
+  "Aguardando resultado · execução não confirmada": "Résultat attendu · exécution non confirmée",
+  "Sem ação nesta rotina": "Aucune action dans cette routine",
+  "Resultado pronto para revisar": "Résultat prêt à examiner",
+  "Bloqueio registrado · conferir resultado": "Blocage enregistré · vérifier le résultat",
+  "Resultado sem validação": "Résultat non validé",
+  "Fonte local indisponível": "Source locale indisponible",
+
   "Depende de mim": "À moi de répondre",
   "Nenhuma resposta sua pendente nas sessões acompanhadas.": "Aucune réponse de votre part en attente dans les sessions suivies.",
 

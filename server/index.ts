@@ -3,6 +3,7 @@
 //   npm run dev    -> tsx server/index.ts --dev (Vite em middleware mode, HMR no mesmo servidor)
 //   npm start      -> node dist/server/index.js (serve dist/client)
 import http from 'node:http';
+import { readExternalAgents } from './sources/external-handoffs';
 import { join } from 'node:path';
 import { codexDirsRefused, isDefaultDir } from './accounts/detect';
 import { AccountsService } from './accounts/service';
@@ -113,8 +114,11 @@ const accounts = new AccountsService({
   usageDir: config.usageDir,
   onChange: () => late.office?.markDirty(),
 });
+const handoffRoot = process.env.HABBLAUD_HANDOFF_DIR || join(config.home, 'AgenteArquivos', 'esteira-manha');
+let externalAgents = readExternalAgents(handoffRoot);
 const office = new Office({
   names,
+  externalAgents: () => externalAgents,
   roomAlias: (path) => roomAliases.get(path),
   version: config.version,
   // No modo dev o Vite serve o cliente direto do código-fonte: não há build para comparar.
@@ -330,6 +334,13 @@ messages?.start();
 stats.start();
 updates.start();
 worldUplink?.start();
+const externalTicker = setInterval(() => {
+  const next = readExternalAgents(handoffRoot);
+  if (JSON.stringify(next) !== JSON.stringify(externalAgents)) {
+    externalAgents = next;
+    office.markDirty();
+  }
+}, 30_000);
 const ticker = setInterval(() => {
   try {
     office.tick();
@@ -545,6 +556,7 @@ function shutdown(signal: string): void {
   shuttingDown = true;
   log.info(tr('Encerrando ({0})…', [signal]));
   clearInterval(ticker);
+  clearInterval(externalTicker);
   stats.stop();
   agents.stop();
   accounts.stop();

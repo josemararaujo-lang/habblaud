@@ -12,6 +12,9 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Grok Bot e Gemini no Agora.** Mostra a rotina local por arquivos, com data e ID conferidos, sem confundir resultado antigo ou repasse pendente com execução atual.
+
+
 - **Depende de mim ao abrir.** A visão Agora começa nas sessões que aguardam uma resposta humana; quando não há nenhuma, explica isso sem confundir atividade com pendência. Modo Foco ligado e feed recolhido por padrão; todos os estados continuam acessíveis.
 
 - **Salas com contexto.** Resumo dos estados e do trabalho em destaque em cada sala, equipes expansíveis e atalho para o agente que precisa de atenção nos detalhes. A busca revela as equipes correspondentes automaticamente.

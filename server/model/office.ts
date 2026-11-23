@@ -3,6 +3,7 @@
 // chama commit() (com throttle) para obter o snapshot novo, o feed e os avisos pendentes.
 import type {
   AccountInfo,
+  ExternalAgentInfo,
   Activity,
   AgentDetail,
   AgentInfo,
@@ -63,6 +64,7 @@ export interface OfficeDeps {
   /** Contas reais, com o nº de sessões abertas de cada uma. */
   accounts: (sessions: ReadonlyMap<string, number>) => AccountInfo[];
   sources: () => SourceInfo[];
+  externalAgents?: () => ExternalAgentInfo[];
   /** Nome amigável da conta (ex.: "Conta D") para os avisos. */
   accountName: (id: string) => string | undefined;
   /** Terminal ligado (ver OfficeSnapshot.meta.terminal e ServerConfig.terminal). */
@@ -991,6 +993,7 @@ export class Office {
       serverTime: now,
       rooms,
       agents: [...real, ...demoAgents].map(trim),
+      ...(!this.isDemo() && this.deps.externalAgents ? { externalAgents: this.deps.externalAgents() } : {}),
       accounts: [...this.deps.accounts(sessions), ...(this.demoSnap?.accounts ?? [])],
       ...(ptys ? { ptys: ptys.list } : {}),
       meta: {

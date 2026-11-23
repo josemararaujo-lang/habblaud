@@ -328,12 +328,21 @@ export interface AccountInfo {
   usageStatus: 'ok' | 'stale' | 'disabled';
 }
 
+/** Read-only evidence from the existing local handoff workflow, not app telemetry. */
+export interface ExternalAgentInfo {
+  id: 'gemini' | 'grok-bot';
+  date: string;
+  handoffId?: string;
+  state: 'no_handoff' | 'pending' | 'no_action' | 'completed' | 'blocked' | 'unknown' | 'unavailable';
+}
+
 export interface OfficeSnapshot {
   /** Incrementa a cada mudança. */
   rev: number;
   serverTime: number;
   rooms: RoomInfo[];
   agents: AgentInfo[];
+  externalAgents?: ExternalAgentInfo[];
   /** Terminais interativos abertos pelo Habblaud (Claude Code rodando dentro do navegador). */
   ptys?: PtyInfo[];
   /** Contas do Claude detectadas (com uso de 5h/semanal quando disponível). */

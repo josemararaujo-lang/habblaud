@@ -7,6 +7,7 @@ import { lastResult, nextAction, workGroup, type WorkGroup } from './work-summar
 import { createProgress, updateProgress } from './widgets';
 import { taskProgress } from './model';
 import { relativeTime } from './format';
+import { ExternalAgentsPanel } from './external-agents';
 
 const GROUPS: { key: WorkGroup; label: string; short: string }[] = [
   { key: 'attention', short: tr('Depende de mim'), label: tr('Precisa de você') },
@@ -24,6 +25,7 @@ export class NowPanel {
   private filters = new Map<WorkGroup | null, { button: HTMLButtonElement; count: HTMLElement }>();
   private empty = h('p', { class: 'ui-work__empty', hidden: true });
   private emptyMessage = h('span');
+  private external = new ExternalAgentsPanel();
   private refs = new WeakMap<HTMLElement, { room: HTMLElement; team: HTMLElement; row: HTMLElement; result: HTMLElement; next: HTMLElement; progressBox: HTMLElement; progress: HTMLElement; progressText: HTMLElement }>();
   constructor(private ctx: UiContext) {
     const filters = h('div', { class: 'ui-work__filters', role: 'group', attrs: { 'aria-label': tr('Filtrar por estado do trabalho') } });
@@ -100,6 +102,8 @@ export class NowPanel {
   }
   resetFilters(): void { this.selected = null; }
   render(agents: readonly AgentInfo[]): void {
+    if (!this.external.el.isConnected) this.el.append(this.external.el);
+    this.external.render(this.ctx.store.snapshot?.externalAgents ?? []);
     const present = agents.filter(a => a.status !== 'offline');
     setText(this.emptyMessage, this.selected === 'attention'
       ? tr('Nenhuma resposta sua pendente nas sessões acompanhadas.')

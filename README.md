@@ -1287,3 +1287,12 @@ forgotten three days after the agent leaves.
 <p align="center">
   Made with ☕ and lots of <a href="https://code.claude.com">Claude Code</a> agents.
 </p>
+
+### Grok Bot e Gemini no painel Agora
+
+O painel lê somente os repasses e resultados do dia em `~/AgenteArquivos/esteira-manha`
+(ou `HABBLAUD_HANDOFF_DIR`). A data segue America/Bahia. A cada 30 segundos confere
+o ID `manha-AAAA-MM-DD-{gemini,grok-bot}` nas duas pontas. Sem resultado validado,
+não declara execução nem conclusão. Não lê bancos privados dos apps, não dispara
+repasses e não envia mensagens. Os cartões cobrem essa rotina; outras conversas
+não têm telemetria. Nenhum personagem ou consumo é inventado no escritório/World.
