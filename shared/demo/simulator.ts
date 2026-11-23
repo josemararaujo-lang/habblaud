@@ -19,7 +19,7 @@ import { answerSummary, ASK_TOOL, checkAnswers } from '../answers';
 import { describeGitHubEvent, GITHUB_TOOL, RoomEffects } from '../github';
 import { hash32, mulberry32 } from '../hash';
 import { describeMessage, MESSAGE_TOOL } from '../messages';
-import { pickName } from '../names';
+import { pickName } from '../hunter-names';
 import { demoGitHubEvent } from './github';
 import { demoCodexPermission, demoPermission, type DemoPermissionKind } from './permission';
 import { tr } from '../i18n';

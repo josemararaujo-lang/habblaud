@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { Activity } from '../../shared/types';
 import { nameKey } from '../../shared/appearance';
 import { hash32 } from '../../shared/hash';
-import { NAME_POOL } from '../../shared/names';
+import { NAME_POOL } from '../../shared/hunter-names';
 import { setQuiet } from '../log';
 import { tempDir } from '../test/fixtures';
 import { NameStore } from './names';

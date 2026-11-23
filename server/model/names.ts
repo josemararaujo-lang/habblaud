@@ -5,7 +5,7 @@ import { canonicalRoomId } from '../../shared/room-id';
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { parseAppearanceParts, parseCharacterName, parseSeed, type AppearanceParts } from '../../shared/appearance';
-import { pickName, type PersonName } from '../../shared/names';
+import { pickName, type PersonName } from '../../shared/hunter-names';
 import { errMsg, log } from '../log';
 import { tr } from '../../shared/i18n';
 
