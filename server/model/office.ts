@@ -366,12 +366,12 @@ export class Office {
 
   /** Mesmo processo, sessão nova (/clear, /resume): o personagem continua, tarefas e números zeram. */
   observeDesktop(p: MainInput, name: string, eventAt: number): void {
-    this.addMain({ ...p, displayName: name });
+    this.addMain(p);
     const info = this.agents.get(p.id)!.info;
     const text = p.status === 'working' ? tr('Resposta em transmissão no app') : p.status === 'waiting' ? tr('Responder no app') : tr('Estado não informado pelo app');
-    if (info.name === name && info.lastEventAt === eventAt && info.activity?.text === text) return;
-    info.name = name;
-    info.title = tr('Metadados locais · sem cópia do conteúdo');
+    const title = `${name} · ${tr('Metadados locais · sem cópia do conteúdo')}`;
+    if (info.title === title && info.lastEventAt === eventAt && info.activity?.text === text) return;
+    info.title = title;
     info.lastEventAt = eventAt;
     info.activity = { id: `${p.id}:${eventAt}:${p.status}`, at: eventAt, kind: 'other', icon: '◉', text };
     this.markDirty();

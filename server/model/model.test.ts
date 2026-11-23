@@ -826,14 +826,16 @@ it('keeps the most recently customized character when persisted Unicode room key
   } finally { tmp.cleanup(); }
 });
 
-it('keeps real desktop identities and invalidates streaming without reporting completion', () => {
+it('keeps stable character aliases and real desktop identity in details without reporting completion', () => {
   const { office, now } = makeOffice();
   const input = { id: 'gemini:desktop', provider: 'gemini' as const, account: 'gemini', sessionId: 'gemini:desktop', cwd: '/Applications/Gemini.app', role: 'Observação local do app', startedAt: now(), status: 'working' as const };
   office.observeDesktop(input, 'Gemini', now() - 1000);
-  expect(office.commit().snapshot.agents[0]).toMatchObject({ name: 'Gemini', provider: 'gemini', status: 'working' });
+  const first = office.commit().snapshot.agents[0];
+  expect(NAME_POOL.some(p => p.name === first.name)).toBe(true);
+  expect(first).toMatchObject({ title: 'Gemini · Metadados locais · sem cópia do conteúdo', provider: 'gemini', status: 'working' });
   office.observeDesktop({ ...input, status: 'unknown' }, 'Gemini', now() - 1000);
   const result = office.commit();
-  expect(result.snapshot.agents[0]).toMatchObject({ name: 'Gemini', status: 'unknown', lastEventAt: now() - 1000 });
+  expect(result.snapshot.agents[0]).toMatchObject({ name: first.name, status: 'unknown', lastEventAt: now() - 1000 });
   expect(result.snapshot.agents[0].activity?.text).toBe('Estado não informado pelo app');
   expect(result.feed.some(f => f.activity.kind === 'done')).toBe(false);
   office.closeMain(input.id);

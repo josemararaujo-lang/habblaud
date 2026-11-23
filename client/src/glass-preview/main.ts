@@ -5,10 +5,10 @@ import type { Provider } from '../../../shared/types';
 import { tr } from '../../../shared/i18n';
 
 const people = [
-  { name: 'Jorge', provider: 'Codex', team: 'codex' as Provider, state: tr('Precisa de você'), color: '#9451c4', seed: 42, look: 'm' as const },
-  { name: 'Marina', provider: 'Claude Code', team: 'claude' as Provider, state: tr('Trabalhando'), color: '#b45c38', seed: 17, look: 'f' as const },
+  { name: 'Gon', provider: 'Codex', team: 'codex' as Provider, state: tr('Precisa de você'), color: '#9451c4', seed: 42, look: 'm' as const },
+  { name: 'Machi', provider: 'Claude Code', team: 'claude' as Provider, state: tr('Trabalhando'), color: '#b45c38', seed: 17, look: 'f' as const },
   { name: 'Killua', provider: 'Grok Bot', team: 'grok-bot' as Provider, state: tr('Estado não informado pelo app'), color: '#657580', seed: 63, look: 'm' as const },
-  { name: 'Gemini', provider: 'Gemini', team: 'gemini' as Provider, state: tr('Estado não informado pelo app'), color: '#2767b8', seed: 28, look: 'f' as const },
+  { name: 'Biscuit', provider: 'Gemini', team: 'gemini' as Provider, state: tr('Estado não informado pelo app'), color: '#2767b8', seed: 28, look: 'f' as const },
 ];
 const icon = (path: string) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
 const sun = icon('<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/>');

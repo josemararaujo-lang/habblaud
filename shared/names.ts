@@ -5,33 +5,31 @@ export interface PersonName {
   look: 'f' | 'm';
 }
 
-// Nomes brasileiros para os personagens. Sem duplicatas e sem variações quase iguais
-// (ex.: Thiago/Tiago), para que cada personagem seja inconfundível no escritório.
+// Elenco de Hunter × Hunter. Nomes curtos nas etiquetas; a equipe continua na camisa.
 const F = [
-  'Ana', 'Beatriz', 'Camila', 'Daniela', 'Eduarda', 'Fernanda', 'Gabriela', 'Helena', 'Isabela', 'Júlia',
-  'Larissa', 'Mariana', 'Natália', 'Olívia', 'Paula', 'Rebeca', 'Sofia', 'Tatiana', 'Valentina', 'Yasmin',
-  'Alice', 'Bianca', 'Cecília', 'Débora', 'Elisa', 'Flávia', 'Giovana', 'Heloísa', 'Iara', 'Jéssica',
-  'Lívia', 'Manuela', 'Melissa', 'Nina', 'Priscila', 'Rafaela', 'Sabrina', 'Teresa', 'Vitória', 'Zoe',
-  'Aline', 'Bruna', 'Clara', 'Estela', 'Fabiana', 'Glória', 'Ingrid', 'Joana', 'Kátia', 'Lara',
-  'Maitê', 'Mirela', 'Noemi', 'Pietra', 'Renata', 'Simone', 'Sara', 'Vanessa', 'Luana', 'Marina',
+  'Biscuit', 'Machi', 'Pakunoda', 'Shizuku', 'Komugi', 'Alluka', 'Canary', 'Melody',
+  'Palm', 'Ponzu', 'Menchi', 'Neon', 'Kikyo', 'Cheadle', 'Pyon', 'Gel', 'Cluck',
+  'Baise', 'Zazan', 'Tsubone', 'Amane', 'Mito', 'Spinner', 'Leroute',
 ];
 const M = [
-  'Arthur', 'Bruno', 'Caio', 'Diego', 'Enzo', 'Felipe', 'Gustavo', 'Henrique', 'Igor', 'João',
-  'Kauã', 'Lucas', 'Mateus', 'Nicolas', 'Otávio', 'Pedro', 'Rafael', 'Samuel', 'Thiago', 'Vinícius',
-  'Bernardo', 'Danilo', 'Davi', 'Emanuel', 'Fábio', 'Gael', 'Heitor', 'Hugo', 'Joaquim', 'Jorge',
-  'Leonardo', 'Lorenzo', 'Luan', 'Marcelo', 'Murilo', 'Noah', 'Otto', 'Raul', 'Renato', 'Ricardo',
-  'Rodrigo', 'Sérgio', 'Theo', 'Tomás', 'Ulisses', 'Vicente', 'Wagner', 'Yuri', 'Augusto', 'Benício',
-  'César', 'Douglas', 'Elias', 'Francisco', 'Guilherme', 'Ícaro', 'Jonas', 'Leandro', 'Miguel', 'Paulo',
+  'Gon', 'Killua', 'Kurapika', 'Leorio', 'Hisoka', 'Chrollo', 'Netero', 'Ging',
+  'Kite', 'Morel', 'Knov', 'Knuckle', 'Shoot', 'Illumi', 'Silva', 'Zeno', 'Kalluto',
+  'Feitan', 'Phinks', 'Shalnark', 'Franklin', 'Nobunaga', 'Uvogin', 'Bonolenov',
+  'Kortopi', 'Meruem', 'Shaiapouf', 'Youpi', 'Colt', 'Cheetu', 'Rammot', 'Pariston',
+  'Mizaistom', 'Botobai', 'Saiyu', 'Kanzai', 'Saccho', 'Ginta', 'Genthru', 'Razor',
+  'Wing', 'Zushi', 'Hanzo', 'Tonpa', 'Satotz', 'Buhara', 'Gotoh', 'Welfin',
 ];
 
 export const NAME_POOL: readonly PersonName[] = Object.freeze(
-  // Intercala para que nomes vizinhos no pool alternem a dica visual.
-  F.flatMap((f, i) => [{ name: f, look: 'f' as const }, ...(M[i] ? [{ name: M[i], look: 'm' as const }] : [])]),
+  Array.from({ length: Math.max(F.length, M.length) }, (_, i) => [
+    ...(F[i] ? [{ name: F[i], look: 'f' as const }] : []),
+    ...(M[i] ? [{ name: M[i], look: 'm' as const }] : []),
+  ]).flat(),
 );
 
 /**
  * Escolhe um nome determinístico para `id`, evitando os já usados.
- * Se o pool esgotar, acrescenta um sufixo numérico ("Ana 2").
+ * Se o pool esgotar, acrescenta um sufixo numérico ("Gon 2").
  */
 export function pickName(id: string, used: ReadonlySet<string>): PersonName {
   const n = NAME_POOL.length;
