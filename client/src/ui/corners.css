@@ -1,0 +1,62 @@
+/* Concentric corners: outer radius = inner radius + actual edge inset.
+   Each relationship owns its geometry; independent chips keep their own shape. */
+.ui-root .ui-topbar .ui-btn-group {
+  --corner-outer: 14px;
+  --corner-padding: 3px;
+  --corner-border: 1px;
+  border-radius: var(--corner-outer);
+  padding: var(--corner-padding);
+}
+.ui-root .ui-topbar .ui-btn-group > :is(.ui-btn, .ui-icon-btn, .ui-pipeline-button) {
+  border-radius: max(0px, calc(var(--corner-outer) - var(--corner-border) - var(--corner-padding)));
+}
+.ui-root :is(.ui-seg, .ui-feed__modes, .ui-view-tabs) {
+  --corner-outer: 13px;
+  --corner-padding: 4px;
+  --corner-border: 1px;
+  padding: var(--corner-padding);
+  border-radius: var(--corner-outer);
+}
+.ui-root .ui-view-tabs { --corner-outer: 12px; --corner-padding: 3px; }
+.ui-root :is(.ui-seg, .ui-feed__modes, .ui-view-tabs) > button {
+  border-radius: max(0px, calc(var(--corner-outer) - var(--corner-border) - var(--corner-padding)));
+}
+/* Flush content is one border inside its shell, including narrower layouts. */
+.ui-root .ui-popover > .ui-popover__head,
+.ui-root .ui-side__head {
+  border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
+}
+.ui-root :is(.ui-dialog__body, .ui-day__body) {
+  border-radius: 0 0 calc(var(--radius) - 1px) calc(var(--radius) - 1px);
+}
+.ui-root .ui-dialog.ui-pipeline {
+  --pipeline-corner: 24px;
+  --pipeline-inset: 10px;
+  border-radius: var(--pipeline-corner);
+}
+.ui-root .ui-pipeline .ui-pipeline__workspace {
+  margin: 0 var(--pipeline-inset) var(--pipeline-inset);
+}
+/* Only the outer right/bottom corners sit next to the shell. The left edge
+   joins the navigation, whose silhouette and reverse corners remain intact. */
+.ui-root .ui-pipeline .ui-pipeline__content {
+  --pipeline-inner: max(0px, calc(var(--pipeline-corner) - 1px - var(--pipeline-inset)));
+  border-radius: 16px var(--pipeline-inner) var(--pipeline-inner) 16px;
+}
+.ui-root .ui-rename {
+  --rename-gap: 14px;
+  padding: var(--rename-gap);
+  border-radius: calc(var(--glass-control-radius) + var(--rename-gap) + 1px);
+}
+@media (max-width: 600px) {
+  .ui-root .ui-dialog.ui-pipeline { --pipeline-corner: 20px; }
+}
+@container floating-window (max-width: 620px) {
+  .ui-root .ui-pipeline .ui-pipeline__workspace {
+    --pipeline-inset: 6px;
+    margin: 0 var(--pipeline-inset) var(--pipeline-inset);
+  }
+  .ui-root .ui-pipeline .ui-pipeline__content {
+    border-radius: var(--pipeline-inner);
+  }
+}

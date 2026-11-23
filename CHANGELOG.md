@@ -12,6 +12,8 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Cantos concêntricos no Glass.** Filtros e suas seleções compartilham a mesma curva; a esteira ajusta seus cantos ao espaço da janela ampla ou compacta. Cabeçalhos acompanham o raio dos painéis nos dois temas, com encaixe mais coerente na barra e no campo de renomear.
+
 - **Histórico, leitor de conversas e editor revisados.** Terminal com cores legíveis nos modos claro e escuro, superfície Glass e filtros consistentes. Histórico com metadados que se adaptam à janela; editor com prévia e amostras de cor mais confortáveis, sem sobreposição de vidro.
 
 - **Revisão visual dos dois temas.** Barra superior compacta sem cortar o botão lateral em telas estreitas; metadados e ações menores mais legíveis, cabeçalhos de menus sempre acessíveis ao rolar e escolhas de personagem no padrão Glass. Controles indisponíveis mantêm o estado visual ao passar o mouse.

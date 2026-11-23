@@ -20,6 +20,8 @@ export function glassSelection(group: HTMLElement, selector: string): () => void
     indicator.style.transform = `translate(${active.offsetLeft}px, ${active.offsetTop}px)`;
     indicator.style.width = `${active.offsetWidth}px`;
     indicator.style.height = `${active.offsetHeight}px`;
+    // The moving surface must have the same effective corners as its button.
+    indicator.style.borderRadius = getComputedStyle(active).borderRadius;
     // Do not sweep from the origin when a previously hidden panel first opens.
     if (!ready && !readyFrame) readyFrame = requestAnimationFrame(() => { readyFrame = 0; group.classList.add('is-measured'); });
   };
