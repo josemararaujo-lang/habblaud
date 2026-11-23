@@ -5,7 +5,7 @@
 // Salas da conta do Codex só somam tokens (o Codex não grava custo).
 import { addDays, dayKeyOf, dayStart, HOUR_MS, hourStart, localHourOf, type AgentRef, type StatsBook, type StatsView, type TimedStatus } from '../daystats';
 import { hash32, mulberry32 } from '../hash';
-import { pickName } from '../names';
+import { pickName } from '../hunter-names';
 import { DEMO_PROJECT_NAMES } from './simulator';
 import { tr } from '../i18n';
 

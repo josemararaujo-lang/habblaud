@@ -1,0 +1,222 @@
+/* Operational Glass: one material for floating chrome, calm solid content inside.
+   Keep geometry and panel state in styles.css; this sheet owns the visual language. */
+.ui-root {
+  --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-px: var(--font-ui);
+  --ui-bg: rgba(27, 37, 49, .84);
+  --ui-bg-solid: #202b38;
+  --ui-bg-soft: rgba(213, 229, 246, .045);
+  --ui-bg-hover: rgba(219, 235, 255, .085);
+  --ui-line: rgba(207, 225, 246, .10);
+  --ui-line-strong: rgba(216, 233, 252, .19);
+  --ui-text: #f0f5fb;
+  --ui-muted: #b2c0d0;
+  --ui-faint: #a0b1c4;
+  --ui-accent: #90ceff;
+  --ui-accent-soft: rgba(108, 185, 255, .14);
+  --glass-surface: linear-gradient(145deg, rgba(54, 70, 88, .72), rgba(24, 34, 47, .91));
+  --glass-content: rgba(23, 33, 46, .76);
+  --glass-control: rgba(228, 240, 255, .065);
+  --glass-shadow: 0 16px 48px -12px rgba(3, 10, 20, .54), inset 0 1px 0 rgba(245, 250, 255, .17);
+  --radius: 20px;
+  --radius-sm: 11px;
+  font-size: 13px;
+  line-height: 1.5;
+  font-optical-sizing: auto;
+}
+
+/* Blur only the outer sheets. Individual rows never blur each other. */
+.ui-root :is(.ui-panel, .ui-popover, .ui-dialog, .ui-usage-tip) {
+  background: var(--glass-surface);
+  border: 1px solid var(--ui-line-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(26px) saturate(135%);
+  backdrop-filter: blur(26px) saturate(135%);
+  color: var(--ui-text);
+}
+.ui-root :is(.ui-drawer, .ui-feed) { overflow: hidden; }
+.ui-root .ui-topbar { border-radius: 18px; }
+.ui-root .ui-btn-group {
+  background: var(--glass-control);
+  border-color: transparent;
+  box-shadow: none;
+  border-radius: 12px;
+}
+.ui-root :is(.ui-btn, .ui-icon-btn) {
+  border-radius: 10px;
+  border-color: var(--ui-line);
+  background: var(--glass-control);
+  box-shadow: none;
+  transition: background-color 140ms ease-out, border-color 140ms ease-out;
+}
+.ui-root .ui-btn-group .ui-icon-btn { background: transparent; border-color: transparent; }
+.ui-root :is(.ui-btn, .ui-icon-btn):hover:not(:disabled, [aria-disabled='true']) {
+  background: var(--ui-bg-hover);
+  border-color: var(--ui-line-strong);
+}
+.ui-root :is(.ui-btn, .ui-icon-btn):active:not(:disabled, [aria-disabled='true']) { background: var(--ui-accent-soft); }
+.ui-root :is(.ui-btn, .ui-icon-btn)[aria-expanded='true'],
+.ui-root .ui-icon-btn[aria-pressed='true'] {
+  background: var(--ui-accent-soft);
+  color: var(--ui-accent);
+  border-color: rgba(144, 206, 255, .3);
+}
+.ui-root .ui-btn--primary { background: #86c9ff; color: #102b44; border-color: transparent; font-weight: 650; }
+.ui-root .ui-btn--primary:hover:not(:disabled) { background: #a6d8ff; color: #102b44; }
+.ui-root :is(button, a, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--ui-accent);
+  outline-offset: 3px;
+}
+.ui-root ::selection { background: #28699a; color: #fff; }
+.ui-root :is(input, textarea) { caret-color: var(--ui-accent); }
+.ui-root :is(.ui-search, .ui-input, .ui-select, textarea) {
+  background: rgba(9, 20, 34, .28);
+  border-color: var(--ui-line-strong);
+  border-radius: 11px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, .07);
+}
+.ui-root input::placeholder, .ui-root textarea::placeholder { color: var(--ui-faint); opacity: 1; }
+
+/* Shared sheet headers and clear typography; the office itself stays pixel art. */
+.ui-root :is(.ui-side__head, .ui-drawer__bar, .ui-feed__head, .ui-popover__head, .ui-dialog__head) {
+  background: rgba(226, 240, 255, .025);
+  border-color: var(--ui-line);
+}
+.ui-root .ui-side__head { padding: 17px 15px 14px; gap: 11px; border-radius: var(--radius) var(--radius) 0 0; }
+.ui-root :is(.ui-side__title h2, .ui-popover__head h2, .ui-dialog__head h2) {
+  font: 650 18px/1.3 var(--font-ui);
+  letter-spacing: -.02em;
+}
+.ui-root .ui-feed__title h2 { font: 600 13px/1.4 var(--font-ui); letter-spacing: -.01em; }
+.ui-root :is(.ui-dialog__head, .ui-popover__head) { padding: 19px 22px; }
+.ui-root .ui-dialog__body { padding: 20px 22px 24px; }
+.ui-root :is(.ui-sec__title, .ui-dialog__body h3) { font-weight: 650; letter-spacing: -.01em; }
+.ui-root :is(.ui-view-tabs, .ui-pipeline__filters) {
+  background: rgba(8, 19, 33, .24);
+  border: 1px solid rgba(218, 235, 255, .055);
+  border-radius: 13px;
+  padding: 4px;
+  gap: 4px;
+}
+.ui-root :is(.ui-view-tab, .ui-pipeline__filters button) { border-radius: 9px; min-height: 34px; }
+.ui-root .ui-view-tab[aria-pressed='true'],
+.ui-root .ui-pipeline__filters [aria-pressed='true'] {
+  background: rgba(219, 236, 255, .12);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, .12), inset 0 1px 0 rgba(255, 255, 255, .10);
+  color: var(--ui-text);
+}
+.ui-root .ui-acc-filter { border-radius: 9px; border-color: transparent; background: var(--glass-control); }
+.ui-root .ui-acc-filter[aria-pressed='true'] { border-color: var(--ui-line-strong); }
+.ui-root .ui-acc-chip { border-radius: 6px; box-shadow: none; }
+.ui-root .ui-usage-card { background: var(--glass-control); border-color: var(--ui-line); border-radius: 11px; }
+
+/* Quiet room lists. State is communicated by labels, not a forest of accent rails. */
+.ui-root .ui-rooms { padding: 10px; gap: 8px; }
+.ui-root .ui-room {
+  border: 1px solid var(--ui-line);
+  border-left: 1px solid var(--ui-line);
+  border-radius: 13px;
+  background: var(--glass-content);
+  box-shadow: none;
+}
+.ui-root .ui-room__head { border-radius: 12px; padding: 13px; }
+.ui-root .ui-room__head::before { display: none; }
+.ui-root .ui-room__name { font-size: 13px; font-weight: 650; }
+.ui-root .ui-room__path { color: var(--ui-faint); }
+.ui-root .ui-agent {
+  border-color: transparent;
+  border-radius: 11px;
+  box-shadow: none;
+}
+.ui-root .ui-agent:hover { background: var(--ui-bg-hover); }
+.ui-root .ui-agent.is-selected { background: var(--ui-accent-soft); border-color: rgba(144, 206, 255, .25); }
+.ui-root .ui-agent__name { font-weight: 650; }
+.ui-root .ui-work { padding: 0 12px 18px; }
+.ui-root .ui-work__list { gap: 7px; }
+.ui-root .ui-work__card {
+  padding: 14px;
+  border-radius: 13px;
+  border: 1px solid var(--ui-line);
+  background: var(--glass-content);
+}
+.ui-root .ui-work__group > h3 { padding-top: 21px; font-size: 13px; }
+.ui-root .ui-work__group--attention .ui-work__card { background: rgba(107, 79, 32, .19); border-color: rgba(255, 190, 97, .20); }
+.ui-root .ui-work__filter { border-radius: 10px; background: var(--glass-control); border-color: transparent; }
+.ui-root .ui-work__filter[aria-pressed='true'] { background: var(--ui-accent-soft); border-color: rgba(144, 206, 255, .25); }
+.ui-root .ui-external__card { border-radius: 13px; background: var(--glass-content); }
+.ui-root :is(.ui-side-option, .ui-social > summary) { border-radius: 9px; }
+.ui-root .ui-drawer__body { padding: 18px; }
+.ui-root .ui-hero { border-radius: 14px; background: var(--glass-content); border-color: var(--ui-line); }
+.ui-root .ui-hero__title { font-size: 15px; line-height: 1.55; }
+.ui-root .ui-sec { border-color: var(--ui-line); }
+.ui-root .ui-feed__row { border-color: var(--ui-line); }
+.ui-root .ui-feed__row:hover { background: var(--ui-bg-hover); }
+.ui-root .ui-feed__activity { line-height: 1.5; }
+.ui-root :is(.ui-toast, .ui-hover-tip) {
+  background: var(--ui-bg-solid);
+  border-color: var(--ui-line-strong);
+  border-radius: 13px;
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, .35);
+}
+.ui-root .ui-dialog::backdrop {
+  background: rgba(6, 13, 23, .48);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+}
+
+/* Pipeline uses the same sheet, readable type and chronological rhythm. */
+.ui-root .ui-dialog.ui-pipeline { background: var(--glass-surface); border-radius: 24px; }
+.ui-root .ui-pipeline__header { padding: 25px 28px 18px; }
+.ui-root .ui-pipeline__header h2 { font-size: 24px; letter-spacing: -.025em; }
+.ui-root .ui-pipeline__note { font-size: 12px; }
+.ui-root .ui-pipeline__filters { margin-inline: 28px; }
+.ui-root .ui-pipeline__content { padding-inline: 28px; }
+.ui-root .ui-pipeline__intro { font-size: 13px; max-width: 66ch; }
+.ui-root .ui-pipeline__row { padding-block: 23px; gap: 24px; }
+.ui-root .ui-pipeline__time { color: var(--ui-text); font-size: 16px; }
+.ui-root .ui-pipeline__row-head h3 { font-size: 15px; line-height: 1.5; }
+.ui-root .ui-pipeline__state { font-size: 11px; }
+.ui-root :is(.ui-pipeline__owner, .ui-pipeline__info p, .ui-pipeline__details, .ui-pipeline__coverage p) { font-size: 12px; }
+.ui-root .ui-pipeline__details summary { padding-block: 7px; border-radius: 5px; }
+.ui-root .ui-pipeline__details summary:hover { color: var(--ui-text); }
+.ui-root .ui-pipeline__coverage { padding-top: 25px; }
+.ui-root .ui-pipeline__coverage h3 { font-size: 14px; }
+.ui-root :is(.ui-pipeline__content, .ui-dialog__body, .ui-drawer__body, .ui-rooms, .ui-work) {
+  scrollbar-width: thin;
+  scrollbar-color: #6b839c transparent;
+}
+
+@media (max-width: 600px) {
+  .ui-root { --radius: 17px; }
+  .ui-root .ui-topbar { border-radius: 15px; }
+  .ui-root .ui-side__head { padding: 14px 13px 12px; }
+  .ui-root .ui-side__title h2 { font-size: 17px; }
+  .ui-root :is(.ui-dialog__head, .ui-popover__head) { padding: 17px; }
+  .ui-root .ui-dialog__body { padding: 17px; }
+  .ui-root .ui-dialog.ui-pipeline { width: calc(100vw - 24px); border-radius: 20px; }
+  .ui-root .ui-pipeline__header { padding: 20px 18px 16px; }
+  .ui-root .ui-pipeline__header h2 { font-size: 22px; }
+  .ui-root .ui-pipeline__filters { margin-inline: 18px; }
+  .ui-root .ui-pipeline__content { padding-inline: 18px; }
+  .ui-root .ui-pipeline__row { gap: 14px; grid-template-columns: 53px minmax(0, 1fr); }
+  .ui-root .ui-pipeline__time { font-size: 14px; }
+  .ui-root .ui-pipeline__row-head h3 { font-size: 14px; }
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .ui-root :is(.ui-panel, .ui-popover, .ui-dialog, .ui-usage-tip) { background: var(--ui-bg-solid); }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .ui-root :is(.ui-panel, .ui-popover, .ui-dialog, .ui-usage-tip),
+  .ui-root .ui-dialog.ui-pipeline {
+    background: var(--ui-bg-solid);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border-color: #8094ab;
+  }
+  .ui-root .ui-dialog::backdrop { -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .ui-root { --glass-content: #1b2633; --ui-line: #566b82; --ui-faint: #bdcbdc; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-root :is(.ui-btn, .ui-icon-btn, .ui-view-tab, .ui-work__card) { transition: none; }
+}

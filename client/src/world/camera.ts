@@ -31,6 +31,31 @@ export function overviewFrame(
   return { zoom: Math.min(freeW / r.w, freeH / r.h), cx: r.x + r.w / 2, cy: r.y + r.h / 2, dy: (m.top - m.bottom) / 2 };
 }
 
+/** No celular em pé, amplia o prédio para usar a altura disponível; o arraste revela as laterais. */
+export function automaticFrame(
+  building: Bounds,
+  viewW: number,
+  viewH: number,
+  insets: { top: number; right: number; bottom: number; left: number },
+): ReturnType<typeof overviewFrame> {
+  const full = overviewFrame(building, viewW, viewH, insets);
+  const freeW = viewW - insets.left - insets.right;
+  const freeH = viewH - insets.top - insets.bottom;
+  if (viewW > 600 || freeH < freeW * 1.2) return full;
+  const framedHeight = building.h + 3.5 * TILE;
+  const heightZoom = Math.max(0, freeH - OVERVIEW_MARGIN.top - OVERVIEW_MARGIN.bottom) / framedHeight;
+  if (heightZoom <= full.zoom) return full;
+  return { ...full, zoom: Math.max(full.zoom, Math.min(heightZoom * 0.72, full.zoom * 2.2)) };
+}
+
+/** Bounding box of occupied rooms, without decorative grounds or empty wings. */
+export function occupiedBounds(rooms: readonly Bounds[], fallback: Bounds): Bounds {
+  if (!rooms.length) return fallback;
+  const x = Math.min(...rooms.map(r => r.x));
+  const y = Math.min(...rooms.map(r => r.y));
+  return { x, y, w: Math.max(...rooms.map(r => r.x + r.w)) - x, h: Math.max(...rooms.map(r => r.y + r.h)) - y };
+}
+
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 export class Camera {
@@ -100,6 +125,9 @@ export class Camera {
 
   animateTo(x: number, y: number, zoom: number, now: number, dur = 400): void {
     const tz = Math.max(Math.min(this.minZoom, ZOOM_MIN), Math.min(ZOOM_MAX, zoom));
+    if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      this.anim = null; this.x = x; this.y = y; this.zoom = tz; this.clamp(); return;
+    }
     this.anim = { fx: this.x, fy: this.y, fz: this.zoom, tx: x, ty: y, tz, t0: now, dur };
   }
 

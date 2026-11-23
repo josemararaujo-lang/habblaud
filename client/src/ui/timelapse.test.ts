@@ -7,6 +7,8 @@ import { dayLabel, hourTicks, TimelapsePlayer } from './timelapse';
 
 // Só o contexto e o player reais: os outros painéis não participam do relógio.
 vi.mock('./daystats-launcher');
+vi.mock('./pipeline');
+vi.mock('./dialog-windows');
 vi.mock('./roomrename');
 vi.mock('./drawer');
 vi.mock('./feed');
@@ -19,6 +21,7 @@ vi.mock('./settings');
 vi.mock('./sidebar');
 vi.mock('./sound');
 vi.mock('./terminal');
+vi.mock('./pty');
 vi.mock('./toasts');
 vi.mock('./version');
 vi.mock('./update');

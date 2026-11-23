@@ -14,11 +14,19 @@ const MIN_H = 160;
 const EDGES = ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'] as const;
 type Edge = (typeof EDGES)[number];
 
-interface Box {
+export interface Box {
   x: number;
   y: number;
   w: number;
   h: number;
+}
+
+/** Keep a whole floating dialog reachable after a move, resize or display change. */
+export function containBox(b: Box, viewport: { width: number; height: number }): Box {
+  const width = Math.max(1, viewport.width - 16), height = Math.max(1, viewport.height - 16);
+  const w = Math.min(width, Math.max(Math.min(MIN_W, width), b.w));
+  const h = Math.min(height, Math.max(Math.min(220, height), b.h));
+  return { x: Math.max(8, Math.min(viewport.width - w - 8, b.x)), y: Math.max(8, Math.min(viewport.height - h - 8, b.y)), w, h };
 }
 
 export interface MovableOptions {
@@ -30,6 +38,8 @@ export interface MovableOptions {
   onChange?: (floating: boolean) => void;
   /** Chamado depois de mover ou redimensionar (ex.: reajustar um terminal). */
   onMove?: () => void;
+  /** Dialogs stay entirely inside the viewport, including their close controls. */
+  contained?: boolean;
 }
 
 export class Movable {
@@ -44,17 +54,7 @@ export class Movable {
     handle: HTMLElement,
     private opts: MovableOptions,
   ) {
-    handle.classList.add('ui-move-handle');
-    handle.addEventListener('pointerdown', (e) => this.onDown(e, handle));
-    handle.addEventListener('pointermove', (e) => this.onMove(e));
-    handle.addEventListener('pointerup', (e) => this.onUp(e, handle));
-    handle.addEventListener('pointercancel', (e) => this.onUp(e, handle));
-    handle.addEventListener('dblclick', (e) => {
-      if (interactive(e.target)) return;
-      if (this.max) this.toggleMaximize();
-      else this.dock();
-    });
-    for (const edge of EDGES) el.append(this.edgeHandle(edge));
+    this.bindHandle(handle);
     const saved = load(opts.key);
     if (saved && this.allowed()) this.float(saved, false);
     addEventListener('resize', () => {
@@ -80,9 +80,47 @@ export class Movable {
     }
   }
 
+  /** Rebind a header when a detail dialog replaces its content. */
+  bindHandle(handle: HTMLElement): void {
+    this.drag = null;
+    this.sizing = null;
+    this.el.classList.remove('is-dragging', 'is-resizing');
+    handle.classList.add('ui-move-handle');
+    if (this.opts.contained) {
+      handle.tabIndex = 0;
+      handle.setAttribute('aria-label', tr('Mover janela: use as setas ou arraste'));
+      handle.addEventListener('keydown', e => {
+        if (interactive(e.target) || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const r = this.el.getBoundingClientRect(), step = e.shiftKey ? 48 : 16;
+        this.place({ x: r.left + (e.key === 'ArrowRight' ? step : e.key === 'ArrowLeft' ? -step : 0), y: r.top + (e.key === 'ArrowDown' ? step : e.key === 'ArrowUp' ? -step : 0), w: r.width, h: r.height });
+      });
+    }
+    handle.addEventListener('pointerdown', (e) => this.onDown(e, handle));
+    handle.addEventListener('pointermove', (e) => this.onMove(e));
+    handle.addEventListener('pointerup', (e) => this.onUp(e, handle));
+    handle.addEventListener('pointercancel', (e) => this.onUp(e, handle));
+    handle.addEventListener('dblclick', (e) => {
+      if (interactive(e.target)) return;
+      if (this.max) this.toggleMaximize();
+      else this.dock();
+    });
+    if (!this.el.querySelector('.ui-resize')) for (const edge of EDGES) this.el.append(this.edgeHandle(edge));
+  }
+
   get floating(): boolean {
     return this.box !== null;
   }
+
+  /** Explicit placement, shared by compact mode and keyboard controls. */
+  place(box: Box): void {
+    this.float(box, true);
+    this.scheduleSave();
+  }
+
+  /** Reapply the current box after a dialog becomes visible. */
+  refresh(): void { if (this.box && this.allowed()) { this.el.classList.add('is-floating'); this.apply(this.box); } }
 
   /** Ocupando a tela toda do Habblaud (por cima de tudo; não arrasta). */
   get maximized(): boolean {
@@ -136,6 +174,20 @@ export class Movable {
     const g = document.createElement('div');
     g.className = `ui-resize ui-resize--${edge}`;
     g.setAttribute('aria-hidden', 'true');
+    if (edge === 'se' && this.opts.contained) {
+      g.removeAttribute('aria-hidden');
+      g.setAttribute('role', 'button');
+      g.setAttribute('aria-label', tr('Redimensionar janela: use as setas ou arraste'));
+      g.title = tr('Redimensionar janela: use as setas ou arraste');
+      g.tabIndex = 0;
+      g.addEventListener('keydown', e => {
+        if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const r = this.el.getBoundingClientRect(), step = e.shiftKey ? 48 : 16;
+        this.place({ x: r.left, y: r.top, w: r.width + (e.key === 'ArrowRight' ? step : e.key === 'ArrowLeft' ? -step : 0), h: r.height + (e.key === 'ArrowDown' ? step : e.key === 'ArrowUp' ? -step : 0) });
+      });
+    }
     g.addEventListener('pointerdown', (e) => {
       if (e.button !== 0 || this.max || !this.allowed()) return;
       e.preventDefault();
@@ -228,12 +280,18 @@ export class Movable {
    * ficaria coberta e não haveria por onde arrastar de volta (nem fechar, no terminal).
    */
   private minTop(): number {
+    if (this.opts.contained) return 8;
     const s = getComputedStyle(this.el);
     return (parseFloat(s.getPropertyValue('--top-h')) || 0) + (parseFloat(s.getPropertyValue('--gap')) || 0);
   }
 
   /** Aplica a caixa, mantendo um pedaço da janela (e a barra) dentro da tela. */
   private apply(b: Box): void {
+    if (this.opts.contained) {
+      this.box = containBox(b, { width: innerWidth, height: innerHeight });
+      for (const [key, value] of Object.entries({ left: this.box.x, top: this.box.y, width: this.box.w, height: this.box.h })) this.el.style.setProperty(key, `${Math.round(value)}px`);
+      return;
+    }
     const w = Math.max(MIN_W, Math.min(b.w, innerWidth));
     const x = Math.min(innerWidth - KEEP_VISIBLE, Math.max(KEEP_VISIBLE - w, b.x));
     // O limite de cima vence o de baixo: numa janela baixa demais, a barra continua alcançável.

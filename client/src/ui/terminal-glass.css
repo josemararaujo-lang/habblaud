@@ -1,0 +1,71 @@
+/* The transcript reader is an operational sheet, not a permanently dark shell. */
+.ui-root .ui-term {
+  --term-fg: var(--ui-text);
+  --term-dim: var(--ui-muted);
+  background: var(--glass-surface);
+  color: var(--term-fg);
+  border-color: var(--ui-line-strong);
+  border-radius: 20px;
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(28px) saturate(145%);
+  backdrop-filter: blur(28px) saturate(145%);
+  animation: ui-materialize 180ms ease-out;
+}
+.ui-root :is(.ui-term__bar, .ui-term__tools, .ui-term__foot, .ui-ttabs) { background: transparent; border-color: var(--ui-line); }
+.ui-root .ui-term__bar { min-height: 44px; height: auto; padding: 7px 8px 7px 14px; }
+.ui-root .ui-term__bar::after { height: 1px; background: var(--ui-line); }
+.ui-root .ui-term__body { background: var(--nav-pane); }
+.ui-root .ui-term__scroll { font-size: 13px; line-height: 1.6; scrollbar-color: var(--ui-line-strong) transparent; }
+.ui-root .ui-term__row--user { background: var(--ui-bg-hover); border-radius: 9px; padding-block: 8px; }
+.ui-root .ui-term__row--user .ui-term__col,
+.ui-root .ui-term__row--assistant .ui-term__dot { color: var(--ui-text); }
+.ui-root .ui-term__in { background: var(--ui-field); color: var(--ui-text); border-color: var(--ui-line); border-radius: 9px; padding: 8px 10px; }
+.ui-root .ui-term .ui-md__block { background: var(--ui-field); border-color: var(--ui-line); border-radius: 9px; }
+.ui-root .ui-term .ui-md__pre { color: var(--ui-text); scrollbar-color: var(--ui-line-strong) transparent; }
+.ui-root .ui-term__copy { background: var(--ui-bg-solid); color: var(--ui-muted); border-color: var(--ui-line-strong); border-radius: 7px; }
+.ui-root .ui-term__copy:hover:not(.is-done, .is-fail) { color: var(--ui-text); border-color: var(--ui-accent); }
+.ui-root .ui-term__copy.is-fail { color: var(--ui-danger); border-color: var(--ui-danger); }
+.ui-root :is(.ui-term__in--json, .ui-term__in--text, .ui-term__result:not(.is-error)) { color: var(--ui-muted); }
+.ui-root .ui-term__dl.is-add { background: color-mix(in srgb, var(--st-working) 12%, transparent); color: var(--st-working); }
+.ui-root .ui-term__dl.is-del { background: color-mix(in srgb, var(--ui-danger) 10%, transparent); color: var(--ui-danger); }
+.ui-root .ui-term__dl.is-hunk { color: var(--ui-accent); }
+.ui-root .ui-term__row--thinking .ui-term__mark { color: var(--ui-muted); }
+.ui-root .ui-term__status.is-working .ui-term__status-text { color: var(--st-working); }
+.ui-root :is(.ui-term__prompt, .ui-term__search) { background: var(--ui-field); color: var(--ui-text); border-radius: 10px; border-color: var(--ui-line-strong); }
+.ui-root .ui-term__search-input { color: var(--ui-text); }
+.ui-root .ui-term__search-input::placeholder { color: var(--ui-faint); opacity: 1; }
+.ui-root .ui-term__note { white-space: normal; line-height: 1.45; text-align: center; }
+.ui-root .ui-term__note::before, .ui-root .ui-term__note::after { height: 1px; background: var(--ui-line); }
+.ui-root .ui-term__new { background: var(--ui-primary); color: var(--ui-primary-ink); border-color: transparent; border-radius: 10px; box-shadow: var(--glass-control-shadow); }
+.ui-root .ui-term__new:hover { background: color-mix(in srgb, var(--ui-primary) 88%, var(--ui-text)); }
+.ui-root .ui-ttab { color: var(--ui-muted); border-radius: 10px; }
+.ui-root .ui-ttab[aria-selected='true'] { background: var(--nav-selection); color: var(--nav-ink); border-color: transparent; box-shadow: var(--glass-control-shadow); }
+.ui-root .ui-ttab[aria-selected='true'] :is(.ui-ttab__name, .ui-ttab__doing) { color: inherit; }
+.ui-root .ui-hist__day-label { background: var(--nav-pane-solid); padding-block: 10px 6px; }
+.ui-root .ui-hist__item { padding: 10px; margin-block: 3px; }
+.ui-root .ui-hist__meta { flex-wrap: wrap; gap: 3px 7px; }
+.ui-root .ui-hist__foot { padding-block: 10px; }
+/* Inline editor: one glass shell belongs to the drawer, not another blur inside it. */
+.ui-root .ui-char { background: var(--nav-pane); box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; border-radius: 14px; padding: 14px; }
+.ui-root .ui-char__top { background: transparent; }
+.ui-root .ui-char__swatch { width: 24px; height: 24px; border-radius: 6px; }
+.ui-root .ui-char__actions { align-items: stretch; }
+.ui-root .ui-char__actions .ui-btn { min-height: 34px; }
+@media (max-width: 600px) {
+  .ui-root .ui-term__bar { gap: 5px; padding-inline: 9px; }
+  .ui-root .ui-term__who { padding-left: 6px; gap: 5px; }
+  .ui-root .ui-term__bar .ui-role { display: none; }
+  .ui-root .ui-term__tools { gap: 8px; padding: 8px; }
+  .ui-root .ui-term__scroll { padding: 12px; }
+  .ui-root .ui-char__top { grid-template-columns: minmax(0, 1fr); align-items: start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-root .ui-term { animation: none; transition: none; }
+  .ui-root .ui-term__new { animation: none; }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .ui-root .ui-term { background: var(--ui-bg-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .ui-root .ui-term { background: var(--ui-bg-solid); }
+}

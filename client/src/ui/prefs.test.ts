@@ -54,7 +54,7 @@ describe('preferências', () => {
     expect(() => savePrefs(broken, DEFAULT_PREFS)).not.toThrow();
   });
   it('extrai só as opções do mundo', () => {
-    expect(worldOptionsFrom({ ...DEFAULT_PREFS, daylight: 'day' })).toEqual({ showNames: true, bubbles: 'important', liveliness: 'normal', dayNight: false, daylight: 'day', theme: 'auto' });
+    expect(worldOptionsFrom({ ...DEFAULT_PREFS, daylight: 'day' })).toEqual({ showNames: true, bubbles: 'important', liveliness: 'calm', dayNight: false, daylight: 'day', theme: 'auto' });
     expect(worldOptionsFrom({ ...DEFAULT_PREFS, daylight: 'night' })).toMatchObject({ dayNight: true, daylight: 'night' });
   });
   it('ciclo dia/noite: valida o modo e migra o interruptor antigo', () => {
@@ -122,4 +122,15 @@ describe('migração do nome antigo (CodeTown)', () => {
     expect(migrateLegacyKeys(full)).toBe(0);
     expect(Object.fromEntries(full.data)).toEqual({ 'codetown:prefs': '{}' });
   });
+});
+
+
+it('focus mode temporarily reduces motion and preserves the saved choices', () => {
+  const saved = sanitizePrefs({ focusMode: true, bubbles: 'all', liveliness: 'lively', compactCards: false, mainAgentsOnly: true, feedMode: 'errors' });
+  const st = memoryStorage();
+  savePrefs(st, saved);
+  expect(loadPrefs(st)).toMatchObject({ compactCards: false, mainAgentsOnly: true, focusMode: true, feedMode: 'errors' });
+  expect(worldOptionsFrom(saved)).toMatchObject({ bubbles: 'important', liveliness: 'calm' });
+  expect(worldOptionsFrom({ ...saved, focusMode: false })).toMatchObject({ bubbles: 'all', liveliness: 'lively' });
+  expect(worldOptionsFrom({ ...saved, bubbles: 'none' }).bubbles).toBe('none');
 });

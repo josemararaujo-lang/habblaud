@@ -258,3 +258,14 @@ describe('pathFromUri', () => {
     expect(pathFromUri('file:///home/user/a%2Fb.png')).toBe('/home/user/a/b.png');
   });
 });
+
+it('keeps the latest substantive request as the session goal across short follow-ups', () => {
+  const { state } = feed([
+    R.meta(T),
+    R.user(T, 't1', 'u1', 'Arrume o teste quebrado da loja'),
+    R.user(T, 't2', 'u2', '<in-app-browser-context>metadata</in-app-browser-context>\n## My request:\nMelhore o alinhamento e a organização das salas'),
+    R.user(T, 't3', 'u3', 'continue'),
+  ]);
+  expect(state.title).toBe('Melhore o alinhamento e a organização das salas');
+  expect(describeCodexTool('js', { title: 'Conferir os botões' }, 'mcp__cua_repl').desc).toMatchObject({ kind: 'browser', text: 'Conferir os botões' });
+});

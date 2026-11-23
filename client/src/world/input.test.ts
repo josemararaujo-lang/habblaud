@@ -100,10 +100,10 @@ describe('teclado da câmera', () => {
 
 describe('modalOpen', () => {
   /** `document` mínimo: alguns elementos e o `querySelector` dos dois seletores que a função usa. */
-  function installDocument(els: { tag: string; open?: boolean; ariaModal?: boolean }[]): () => void {
+  function installDocument(els: { tag: string; open?: boolean; ariaModal?: boolean; nonmodal?: boolean }[]): () => void {
     const prev = globalThis.document;
     const matches = (sel: string, e: (typeof els)[number]): boolean => {
-      if (sel === 'dialog[open]') return e.tag === 'dialog' && !!e.open;
+      if (sel === 'dialog[open]:not([data-nonmodal])') return e.tag === 'dialog' && !!e.open && !e.nonmodal;
       if (sel === ':not(dialog)[aria-modal="true"]') return e.tag !== 'dialog' && !!e.ariaModal;
       if (sel === '[aria-modal="true"]') return !!e.ariaModal;
       if (sel === ':popover-open') return false;
@@ -137,5 +137,14 @@ describe('modalOpen', () => {
         restore();
       }
     }
+  });
+
+  it('a esteira compacta deixa o escritório utilizável, mas protege o teclado dentro da janela', async () => {
+    const { modalOpen } = await import('./input');
+    const restore = installDocument([{ tag: 'dialog', open: true, nonmodal: true }]);
+    try {
+      expect(modalOpen(null)).toBe(false);
+      expect(modalOpen({ closest: () => ({}) } as unknown as HTMLElement)).toBe(true);
+    } finally { restore(); }
   });
 });

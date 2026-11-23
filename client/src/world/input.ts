@@ -27,7 +27,7 @@ export function modalOpen(target: HTMLElement | null): boolean {
   if (target?.closest?.('dialog, [popover], [role="dialog"], [aria-modal="true"]')) return true;
   if (typeof document === 'undefined') return false;
   // Um <dialog> fechado continua no DOM (com os atributos que tiver): só o aberto conta.
-  if (document.querySelector('dialog[open], :not(dialog)[aria-modal="true"]')) return true;
+  if (document.querySelector('dialog[open]:not([data-nonmodal]), :not(dialog)[aria-modal="true"]')) return true;
   try {
     return !!document.querySelector(':popover-open');
   } catch {

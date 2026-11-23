@@ -3,6 +3,7 @@
 // chama commit() (com throttle) para obter o snapshot novo, o feed e os avisos pendentes.
 import type {
   AccountInfo,
+  ExternalAgentInfo,
   Activity,
   AgentDetail,
   AgentInfo,
@@ -23,6 +24,7 @@ import type {
   TaskItem,
   UpdateStatus,
 } from '../../shared/types';
+import { teamUniform } from '../../shared/team-uniform';
 import { SHELL_WAIT_TOOL, SPECIAL, type ShellOutcome } from '../../shared/activity';
 import { nameKey, type AppearanceParts } from '../../shared/appearance';
 import { DemoSimulator } from '../../shared/demo/simulator';
@@ -63,6 +65,7 @@ export interface OfficeDeps {
   /** Contas reais, com o nº de sessões abertas de cada uma. */
   accounts: (sessions: ReadonlyMap<string, number>) => AccountInfo[];
   sources: () => SourceInfo[];
+  externalAgents?: () => ExternalAgentInfo[];
   /** Nome amigável da conta (ex.: "Conta D") para os avisos. */
   accountName: (id: string) => string | undefined;
   /** Terminal ligado (ver OfficeSnapshot.meta.terminal e ServerConfig.terminal). */
@@ -98,6 +101,7 @@ export interface TranscriptSummary {
 
 export interface MainInput {
   id: string;
+  displayName?: string;
   /** Ferramenta do agente (AgentInfo.provider); ausente = 'claude'. Os subagentes herdam a do principal. */
   provider?: Provider;
   account: string;
@@ -172,7 +176,7 @@ function zeroStats(): AgentStats {
 function cloneAgent(a: AgentInfo): AgentInfo {
   const c: AgentInfo = { ...a, recent: a.recent.slice(), tasks: a.tasks.map((t) => ({ ...t })), stats: { ...a.stats } };
   if (a.shells) c.shells = a.shells.map((j) => ({ ...j }));
-  if (a.parts) c.parts = { ...a.parts };
+  c.parts = teamUniform(a.provider, a.parts);
   return c;
 }
 
@@ -284,7 +288,7 @@ export class Office {
 
   /** Agentes reais presentes (inclusive em período de graça). */
   list(): AgentInfo[] {
-    return [...this.agents.values()].map((r) => r.info);
+    return [...this.agents.values()].map((r) => ({ ...r.info, parts: teamUniform(r.info.provider, r.info.parts) }));
   }
 
   /** Pasta do projeto da sala (cwd original, sem normalizar). */
@@ -323,7 +327,7 @@ export class Office {
       return;
     }
     const roomId = normalizeCwd(p.cwd);
-    this.ensureRoom(roomId, now);
+    this.ensureRoom(roomId, now, p.cwd);
     const chosen = this.roomCharacter(roomId, p.id, p.sessionId);
     // A mesma sessão retomada noutro processo (ex.: "Assumir aqui") mantém o nome, mesmo com o processo antigo
     // ainda saindo do escritório.
@@ -332,7 +336,7 @@ export class Office {
       id: p.id,
       kind: 'main',
       roomId,
-      name: person.name,
+      name: p.displayName ?? person.name,
       look: person.look,
       role: p.role,
       sessionId: p.sessionId,
@@ -361,6 +365,18 @@ export class Office {
   }
 
   /** Mesmo processo, sessão nova (/clear, /resume): o personagem continua, tarefas e números zeram. */
+  observeDesktop(p: MainInput, name: string, eventAt: number): void {
+    this.addMain(p);
+    const info = this.agents.get(p.id)!.info;
+    const text = p.status === 'working' ? tr('Resposta em transmissão no app') : p.status === 'waiting' ? tr('Responder no app') : tr('Estado não informado pelo app');
+    const title = `${name} · ${tr('Metadados locais · sem cópia do conteúdo')}`;
+    if (info.title === title && info.lastEventAt === eventAt && info.activity?.text === text) return;
+    info.title = title;
+    info.lastEventAt = eventAt;
+    info.activity = { id: `${p.id}:${eventAt}:${p.status}`, at: eventAt, kind: 'other', icon: '◉', text };
+    this.markDirty();
+  }
+
   switchSession(id: string, sessionId: string): void {
     const rec = this.agents.get(id);
     if (!rec || rec.info.sessionId === sessionId) return;
@@ -982,7 +998,7 @@ export class Office {
       const { canMessage: _off, ...rest } = a;
       return rest;
     });
-    const trim = (a: AgentInfo): AgentInfo => (a.recent.length > SNAPSHOT_RECENT ? { ...a, recent: a.recent.slice(-SNAPSHOT_RECENT) } : a);
+    const trim = (a: AgentInfo): AgentInfo => ({ ...a, parts: teamUniform(a.provider, a.parts), recent: a.recent.length > SNAPSHOT_RECENT ? a.recent.slice(-SNAPSHOT_RECENT) : a.recent });
     const sessions = new Map<string, number>();
     for (const a of real) if (a.kind === 'main' && a.status !== 'offline') sessions.set(a.account, (sessions.get(a.account) ?? 0) + 1);
     const ptys = this.deps.ptys?.();
@@ -991,6 +1007,7 @@ export class Office {
       serverTime: now,
       rooms,
       agents: [...real, ...demoAgents].map(trim),
+      ...(!this.isDemo() && this.deps.externalAgents ? { externalAgents: this.deps.externalAgents() } : {}),
       accounts: [...this.deps.accounts(sessions), ...(this.demoSnap?.accounts ?? [])],
       ...(ptys ? { ptys: ptys.list } : {}),
       meta: {
@@ -1038,9 +1055,9 @@ export class Office {
     return out;
   }
 
-  private ensureRoom(roomId: string, now: number): void {
+  private ensureRoom(roomId: string, now: number, originalPath: string): void {
     if (this.rooms.has(roomId)) return;
-    this.rooms.set(roomId, { path: roomId, createdAt: now });
+    this.rooms.set(roomId, { path: originalPath.trim(), createdAt: now });
     this.recomputeRoomNames();
     this.notice('room', roomId, 'info', tr('🏗️ Nova sala: {0}', [this.roomName(roomId)]), roomId);
   }

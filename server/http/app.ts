@@ -22,8 +22,10 @@ import { AUDIO_BODY_MAX, type DictationService } from '../dictation/dictation';
 import type { DeliveryIndex } from '../deliveries/deliveries';
 import type { FileFetcher } from '../deliveries/fetcher';
 import { HOST_WAIT_MS } from '../host-wait';
+import type { PipelineView } from '../../shared/pipeline';
 
 export interface ApiDeps {
+  pipeline?: () => PipelineView;
   office: Office;
   hub: Hub;
   accounts: AccountsService;
@@ -353,6 +355,13 @@ export function createApiHandler(deps: ApiDeps): (req: IncomingMessage, res: Ser
     if (path === '/api/stream') {
       if (method !== 'GET') methodNotAllowed(res, 'GET');
       else hub.attach(req, res);
+      return true;
+    }
+    if (path === '/api/pipeline') {
+      if (!isRead) methodNotAllowed(res, 'GET');
+      else if (isRemote(req) || !isLoopbackHost(req.headers.host)) sendJson(res, 403, { error: 'local_only' });
+      else if (!deps.pipeline) sendJson(res, 404, { error: 'unavailable' });
+      else sendJson(res, 200, deps.pipeline());
       return true;
     }
     if (path === '/api/snapshot') {

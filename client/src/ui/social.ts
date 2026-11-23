@@ -38,7 +38,7 @@ export class SocialSection {
   private keys = { traits: '', bonds: '', ledger: '' };
 
   constructor(private ctx: UiContext) {
-    const title = h('h3', { class: 'ui-sec__title', text: tr('Vida social') });
+    const title = h('h3', { class: 'ui-sec__title', text: tr('Vida social · simulação') });
     this.extra = h('span', { class: 'ui-sec__extra ui-social__balance' });
     this.doing = h('p', { class: 'ui-social__doing' });
     this.coins = h('strong', { class: 'ui-social__coins' });
@@ -60,9 +60,10 @@ export class SocialSection {
     );
     setTitle(wallet, tr('Moedinhas fictícias: entra no escritório com um saldo, ganha 🪙10 por tarefa concluída e 🪙5 por pedido atendido, e aposta com os colegas. Ficam salvas neste navegador.'));
     this.el = h(
-      'section',
+      'details',
       { class: 'ui-sec ui-social' },
-      h('div', { class: 'ui-sec__head' }, title, this.extra),
+      h('summary', { class: 'ui-sec__head' }, title, this.extra),
+      h('p', { class: 'ui-section-hint', text: tr('As interações dos personagens são fictícias. As mensagens de trabalho aparecem em Colaboração registrada.') }),
       this.doing,
       wallet,
       this.traits,

@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { Activity } from '../../shared/types';
 import { nameKey } from '../../shared/appearance';
 import { hash32 } from '../../shared/hash';
-import { NAME_POOL } from '../../shared/names';
+import { NAME_POOL } from '../../shared/hunter-names';
 import { setQuiet } from '../log';
 import { tempDir } from '../test/fixtures';
 import { NameStore } from './names';
@@ -796,4 +796,48 @@ describe('Office: personagem do projeto', () => {
     office.switchSession('acc:2', 's2b');
     expect(names.character('/p/api')?.owner).toBe('s2b');
   });
+});
+
+it('shares a room across Claude and Codex Unicode spellings while preserving the original folder path', () => {
+  const { office, now } = makeOffice();
+  const original = '/p/Estruturação'.normalize('NFD');
+  for (const [id, provider, cwd] of [['a', 'claude', original], ['b', 'codex', original.normalize('NFC')]] as const) {
+    office.addMain({ id, provider, account: provider, sessionId: id, cwd, role: 'Agente principal', startedAt: now(), status: 'working' });
+  }
+  const snap = office.commit().snapshot;
+  expect(snap.rooms).toHaveLength(1);
+  expect(new Set(snap.agents.map(a => a.roomId)).size).toBe(1);
+  expect(snap.rooms[0].path).toBe(original);
+});
+
+it('keeps the most recently customized character when persisted Unicode room keys converge', () => {
+  const tmp = tempDir();
+  try {
+    const file = join(tmp.dir, 'names.json');
+    const path = '/p/Estruturação';
+    writeFileSync(file, JSON.stringify({ version: 1, names: {}, rooms: {
+      [path]: { name: 'Ana', look: 'f', seed: 1, at: 1 },
+      [path.normalize('NFD')]: { name: 'Bia', look: 'f', seed: 2, at: 2 },
+    } }));
+    const names = new NameStore(file);
+    names.load();
+    expect(names.character(path)?.name).toBe('Bia');
+    expect(names.reservedNames().size).toBe(1);
+  } finally { tmp.cleanup(); }
+});
+
+it('keeps stable character aliases and real desktop identity in details without reporting completion', () => {
+  const { office, now } = makeOffice();
+  const input = { id: 'gemini:desktop', provider: 'gemini' as const, account: 'gemini', sessionId: 'gemini:desktop', cwd: '/Applications/Gemini.app', role: 'Observação local do app', startedAt: now(), status: 'working' as const };
+  office.observeDesktop(input, 'Gemini', now() - 1000);
+  const first = office.commit().snapshot.agents[0];
+  expect(NAME_POOL.some(p => p.name === first.name)).toBe(true);
+  expect(first).toMatchObject({ title: 'Gemini · Metadados locais · sem cópia do conteúdo', provider: 'gemini', status: 'working' });
+  office.observeDesktop({ ...input, status: 'unknown' }, 'Gemini', now() - 1000);
+  const result = office.commit();
+  expect(result.snapshot.agents[0]).toMatchObject({ name: first.name, status: 'unknown', lastEventAt: now() - 1000 });
+  expect(result.snapshot.agents[0].activity?.text).toBe('Estado não informado pelo app');
+  expect(result.feed.some(f => f.activity.kind === 'done')).toBe(false);
+  office.closeMain(input.id);
+  expect(office.commit().snapshot.agents[0].status).toBe('offline');
 });

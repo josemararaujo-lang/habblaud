@@ -65,6 +65,8 @@ export interface WorldApi {
   focusRoom(id: string): void;
   /** Enquadra o prédio inteiro. */
   overview(): void;
+  /** Fit rooms currently present, excluding empty wings. */
+  focusWork?(): void;
   zoomBy(factor: number): void;
   getOptions(): WorldOptions;
   setOptions(o: Partial<WorldOptions>): void;

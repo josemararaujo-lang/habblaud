@@ -599,6 +599,7 @@ Codex account chip is hollow and carries the **CODEX** tag.
   the session's queue and Codex picks it up when it finishes what it's doing (up to about 10 seconds later). In Node mode
   Habblaud runs the command itself; **in Docker**, keep `npm run codex:bridge` running on the Mac (the container can't
   see your Codex).
+  To connect only messaging, use `npm run codex:bridge -- --messages-only`; this mode skips the file, dictation and agent-start helpers.
 - **5-hour and weekly usage:** comes from Codex's own files and only refreshes while some session is running; the card
   shows how old the numbers are and "no quota" when the workspace has run out of credits.
 - **When the session comes in:** with the first message (that's when Codex records the project folder); a CLI that's open
@@ -1286,3 +1287,53 @@ forgotten three days after the agent leaves.
 <p align="center">
   Made with ☕ and lots of <a href="https://code.claude.com">Claude Code</a> agents.
 </p>
+
+### Grok Bot e Gemini no painel Agora
+
+O painel lê somente os repasses e resultados do dia em `~/AgenteArquivos/esteira-manha`
+(ou `HABBLAUD_HANDOFF_DIR`). A data segue America/Bahia. A cada 30 segundos confere
+o ID `manha-AAAA-MM-DD-{gemini,grok-bot}` nas duas pontas. Sem resultado validado,
+não declara execução nem conclusão. Não lê bancos privados dos apps, não dispara
+repasses e não envia mensagens. Os cartões cobrem essa rotina; outras conversas
+não têm telemetria. Nenhum personagem ou consumo é inventado no escritório/World.
+
+### Personagens dos apps desktop (macOS)
+
+As fontes locais Grok Bot e Gemini observam os caches existentes a cada 2 s e verificam
+se o processo do app está aberto. Não operam a interface, não chamam endpoints privados
+e não enviam prompts. Fechar o app retira seus personagens. Falha de leitura invalida
+o estado anterior. O cache pode atrasar em relação à nuvem; a frequência de consulta
+não é garantia de que o fornecedor persista todos os eventos ao vivo.
+
+Grok Bot: nomes e IDs vêm do roster local (bots visíveis, com atividade nos últimos
+7 dias); `isStreaming` recente é necessário para mostrar trabalho, e pedido humano
+exige flag explícita recente. Gemini: um personagem representa o app; somente a data
+de atualização não criptografada é lida de `ChatInfo2.store`, aberto em modo somente
+leitura. O conteúdo criptografado não é lido nem decifrado. O cache do Gemini não
+fornece status de execução: ele aparece em **Sem sinal**, com **Estado não informado
+pelo app**, mesmo que uma conversa esteja rodando na nuvem. Portanto, essa integração
+ainda não oferece a mesma precisão de execução do Claude/Codex.
+
+Os metadados ficam no escritório local; esses personagens são excluídos do uplink
+do Habblaud World. Não há transcrição, permissão de envio, consumo ou conclusão
+inventados. Os cartões da rotina por arquivos continuam sendo uma evidência distinta.
+
+
+### Minha esteira
+
+Em **Configurações → Aparência → Cor da interface**, escolha **Claro**, **Escuro** ou **Automático**. A troca é imediata e fica salva neste navegador. Automático acompanha a aparência do sistema; o tema sazonal e o ciclo dia/noite do escritório continuam independentes.
+
+**Compactar** transforma a esteira em uma janela flutuante dentro do Habblaud, mantendo o escritório utilizável. **Expandir** volta à leitura completa com fontes e comprovantes. Arraste o cabeçalho para mover; puxe as bordas ou o canto inferior direito para redimensionar. O botão de restauração (ou duplo clique no cabeçalho) devolve tamanho e posição ao padrão. As escolhas ficam salvas neste navegador. Cabeçalhos e a alça do canto também aceitam as setas do teclado; Shift aumenta o passo. Diálogos como Ajuda, Meu dia e Configurações usam o mesmo mecanismo. O texto se reorganiza pela largura de cada janela, inclusive em um monitor amplo.
+
+O botão **Esteira** (ou `/?esteira=1`) abre a programação em leitura: **Manhã**
+e **Todas as rotinas**, agente executor, horário em America/Bahia, previsão do
+próximo disparo e resultado com ID correspondente ao repasse. Um resultado antigo
+não comprova execução de hoje. A tela relê os arquivos a cada 30 s enquanto aberta.
+
+O endpoint `/api/pipeline` é restrito ao acesso local e não permite alterações.
+Lê apenas metadados das automações Codex, arquivos da esteira e nomes das definições
+Claude. Não transmite prompts nem inclui esses dados no World. Observações de agendas
+nativas ficam em `~/.habblaud/pipeline-observations.json`, com fonte e horário;
+após seis horas são tratadas como não revalidadas. Definição local ou documentação
+não equivale a agenda ativa. Gemini é despachado pelo Codex; uma agenda nativa vazia
+não elimina essa etapa. Falhas de acesso ficam explícitas, sem assumir ausência.

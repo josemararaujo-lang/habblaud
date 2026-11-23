@@ -5,6 +5,7 @@ import { createAvatar, createAvatarPlaceholder, updateAvatar } from './avatar';
 import type { UiComponent, UiContext } from './context';
 import { h, KeyedList, setAttr, setHidden, setText, setTitle } from './dom';
 import { formatClock } from './format';
+import { feedRows, matchesFeedMode, matchesFeedSelection, type FeedRow } from './feed-focus';
 import { ICONS } from './icons';
 import { shellDoneKind } from './model';
 import { officeIsEmpty } from './overlays';
@@ -12,16 +13,16 @@ import { createAccountChip, updateAccountChip } from './widgets';
 import { tr } from '../../../shared/i18n';
 
 const VISIBLE = 50;
+const BUFFER = 200;
 
 type AgentMeta = Pick<AgentInfo, 'seed' | 'look' | 'kind' | 'account' | 'parts'>;
 
 export class FeedPanel implements UiComponent {
   readonly el: HTMLElement;
   private list: HTMLElement;
-  private rows: KeyedList<FeedItem>;
+  private rows: KeyedList<FeedRow>;
   private items: FeedItem[] = [];
   private pending: FeedItem[] = [];
-  private pendingCounts = new Map<string | undefined, number>();
   private hovering = false;
   private scrolledUp = false;
   private newPill: HTMLButtonElement;
@@ -29,12 +30,18 @@ export class FeedPanel implements UiComponent {
   private toggleBtn: HTMLButtonElement;
   private empty: HTMLElement;
   private filterNote: HTMLElement;
+  private importantBtn: HTMLButtonElement;
+  private allBtn: HTMLButtonElement;
+  private errorsBtn: HTMLButtonElement;
+  private scopeBtn: HTMLButtonElement;
+  private followingSelection = false;
   /** Aparência/conta dos agentes com eventos guardados (o feed sobrevive à saída do agente). */
   private meta = new Map<string, AgentMeta>();
 
   constructor(private ctx: UiContext) {
     this.list = h('ol', { class: 'ui-feed__list', role: 'log', attrs: { 'aria-label': tr('Eventos recentes'), 'aria-live': 'off' } });
-    this.rows = new KeyedList<FeedItem>(this.list, {
+    this.rows = new KeyedList<FeedRow>(this.list, {
+      animate: false,
       key: (f) => f.id,
       create: (f) => this.createRow(f),
       update: (li, f) => this.updateRow(li, f),
@@ -43,6 +50,11 @@ export class FeedPanel implements UiComponent {
     this.newPill = h('button', { class: 'ui-feed__new', type: 'button', hidden: true, on: { click: () => this.resume() } });
     this.ticker = h('span', { class: 'ui-feed__ticker', attrs: { 'aria-hidden': 'true' } });
     this.filterNote = h('span', { class: 'ui-feed__filter', hidden: true });
+    this.importantBtn = h('button', { class: 'ui-feed__mode-btn', type: 'button', text: tr('Importantes'), on: { click: () => ctx.updatePrefs({ feedMode: 'important' }) } });
+    this.allBtn = h('button', { class: 'ui-feed__mode-btn', type: 'button', text: tr('Tudo'), on: { click: () => ctx.updatePrefs({ feedMode: 'all' }) } });
+    this.errorsBtn = h('button', { class: 'ui-feed__mode-btn', type: 'button', text: tr('Erros'), on: { click: () => ctx.updatePrefs({ feedMode: 'errors' }) } });
+    this.scopeBtn = h('button', { class: 'ui-feed__mode-btn ui-feed__scope', type: 'button', text: tr('Seleção'), on: { click: () => { this.followingSelection = !this.followingSelection; ctx.invalidate(); } } });
+    const modes = h('div', { class: 'ui-feed__modes', role: 'group', attrs: { 'aria-label': tr('Filtrar atividade') } }, this.importantBtn, this.errorsBtn, this.allBtn, this.scopeBtn);
     this.toggleBtn = h('button', { class: 'ui-icon-btn ui-icon-btn--sm', type: 'button', on: { click: () => ctx.togglePanel('feed') } });
     const scroller = h('div', { class: 'ui-feed__scroll' }, this.list, this.empty);
     scroller.addEventListener('scroll', () => {
@@ -57,6 +69,7 @@ export class FeedPanel implements UiComponent {
         { class: 'ui-feed__head' },
         h('button', { class: 'ui-feed__title', type: 'button', on: { click: () => ctx.togglePanel('feed') } }, h('h2', { text: tr('Atividade') }), this.filterNote, this.ticker),
         this.newPill,
+        modes,
         this.toggleBtn,
       ),
       scroller,
@@ -72,7 +85,7 @@ export class FeedPanel implements UiComponent {
       this.appendPending(fresh);
       ctx.invalidate();
     });
-    this.appendPending(ctx.store.feed.slice(-VISIBLE));
+    this.appendPending(ctx.store.feed.slice(-BUFFER));
     // Partidas e apostas resolvidas no escritório (vida social) entram no feed como eventos locais.
     ctx.world.onSocialEvent?.((e) => {
       const a = ctx.agent(e.agentId);
@@ -104,28 +117,37 @@ export class FeedPanel implements UiComponent {
 
     // Filtro por conta da barra lateral: também vale para o feed.
     const hidden = this.ctx.prefs.hiddenAccounts;
-    const filtering = hidden.length > 0;
-    const visible = filtering ? this.items.filter((f) => this.visible(f)) : this.items;
-    const pending = filtering ? this.pending.filter((f) => this.visible(f)) : this.pending;
-    let newCount = 0;
-    for (const [account, count] of this.pendingCounts) if (!account || !hidden.includes(account)) newCount += count;
+    const mode = this.ctx.prefs.feedMode;
+    const selection = this.ctx.selection();
+    const scope = this.followingSelection ? selection : null;
+    this.scopeBtn.disabled = !selection;
+    setAttr(this.scopeBtn, 'aria-pressed', String(!!scope));
+    setTitle(this.scopeBtn, selection ? tr('Mostrar apenas a atividade do agente ou sala selecionada') : tr('Selecione um agente ou uma sala no escritório'));
+    const filtering = hidden.length > 0 || !!scope;
+    const accountItems = this.items.filter((f) => this.visible(f) && matchesFeedSelection(f, scope));
+    const visible = feedRows(accountItems, mode, VISIBLE);
+    const pending = this.pending.filter((f) => this.visible(f) && matchesFeedSelection(f, scope) && matchesFeedMode(f, mode));
+    const newCount = pending.length;
     setHidden(this.newPill, !(paused && newCount > 0 && open));
     if (newCount) setText(this.newPill, newCount === 1 ? tr('1 nova') : tr('{0} novas', [Math.min(newCount, 99)]));
     // Escritório vazio: o cartão central já explica; o feed só mostra o que houver de antes.
     setHidden(this.empty, visible.length > 0 || officeIsEmpty(this.ctx));
     setText(
       this.empty,
-      filtering && this.items.length > 0 ? tr('Nenhum evento das contas selecionadas.') : tr('Os eventos dos agentes aparecem aqui assim que acontecem.'),
+      scope && accountItems.length === 0 ? tr('Nenhuma atividade recente nesta seleção.') : filtering && this.items.length > 0 && accountItems.length === 0 ? tr('Nenhum evento das contas selecionadas.') : mode === 'errors' ? tr('Nenhum erro recente com estes filtros.') : mode === 'important' ? tr('Nenhum evento importante recente.') : tr('Os eventos dos agentes aparecem aqui assim que acontecem.'),
     );
     setHidden(this.filterNote, !filtering);
     if (filtering) {
       const names = hidden.map((id) => this.ctx.account(id)?.name ?? id);
-      setText(this.filterNote, 'filtrado');
-      setTitle(this.filterNote, tr('Sem {0} (filtro da barra lateral)', [names.join(', ')]));
+      setText(this.filterNote, tr('Filtrado'));
+      setTitle(this.filterNote, scope ? tr('Mostrar apenas a atividade do agente ou sala selecionada') : tr('Sem {0} (filtro da barra lateral)', [names.join(', ')]));
     }
 
     const latest = pending[pending.length - 1] ?? visible[visible.length - 1];
     setText(this.ticker, latest ? `${latest.agentName}: ${latest.activity.icon} ${latest.activity.text}` : '');
+    setAttr(this.importantBtn, 'aria-pressed', String(mode === 'important'));
+    setAttr(this.errorsBtn, 'aria-pressed', String(mode === 'errors'));
+    setAttr(this.allBtn, 'aria-pressed', String(mode === 'all'));
     this.toggleBtn.innerHTML = open ? ICONS.chevronDown : ICONS.chevronUp;
     const label = open ? tr('Recolher feed ( ] )') : tr('Abrir feed ( ] )');
     setAttr(this.toggleBtn, 'aria-label', label);
@@ -147,13 +169,8 @@ export class FeedPanel implements UiComponent {
   }
 
   private appendPending(fresh: FeedItem[]): void {
-    // A contagem por conta sobrevive ao descarte das pendências mais antigas.
-    for (const f of fresh) {
-      const account = this.accountOf(f);
-      this.pendingCounts.set(account, (this.pendingCounts.get(account) ?? 0) + 1);
-    }
-    this.pending.push(...fresh.slice(-VISIBLE));
-    this.pending = this.pending.slice(-VISIBLE);
+    this.pending.push(...fresh.slice(-BUFFER));
+    this.pending = this.pending.slice(-BUFFER);
     this.pruneMeta();
   }
 
@@ -168,10 +185,9 @@ export class FeedPanel implements UiComponent {
     const known = new Set(this.items.map((f) => f.id));
     for (const f of this.pending) if (!known.has(f.id)) this.items.push(f);
     this.pending = [];
-    this.pendingCounts.clear();
-    this.items = this.items.slice(-VISIBLE);
+    this.items = this.items.slice(-BUFFER);
     this.pruneMeta();
-    this.rows.sync(this.ctx.prefs.hiddenAccounts.length ? this.items.filter((f) => this.visible(f)) : this.items);
+    this.rows.sync(feedRows(this.items.filter((f) => this.visible(f)), this.ctx.prefs.feedMode, VISIBLE));
     const scroller = this.list.parentElement!;
     requestAnimationFrame(() => {
       scroller.scrollTop = scroller.scrollHeight;
@@ -190,7 +206,7 @@ export class FeedPanel implements UiComponent {
     this.ctx.invalidate();
   }
 
-  private createRow(f: FeedItem): HTMLElement {
+  private createRow(f: FeedRow): HTMLElement {
     const m = this.meta.get(f.agentId) ?? this.metaFromStore(f.agentId);
     const avatar = m ? createAvatar(m, 'xs') : createAvatarPlaceholder('xs');
     const btn = h(
@@ -211,7 +227,7 @@ export class FeedPanel implements UiComponent {
     return h('li', { class: 'ui-feed__item' }, btn);
   }
 
-  private updateRow(li: HTMLElement, f: FeedItem): void {
+  private updateRow(li: HTMLElement, f: FeedRow): void {
     const btn = li.firstElementChild as HTMLElement;
     const [time, avatar, who, chip, room, icon, text] = btn.children as unknown as HTMLElement[];
     const m = this.meta.get(f.agentId);
@@ -224,7 +240,7 @@ export class FeedPanel implements UiComponent {
     setHidden(chip, !acc);
     setText(room, f.roomName);
     setText(icon, f.activity.icon);
-    setText(text, f.activity.text);
+    setText(text, f.id.startsWith('social:') ? `${tr('Simulação social')}: ${f.activity.text}` : f.repeatCount && f.repeatCount > 1 ? `${f.activity.text} ×${f.repeatCount}` : f.activity.text);
     li.classList.toggle('is-error', !!f.activity.error);
     li.classList.toggle('is-social', f.id.startsWith('social:'));
     // Fim de um shell (✅ terminou / ❌ falhou ou foi interrompido): linha com destaque próprio.

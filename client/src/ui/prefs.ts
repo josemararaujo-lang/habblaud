@@ -7,6 +7,7 @@ import { DEFAULT_WORLD_OPTIONS } from '../world/api';
 export const PREFS_KEY = 'habblaud:prefs';
 
 export interface UiPrefs {
+  colorMode: 'auto' | 'light' | 'dark';
   showNames: boolean;
   bubbles: WorldOptions['bubbles'];
   liveliness: WorldOptions['liveliness'];
@@ -20,7 +21,14 @@ export interface UiPrefs {
   /** Notification do navegador para alertas com a aba oculta. */
   browserNotifications: boolean;
   sidebarOpen: boolean;
+  sidebarView: 'now' | 'rooms';
+  sidebarWidth: number;
+  compactCards: boolean;
+  mainAgentsOnly: boolean;
+  focusMode: boolean;
   feedOpen: boolean;
+  /** Eventos operacionais em destaque ou todos os passos do feed. */
+  feedMode: 'important' | 'errors' | 'all';
   /** Contas ocultas na barra lateral (AccountInfo.id). */
   hiddenAccounts: string[];
   /** Habblaud World: aviso quando o primeiro visitante entra no seu prédio (a cada conexão). Ligado por padrão. */
@@ -28,6 +36,7 @@ export interface UiPrefs {
 }
 
 export const DEFAULT_PREFS: UiPrefs = {
+  colorMode: 'auto',
   showNames: DEFAULT_WORLD_OPTIONS.showNames,
   bubbles: DEFAULT_WORLD_OPTIONS.bubbles,
   liveliness: DEFAULT_WORLD_OPTIONS.liveliness,
@@ -37,7 +46,13 @@ export const DEFAULT_PREFS: UiPrefs = {
   sounds: DEFAULT_SOUND_SETTINGS,
   browserNotifications: false,
   sidebarOpen: true,
-  feedOpen: true,
+  sidebarView: 'now',
+  sidebarWidth: 336,
+  compactCards: true,
+  mainAgentsOnly: false,
+  focusMode: true,
+  feedOpen: false,
+  feedMode: 'important',
   hiddenAccounts: [],
   worldVisitNotify: true,
 };
@@ -53,6 +68,7 @@ export function sanitizePrefs(raw: unknown): UiPrefs {
   const o = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
   const d = DEFAULT_PREFS;
   return {
+    colorMode: oneOf(o.colorMode, ['auto', 'light', 'dark'] as const, d.colorMode),
     showNames: bool(o.showNames, d.showNames),
     bubbles: oneOf(o.bubbles, ['all', 'important', 'none'] as const, d.bubbles),
     liveliness: oneOf(o.liveliness, ['calm', 'normal', 'lively'] as const, d.liveliness),
@@ -63,7 +79,13 @@ export function sanitizePrefs(raw: unknown): UiPrefs {
     sounds: sanitizeSoundSettings(o.sounds),
     browserNotifications: bool(o.browserNotifications, d.browserNotifications),
     sidebarOpen: bool(o.sidebarOpen, d.sidebarOpen),
+    sidebarWidth: typeof o.sidebarWidth === 'number' && Number.isFinite(o.sidebarWidth) ? Math.max(300, Math.min(440, o.sidebarWidth)) : d.sidebarWidth,
+    compactCards: bool(o.compactCards, d.compactCards),
+    mainAgentsOnly: bool(o.mainAgentsOnly, d.mainAgentsOnly),
+    focusMode: bool(o.focusMode, d.focusMode),
+    sidebarView: oneOf(o.sidebarView, ['now', 'rooms'] as const, d.sidebarView),
     feedOpen: bool(o.feedOpen, d.feedOpen),
+    feedMode: oneOf(o.feedMode, ['important', 'errors', 'all'] as const, d.feedMode),
     hiddenAccounts: Array.isArray(o.hiddenAccounts) ? o.hiddenAccounts.filter((x): x is string => typeof x === 'string').slice(0, 20) : [],
     worldVisitNotify: bool(o.worldVisitNotify, d.worldVisitNotify),
   };
@@ -90,7 +112,7 @@ export function savePrefs(storage: StorageLike | null, prefs: UiPrefs): void {
 
 /** Parte das preferências que o mundo (canvas) consome. */
 export function worldOptionsFrom(p: UiPrefs): Partial<WorldOptions> {
-  return { showNames: p.showNames, bubbles: p.bubbles, liveliness: p.liveliness, dayNight: p.daylight !== 'day', daylight: p.daylight, theme: p.theme };
+  return { showNames: p.showNames, bubbles: p.focusMode && p.bubbles !== 'none' ? 'important' : p.bubbles, liveliness: p.focusMode ? 'calm' : p.liveliness, dayNight: p.daylight !== 'day', daylight: p.daylight, theme: p.theme };
 }
 
 /** localStorage com proteção contra navegadores que lançam exceção ao acessá-lo. */

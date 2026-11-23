@@ -12,20 +12,21 @@ import type { Character } from '../sim/character';
 import { shellAgeKey, shellBubbleAlpha, shellBubbleText, STORM_LIFT, unitHash } from '../sim/shell';
 import type { Sim } from '../sim/sim';
 import { buildAnim } from './anim';
-import { drawFxBanner } from './github-fx';
+import { drawFxBanner, reducedMotion } from './github-fx';
+import { activeRoomTeams, roomPulse } from './room-label';
+import { TEAM_SHIRTS } from '../../../../shared/team-uniform';
+import type { Provider } from '../../../../shared/types';
 import type { HeadInfo, Renderer } from './renderer';
 import { tr } from '../../../../shared/i18n';
 
 // A Pixelify Sans tem o "C" maiúsculo quase fechado (lê-se "Oopa" em vez de "Copa") em qualquer
 // peso/tamanho usado no canvas; os textos do mundo usam a fonte do sistema, sempre legível.
 const UI_FONT = 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif';
-const LABEL_FONT = `600 10.5px ${UI_FONT}`;
+const LABEL_FONT = `600 12px ${UI_FONT}`;
 const BUBBLE_FONT = `500 11.5px ${UI_FONT}`;
 const SAY_FONT = `500 10.5px ${UI_FONT}`;
 const FLOAT_FONT = `800 12px ${UI_FONT}`;
-const CHIP_FONT = `700 8px ${UI_FONT}`;
 const BADGE_FONT = `700 8px ${UI_FONT}`;
-const ROOM_FONT = `700 12px ${UI_FONT}`;
 const CORE_FONT = `600 11px ${UI_FONT}`;
 const CORE_FONT_SMALL = `600 9.5px ${UI_FONT}`;
 const signFont = (size: number) => `700 ${size}px ${UI_FONT}`;
@@ -34,7 +35,7 @@ const signFont = (size: number) => `700 ${size}px ${UI_FONT}`;
 export const BUBBLE_MAX_W = 220;
 export const ALERT_MAX_W = 340;
 const BUBBLE_H = 20;
-const LABEL_H = 15;
+const LABEL_H = 21;
 const RECENT_MS = 4000;
 /** Altura mínima (px CSS) da placa na tela para escrever o nome nela. */
 const SIGN_MIN_PX = 14;
@@ -103,29 +104,11 @@ interface Label {
 
 type Item = Bubble | Label;
 
-/** Luminância relativa de uma cor hex (0..1). */
-/** Fundo do chip vazado das contas do Codex (o mesmo dos painéis). */
+/** Fundo dos pontos pequenos de conta nas salas. */
 const CODEX_CHIP_BG = '#161b26';
-/** Selo "CODEX" das etiquetas: discreto (vidro claro), sem a cor de ninguém. */
-const CODEX_BADGE = 'CODEX';
-
-/** Octógono "em degrau" (um quadrado de cantos cortados, como um pixel arredondado). */
-function steppedRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, s: number): void {
-  ctx.beginPath();
-  ctx.moveTo(x + s, y);
-  ctx.lineTo(x + w - s, y);
-  ctx.lineTo(x + w, y + s);
-  ctx.lineTo(x + w, y + h - s);
-  ctx.lineTo(x + w - s, y + h);
-  ctx.lineTo(x + s, y + h);
-  ctx.lineTo(x, y + h - s);
-  ctx.lineTo(x, y + s);
-  ctx.closePath();
-}
 
 /**
- * Bolinha de uma conta (placas e pílulas das salas): cheia no Claude Code; vazada (anel na cor da conta) no Codex,
- * como o chip dos painéis.
+ * Bolinha minúscula de uma conta (placas e pílulas das salas): cheia no Claude Code, vazada no Codex.
  */
 function accountDot(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, acc: { color: string; provider?: string }): void {
   ctx.beginPath();
@@ -142,13 +125,6 @@ function accountDot(ctx: CanvasRenderingContext2D, x: number, y: number, r: numb
   }
   ctx.fillStyle = acc.color;
   ctx.fill();
-}
-
-function luminance(hex: string): number {
-  const m = /^#?([0-9a-f]{6})$/i.exec(hex);
-  if (!m) return 0.5;
-  const n = parseInt(m[1], 16);
-  return (0.2126 * ((n >> 16) & 255) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255;
 }
 
 /** Altura (px de mundo) ocupada pelos ícones sobre a cabeça: balões e etiquetas sobem para não cobri-los. */
@@ -205,7 +181,8 @@ export class Overlay {
     private readonly sim: Sim,
     private readonly renderer: Renderer,
     private readonly camera: Camera,
-  ) {}
+  ) {
+  }
 
   /** Descarta medições (ex.: depois que uma fonte carregou). */
   resetCaches(): void {
@@ -323,7 +300,7 @@ export class Overlay {
       // o visitante (cena Visita) sempre com o nome e o crachá
       const visitor = ch === this.sim.visitor;
       const labeled = selected || hovered || ch.mode === 'wait' || showAll || visitor;
-      const above = labeled && this.labelAbove(ch);
+      const above = labeled && visitor && this.labelAbove(ch);
       const b = this.bubbleFor(ch, head, now, opts, selected, hovered);
       if (b) {
         b.extraLift = above ? LABEL_H + 3 : 0;
@@ -419,7 +396,7 @@ export class Overlay {
       const anim = room ? buildAnim(room.phase, room.progress(now)) : null;
       // texto da placa quando ela fica grande o bastante para ler; senão, o nome flutuante
       const rect = this.renderer.signRect(vis);
-      const text = room ? room.info.name : vis.id === 'core:recepcao' ? 'Habblaud' : null;
+      const text = !room && vis.id === 'core:recepcao' ? 'Habblaud' : null;
       const readable = !!rect && rect.h * zoom >= SIGN_MIN_PX;
       if (readable && rect && text && (!anim || anim.sign >= 1)) {
         const ax = this.sx(rect.x);
@@ -431,14 +408,14 @@ export class Overlay {
           this.place(ax, ay, w, h);
         }
       }
-      if (room ? readable : zoom >= 1.4) continue;
+      if (!room && zoom >= 1.4) continue;
       const cx = this.sx((r.x + r.w / 2) * TILE);
       const cy = this.sy(r.y * TILE + 6);
       if (cx < -200 || cx > vw + 200 || cy < -40 || cy > vh + 40) continue;
       if (room) {
         // endereço antigo de uma mudança: o nome já está na sala nova
         if (!room.present || room.ghost || (anim && anim.walls < 0.6)) continue;
-        this.drawRoomPill(room.info.name, cx, cy, colW - 8, room.accounts, this.countIn(room.id), room.theme.accent, room.lightOn);
+        this.drawCorePill(room.info.name, cx, cy, colW - 8, activeRoomTeams(this.sim.chars.values(), room.id), now);
       } else if (CORE_NAMES[vis.id]) {
         this.drawCorePill(CORE_NAMES[vis.id], cx, cy, colW - 8);
       }
@@ -466,12 +443,6 @@ export class Overlay {
       const b = drawFxBanner(this.ctx, fx, cx, top, r.w * TILE * zoom - 12, now, (f, t, w) => this.fit(f, t, w), (f, t) => this.measure(f, t));
       if (b) this.place(b.x, b.y, b.w, b.h);
     }
-  }
-
-  private countIn(roomId: string): number {
-    let n = 0;
-    for (const c of this.sim.chars.values()) if (c.roomId === roomId && !c.leaving) n++;
-    return n;
   }
 
   private drawSignText(text: string, x: number, y: number, w: number, h: number, dark: boolean, accounts: string[]): void {
@@ -509,70 +480,7 @@ export class Overlay {
     }
   }
 
-  private drawRoomPill(name: string, cx: number, cy: number, maxW: number, accounts: string[], count: number, accent: string, lit: boolean): void {
-    const { ctx } = this;
-    let dots = accounts.filter((a) => this.sim.accounts.has(a));
-    let countText = count > 0 ? String(count) : '';
-    let cw = countText ? this.measure(LABEL_FONT, countText) + 14 : 0;
-    // nome cortado para caber na largura da coluna; com pouco espaço, o nome vale mais que a
-    // contagem e as bolinhas; sem espaço nem para 3 letras, pílula compacta (só contagem)
-    let text = this.fit(ROOM_FONT, name, Math.min(180, maxW - (18 + dots.length * 10 + cw)));
-    if (text.length < Math.min(7, name.length)) {
-      const alone = this.fit(ROOM_FONT, name, maxW - 18);
-      if (alone.length >= 4) {
-        text = alone;
-        dots = [];
-        countText = '';
-        cw = 0;
-      }
-    }
-    const extras = 18 + dots.length * 10 + cw;
-    // Só vira pílula compacta quando o nome precisou ser cortado (nomes curtos como "app" cabem inteiros).
-    const compact = text !== name && text.length < 4;
-    const tw = compact ? 0 : this.measure(ROOM_FONT, text);
-    const w = Math.round(compact ? Math.max(12, 10 + cw + dots.length * 10) : tw + extras);
-    const h = 22;
-    const x = Math.round(cx - w / 2);
-    const y = Math.round(cy - h - 4);
-    ctx.save();
-    ctx.globalAlpha = lit ? 1 : 0.8;
-    ctx.fillStyle = 'rgba(16,20,32,0.28)';
-    ctx.beginPath();
-    ctx.roundRect(x, y + 2, w, h, 7);
-    ctx.fill();
-    ctx.fillStyle = 'rgba(22,27,40,0.9)';
-    ctx.beginPath();
-    ctx.roundRect(x, y, w, h, 7);
-    ctx.fill();
-    ctx.fillStyle = accent;
-    ctx.beginPath();
-    ctx.roundRect(x, y, 4, h, [7, 0, 0, 7]);
-    ctx.fill();
-    let dx = x + 10;
-    if (!compact) {
-      ctx.font = ROOM_FONT;
-      ctx.fillStyle = '#f3f5fa';
-      ctx.fillText(text, x + 10, y + h / 2 + 1);
-      dx = x + 10 + tw + 8;
-    }
-    for (const id of dots) {
-      accountDot(ctx, dx + 3, y + h / 2, 3.5, this.sim.accounts.get(id)!);
-      dx += 10;
-    }
-    if (countText) {
-      ctx.fillStyle = 'rgba(255,255,255,0.14)';
-      ctx.beginPath();
-      ctx.roundRect(dx + 2, y + 4, cw - 4, h - 8, 5);
-      ctx.fill();
-      ctx.font = LABEL_FONT;
-      ctx.fillStyle = '#dfe5f2';
-      ctx.fillText(countText, dx + 7, y + h / 2 + 0.5);
-    }
-    ctx.restore();
-    this.place(x, y, w, h);
-  }
-
-  private drawCorePill(name: string, cx: number, cy: number, maxW: number): void {
+  private drawCorePill(name: string, cx: number, cy: number, maxW: number, teams: Provider[] = [], now = 0): void {
     const { ctx } = this;
     // fonte um pouco menor antes de cortar o nome
     const font = this.measure(CORE_FONT, name) <= maxW - 14 ? CORE_FONT : CORE_FONT_SMALL;
@@ -587,6 +495,35 @@ export class Overlay {
     ctx.beginPath();
     ctx.roundRect(x, y, w, h, 6);
     ctx.fill();
+    if (teams.length) {
+      // Mesmo balão dos locais: só a atividade real acrescenta uma borda colorida.
+      // Equipes simultâneas dividem o contorno, sem alternar nomes nem cores.
+      ctx.save();
+      ctx.globalAlpha *= roomPulse(now, reducedMotion());
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(x, y, w, h, 6);
+      ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+      ctx.stroke();
+      ctx.lineWidth = 1.5;
+      for (let i = 0; i < teams.length; i++) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x - 2 + i * (w + 4) / teams.length, y - 2, (w + 4) / teams.length, h + 4);
+        ctx.clip();
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, h, 6);
+        ctx.fillStyle = TEAM_SHIRTS[teams[i]];
+        ctx.save();
+        ctx.globalAlpha *= 0.45;
+        ctx.fill();
+        ctx.restore();
+        ctx.strokeStyle = TEAM_SHIRTS[teams[i]];
+        ctx.stroke();
+        ctx.restore();
+      }
+      ctx.restore();
+    }
     ctx.font = font;
     ctx.fillStyle = '#e8ecf5';
     ctx.fillText(text, x + 7, y + h / 2 + 1);
@@ -869,23 +806,18 @@ export class Overlay {
   // =================================================================== etiquetas
 
   /** Larguras das partes da etiqueta. O selo "CODEX" (como o "SUB") só aparece fora do modo compacto. */
-  private labelWidth(l: Label): { nameW: number; chipW: number; badgeW: number; codexW: number } {
-    const ch = l.ch;
-    const acc = this.sim.accounts.get(ch.info.account);
-    const nameW = this.measure(LABEL_FONT, ch.info.name);
-    const chipW = acc ? 13 : 0;
-    const visitor = ch === this.sim.visitor;
-    const badgeW = visitor ? this.measure(BADGE_FONT, visitorBadge()) + 7 : ch.info.kind === 'sub' && !l.compact ? this.measure(BADGE_FONT, 'SUB') + 7 : 0;
-    const codexW = ch.info.provider === 'codex' && !l.compact ? this.measure(BADGE_FONT, CODEX_BADGE) + 7 : 0;
-    return { nameW, chipW, badgeW, codexW };
+  private labelWidth(l: Label): { nameW: number; badgeW: number } {
+    const nameW = this.measure(LABEL_FONT, this.fit(LABEL_FONT, l.ch.info.name, 170));
+    const badgeW = l.ch === this.sim.visitor ? this.measure(BADGE_FONT, visitorBadge()) + 7 : 0;
+    return { nameW, badgeW };
   }
 
   /** Posiciona a etiqueta: nos pés (ou acima da cabeça); se colidir, tenta o outro lado. */
   private placeLabel(l: Label): boolean {
-    const { nameW, chipW, badgeW, codexW } = this.labelWidth(l);
-    const w = Math.round(nameW + 10 + chipW + (badgeW ? badgeW + 3 : 0) + (codexW ? codexW + 3 : 0));
+    const { nameW, badgeW } = this.labelWidth(l);
+    const w = Math.round(nameW + 16 + (badgeW ? badgeW + 3 : 0));
     const h = LABEL_H;
-    const x = Math.round(this.sx(l.head.x) - w / 2);
+    const x = Math.max(4, Math.min(this.camera.viewW - w - 4, Math.round(this.sx(l.head.x) - w / 2)));
     const below = Math.round(this.sy(l.head.feetY) + 3);
     const iconLift = this.iconLift(l.ch) * this.zoom;
     const over = Math.round(this.sy(l.head.y) - iconLift - h - 3);
@@ -904,75 +836,37 @@ export class Overlay {
 
   private drawLabel(l: Label, sel: { agent: string | null; hover: string | null }): void {
     const { ctx } = this;
-    const ch = l.ch;
-    const acc = this.sim.accounts.get(ch.info.account);
-    const sub = ch.info.kind === 'sub';
-    const codex = ch.info.provider === 'codex' || acc?.provider === 'codex';
-    const { nameW, chipW, badgeW, codexW } = this.labelWidth(l);
-    const { x, y, w, h } = l;
+    const { x, y, w, h, ch } = l;
+    const { nameW, badgeW } = this.labelWidth(l);
     const selected = sel.agent === ch.id;
-    ctx.fillStyle = selected ? 'rgba(18,96,140,0.95)' : ch.mode === 'wait' ? 'rgba(120,78,0,0.92)' : 'rgba(22,26,38,0.82)';
+    const glass = ctx.createLinearGradient(x, y, x, y + h);
+    glass.addColorStop(0, selected ? '#f3f9ff' : ch.mode === 'wait' ? '#fff6de' : 'rgba(255,255,255,0.96)');
+    glass.addColorStop(1, selected ? '#ddecfb' : ch.mode === 'wait' ? '#f9e8be' : 'rgba(231,239,245,0.94)');
+    ctx.fillStyle = glass;
+    ctx.shadowColor = 'rgba(16,30,44,0.22)';
+    ctx.shadowOffsetY = 2;
+    ctx.shadowBlur = 6;
     ctx.beginPath();
-    ctx.roundRect(x, y, w, h, 7.5);
+    ctx.roundRect(x, y, w, h, 9);
     ctx.fill();
-    let cx = x + 4;
-    if (acc && codex) {
-      // Codex: chip vazado de cantos em degrau (fundo escuro, borda e letra na cor da conta), como nos painéis.
-      steppedRect(ctx, cx, y + h / 2 - 5, 10, 10, 2);
-      ctx.fillStyle = CODEX_CHIP_BG;
-      ctx.fill();
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = acc.color;
-      steppedRect(ctx, cx + 0.75, y + h / 2 - 4.25, 8.5, 8.5, 1.6);
-      ctx.stroke();
-      ctx.font = CHIP_FONT;
-      ctx.textAlign = 'center';
-      ctx.fillStyle = acc.color;
-      ctx.fillText(acc.short.slice(0, 1), cx + 5, y + h / 2 + 0.5);
-      ctx.textAlign = 'left';
-      cx += chipW;
-    } else if (acc) {
-      ctx.beginPath();
-      ctx.arc(cx + 5, y + h / 2, 5, 0, Math.PI * 2);
-      ctx.fillStyle = acc.color;
-      ctx.fill();
-      ctx.font = CHIP_FONT;
-      ctx.textAlign = 'center';
-      ctx.fillStyle = luminance(acc.color) > 0.62 ? '#1d2330' : '#ffffff';
-      ctx.fillText(acc.short.slice(0, 1), cx + 5, y + h / 2 + 0.5);
-      ctx.textAlign = 'left';
-      cx += chipW;
-    }
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+    if (selected) { ctx.strokeStyle = '#307fc1'; ctx.lineWidth = 1.2; ctx.stroke(); }
     ctx.font = LABEL_FONT;
-    ctx.fillStyle = '#f5f7fb';
-    ctx.fillText(ch.info.name, cx + 1, y + h / 2 + 0.5);
-    cx += nameW + 4;
+    ctx.fillStyle = '#233443';
+    ctx.fillText(this.fit(LABEL_FONT, ch.info.name, 170), x + 8, y + h / 2 + 0.5);
     if (badgeW) {
+      const cx = x + nameW + 11;
       ctx.fillStyle = ch.appearance.lanyard ?? '#f2b33d';
       ctx.beginPath();
       ctx.roundRect(cx, y + 3, badgeW, h - 6, 4);
       ctx.fill();
       ctx.font = BADGE_FONT;
       ctx.fillStyle = '#2a2000';
-      ctx.fillText(ch === this.sim.visitor ? visitorBadge() : 'SUB', cx + 3.5, y + h / 2 + 0.5);
-      cx += badgeW + 3;
-    } else if (sub) {
-      // selo compacto: pontinho na cor do crachá
-      ctx.fillStyle = ch.appearance.lanyard ?? '#f2b33d';
-      ctx.beginPath();
-      ctx.arc(x + w - 3, y + 3, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    if (codexW) {
-      ctx.fillStyle = 'rgba(255,255,255,0.16)';
-      ctx.beginPath();
-      ctx.roundRect(cx, y + 3, codexW, h - 6, 3);
-      ctx.fill();
-      ctx.font = BADGE_FONT;
-      ctx.fillStyle = '#e8ecf5';
-      ctx.fillText(CODEX_BADGE, cx + 3.5, y + h / 2 + 0.5);
+      ctx.fillText(visitorBadge(), cx + 3.5, y + h / 2 + 0.5);
     }
   }
+
 }
 
 /** Ícone da fala quando ela vira só um chip (visão geral): o primeiro emoji da frase, ou 💬. */

@@ -3,6 +3,9 @@
 //   npm run dev    -> tsx server/index.ts --dev (Vite em middleware mode, HMR no mesmo servidor)
 //   npm start      -> node dist/server/index.js (serve dist/client)
 import http from 'node:http';
+import { DesktopSource } from './sources/desktop';
+import { readPipeline } from './sources/pipeline';
+import { readExternalAgents } from './sources/external-handoffs';
 import { join } from 'node:path';
 import { codexDirsRefused, isDefaultDir } from './accounts/detect';
 import { AccountsService } from './accounts/service';
@@ -113,9 +116,12 @@ const accounts = new AccountsService({
   usageDir: config.usageDir,
   onChange: () => late.office?.markDirty(),
 });
+const handoffRoot = process.env.HABBLAUD_HANDOFF_DIR || join(config.home, 'AgenteArquivos', 'esteira-manha');
+let externalAgents = readExternalAgents(handoffRoot);
 const office = new Office({
   names,
-  roomAlias: (path) => roomAliases.get(path),
+  externalAgents: () => externalAgents,
+  roomAlias: (path) => roomAliases.get(path) ?? (path === '/Applications/Gemini.app' ? 'Gemini' : path === '/Applications/Grok Bot.app' ? 'Grok Bot' : undefined),
   version: config.version,
   // No modo dev o Vite serve o cliente direto do código-fonte: não há build para comparar.
   build: config.dev ? undefined : createBuildReader(config.rootDir),
@@ -135,6 +141,10 @@ const office = new Office({
 // ela mesma (accounts.setProviderAccounts). `codex` também recebe os eventos dos hooks do Codex (CodexLive).
 const claude = new ClaudeWatcher({ accounts, office, inDocker: config.inDocker });
 const agents = new SourceSet([claude]);
+if (process.platform === 'darwin' && !config.inDocker) {
+  agents.add(new DesktopSource('grok-bot', config.home, office, accounts));
+  agents.add(new DesktopSource('gemini', config.home, office, accounts));
+}
 const codexDirs = config.codex ? discoverCodexDirs(process.env, config.home) : [];
 const codex = codexDirs.length ? new CodexSource({ accounts, office, dirs: codexDirs, env: process.env, home: config.home }) : undefined;
 if (codex) agents.add(codex);
@@ -165,7 +175,7 @@ const worldUplink =
         locale: () => getLocale() as WorldLocale,
         store: worldStore,
         canAct: () => config.terminal,
-        agents: () => office.list(),
+        agents: () => office.list().filter(a => a.provider !== 'gemini' && a.provider !== 'grok-bot'),
         subscribe: (cb) => office.onChange(cb),
         booting: () => office.isBooting(),
         tokens: () => worldTokens.read(),
@@ -330,6 +340,13 @@ messages?.start();
 stats.start();
 updates.start();
 worldUplink?.start();
+const externalTicker = setInterval(() => {
+  const next = readExternalAgents(handoffRoot);
+  if (JSON.stringify(next) !== JSON.stringify(externalAgents)) {
+    externalAgents = next;
+    office.markDirty();
+  }
+}, 30_000);
 const ticker = setInterval(() => {
   try {
     office.tick();
@@ -339,6 +356,7 @@ const ticker = setInterval(() => {
 }, 250);
 
 const api = createApiHandler({
+  pipeline: () => readPipeline(config.home, handoffRoot, config.dataDir),
   renameRoom: (id, name) => {
     const path = office.roomPath(id);
     if (!path) return undefined;
@@ -545,6 +563,7 @@ function shutdown(signal: string): void {
   shuttingDown = true;
   log.info(tr('Encerrando ({0})…', [signal]));
   clearInterval(ticker);
+  clearInterval(externalTicker);
   stats.stop();
   agents.stop();
   accounts.stop();

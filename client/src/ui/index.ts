@@ -1,3 +1,4 @@
+import { PipelinePanel } from './pipeline';
 // Interface do Habblaud (painéis DOM sobre o canvas do escritório).
 // Recebe o OfficeStore (dados) e o WorldApi (canvas) e monta: barra superior com uso por conta,
 // barra lateral, gaveta de detalhes, feed, avisos, configurações, ajuda e estados de carregamento/vazio.
@@ -8,6 +9,16 @@ import '@fontsource/pixelify-sans/500.css';
 import '@fontsource/pixelify-sans/600.css';
 import '@fontsource/pixelify-sans/700.css';
 import './styles.css';
+import './glass.css';
+import './themes.css';
+import './refinement.css';
+import './navigation-glass.css';
+import './controls-glass.css';
+import './terminal-glass.css';
+import './corners.css';
+import { GlassControls } from './glass-selection';
+import { DialogWindows } from './dialog-windows';
+import { ColorMode } from './color-mode';
 
 import type { OfficeStore } from '../net/store';
 import type { Selection, WorldApi } from '../world/api';
@@ -62,6 +73,7 @@ function isTypingTarget(t: EventTarget | null): boolean {
 export function createUI(root: HTMLElement, store: OfficeStore, world: WorldApi, city?: CitySceneHost): void {
   const storage = safeLocalStorage();
   let prefs: UiPrefs = loadPrefs(storage);
+  const colorMode = new ColorMode(root, () => prefs.colorMode);
   let selection: Selection = world.getSelection();
   let skew = 0;
   const narrowMq = typeof matchMedia === 'function' ? matchMedia(NARROW_QUERY) : null;
@@ -94,8 +106,11 @@ export function createUI(root: HTMLElement, store: OfficeStore, world: WorldApi,
       return prefs;
     },
     updatePrefs(patch) {
+      // Editing motion preferences explicitly leaves focus mode; toggling it otherwise restores those choices.
+      if (patch.focusMode === undefined && (patch.bubbles !== undefined || patch.liveliness !== undefined)) patch = { ...patch, focusMode: false };
       prefs = { ...prefs, ...patch };
       savePrefs(storage, prefs);
+      colorMode.apply();
       world.setOptions(worldOptionsFrom(prefs));
       invalidate();
     },
@@ -112,6 +127,7 @@ export function createUI(root: HTMLElement, store: OfficeStore, world: WorldApi,
       // A gaveta passa a contar na área livre ANTES do foco: o mundo centraliza já na parte visível.
       const prev = selection;
       selection = sel;
+      adaptSelectionPanels(sel);
       area.selectingFromUi();
       applyLayout({ refocus: false });
       uiSelecting = true;
@@ -130,12 +146,13 @@ export function createUI(root: HTMLElement, store: OfficeStore, world: WorldApi,
     },
     camera(action) {
       if (inCity() && city) {
-        if (action === 'overview') city.recenter();
+        if (action === 'overview' || action === 'focusWork') city.recenter();
         else city.zoomBy(action === 'zoomIn' ? 1.25 : 1 / 1.25);
         return;
       }
       area.clearIntent();
       if (action === 'overview') world.overview();
+      else if (action === 'focusWork') world.focusWork?.();
       else world.zoomBy(action === 'zoomIn' ? 1.25 : 1 / 1.25);
     },
     invalidate: () => invalidate(),
@@ -275,6 +292,10 @@ export function createUI(root: HTMLElement, store: OfficeStore, world: WorldApi,
   help = new HelpDialog();
   const day = new DayLauncher(ctx, (el) => root.append(el));
   topbar.addPanelButton(day.button);
+  const pipeline = new PipelinePanel(ctx);
+  topbar.addPanelButton(pipeline.button);
+  root.append(pipeline.el);
+  if (new URLSearchParams(globalThis.location?.search ?? '').get('esteira') === '1') requestAnimationFrame(() => pipeline.open());
   // Botão direito numa sala (lista lateral ou escritório): renomear.
   const renamer = new RoomRenamer(ctx);
   ctx.renameRoom = (id, at) => renamer.open(id, at);
@@ -297,10 +318,12 @@ export function createUI(root: HTMLElement, store: OfficeStore, world: WorldApi,
   }));
   drawer.onLayoutChange = () => applyLayout();
 
-  const components: UiComponent[] = [topbar, sidebar, drawer, terminal, pty, history, deliveries, feed, toasts, settings, empty, banner, tip, notifier, splash, timelapse, sound, day, updateToaster, worldDialog, popups, worldChip];
+  const components: UiComponent[] = [topbar, sidebar, drawer, terminal, pty, history, deliveries, feed, toasts, settings, empty, banner, tip, notifier, splash, timelapse, sound, day, updateToaster, worldDialog, popups, worldChip, pipeline];
   if (scene) components.push(scene);
   root.append(worldSocial.el);
   components.push(worldSocial);
+  new DialogWindows(root);
+  new GlassControls(root);
 
   // ---------------------------------------------------------------- renderização agrupada por quadro
   let rafId = 0;
@@ -331,6 +354,17 @@ export function createUI(root: HTMLElement, store: OfficeStore, world: WorldApi,
   }
 
   /** Aplica as classes de layout e informa ao mundo a área livre (sem esperar as transições dos painéis). */
+  let autoCollapsedSidebar = false;
+  function adaptSelectionPanels(sel: Selection): void {
+    if (sel && window.innerWidth > 900 && window.innerWidth < 1280 && panels.sidebar) {
+      panels.sidebar = false;
+      autoCollapsedSidebar = true;
+    } else if (!sel && autoCollapsedSidebar) {
+      panels.sidebar = prefs.sidebarOpen;
+      autoCollapsedSidebar = false;
+    }
+  }
+
   function applyLayout(opts: { refocus?: boolean } = {}): void {
     root.classList.toggle('has-sidebar', panels.sidebar);
     root.classList.toggle('has-feed', panels.feed);
@@ -351,6 +385,7 @@ export function createUI(root: HTMLElement, store: OfficeStore, world: WorldApi,
   world.onSelect((sel) => {
     const prev = selection;
     selection = sel;
+    adaptSelectionPanels(sel);
     // Clique no canvas (ou agente que saiu): a gaveta espera a janela do duplo clique antes de mexer na câmera.
     if (!uiSelecting) area.selectionChangedExternally(prev, sel);
     applyLayout(uiSelecting ? { refocus: false } : {});
@@ -385,7 +420,7 @@ export function createUI(root: HTMLElement, store: OfficeStore, world: WorldApi,
     // Na cidade os atalhos do escritório ficam desligados: Esc fecha o cartão aberto ou volta ao escritório.
     if (inCity()) {
       if (e.key === 'Escape') {
-        if (help.isOpen || settings.isOpen || worldDialog.isOpen || history.isOpen || document.querySelector('dialog[open], :not(dialog)[aria-modal="true"]')) return;
+        if (help.isOpen || settings.isOpen || worldDialog.isOpen || history.isOpen || document.querySelector('dialog[open]:not([data-nonmodal]), :not(dialog)[aria-modal="true"]')) return;
         e.preventDefault();
         if (!city?.escape()) scene?.close();
       } else if (e.key === '?' && !isTypingTarget(e.target) && !help.isOpen) {

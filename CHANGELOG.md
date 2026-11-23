@@ -10,6 +10,81 @@ do meio (0.**3**.0).
 
 ## [Não lançado]
 
+### Melhorado
+
+- **Cantos concêntricos no Glass.** Filtros e suas seleções compartilham a mesma curva; a esteira ajusta seus cantos ao espaço da janela ampla ou compacta. Cabeçalhos acompanham o raio dos painéis nos dois temas, com encaixe mais coerente na barra e no campo de renomear.
+
+- **Histórico, leitor de conversas e editor revisados.** Terminal com cores legíveis nos modos claro e escuro, superfície Glass e filtros consistentes. Histórico com metadados que se adaptam à janela; editor com prévia e amostras de cor mais confortáveis, sem sobreposição de vidro.
+
+- **Revisão visual dos dois temas.** Barra superior compacta sem cortar o botão lateral em telas estreitas; metadados e ações menores mais legíveis, cabeçalhos de menus sempre acessíveis ao rolar e escolhas de personagem no padrão Glass. Controles indisponíveis mantêm o estado visual ao passar o mouse.
+
+- **Glass consistente em toda a interface.** Configurações, Meu dia, ajuda, detalhes, menus e controles compartilham materiais, brilho e estados. Seleções de filtros e opções deslizam, interruptores têm resposta fluida e menus abrem suavemente, com adaptação aos dois temas e às preferências de acessibilidade.
+
+- **Navegação e esteira com movimento Glass.** Seleção desliza entre opções; a esteira completa conecta a navegação lateral à área de leitura e se reorganiza na janela compacta, com expansão suave. Símbolos e cores dos agentes preservados, com acabamento para os temas claro e escuro e alternativas para movimento e transparência reduzidos.
+
+- **Mais espaço para acompanhar o trabalho.** Esteira com ações compactas e metadados agrupados; filtros alinhados, recibos mais discretos e feed com duas linhas. Cabeçalhos, textos longos e opções das Configurações se adaptam à largura de cada janela, nos dois temas.
+
+- **Nomes dos projetos mais discretos.** Mesmo balão compacto dos locais, sem contagens ou bolinhas. Trabalho em andamento pulsa suavemente na cor da equipe; equipes simultâneas compartilham o contorno. Movimento reduzido mantém a borda estática.
+
+- **Interface clara, escura ou automática.** Escolha salva nas Configurações, independente do cenário do escritório. Menus, botões, filtros, campos e interruptores compartilham estados e contraste consistentes; indicadores adaptam as cores ao tema.
+
+- **Esteira compacta e janelas móveis.** A esteira pode acompanhar o escritório sem bloqueá-lo. Diálogos podem ser arrastados pelo cabeçalho e redimensionados pelas bordas ou pelo teclado; posição e tamanho são lembrados, com restauração e texto adaptado à largura da janela.
+
+- **Glass em todo o escritório.** Barra, lateral, detalhes, feed, configurações, histórico, ajuda, Meu dia e esteira compartilham material, tipografia e controles. Listas mais calmas, foco visível e fallback opaco para maior contraste.
+
+- **Símbolos Grok e Gemini.** Marcas vetoriais reconhecíveis substituem a letra provisória; ícones com escala consistente nos painéis e na prévia. A barra compacta mantém as duas contas visíveis.
+
+- **Elenco Hunter × Hunter.** Novos nomes dos personagens usam o elenco do anime, inclusive Grok Bot e Gemini; a identidade original do app fica nos detalhes e a cor da equipe permanece na camisa.
+
+- **Minha esteira.** Linha do tempo local com agentes, horários, próximo disparo previsto e resultados com ID validado. Distingue agenda confirmada, rotina documentada e definição sem agendamento.
+
+- **Equipes pela camisa, nomes compactos.** Claude laranja, Codex azul, Grok preta e Gemini amarela. Etiquetas mais legíveis abaixo dos personagens, sem ícones ou selos de provedor disputando espaço; identificação completa nos detalhes.
+
+
+- **Estudo visual Liquid Glass.** Prévia local independente com etiquetas dos personagens, temas claro/escuro e controles de contraste. O escritório principal continua preservado enquanto o desenho é revisado.
+
+
+- **Personagens Grok Bot e Gemini.** Observação local a cada 2 s, com identidade dos bots do Grok, sala por app e estado desconhecido explícito; streaming só quando registrado recentemente. Conteúdo criptografado do Gemini não é lido.
+
+
+- **Grok Bot e Gemini no Agora.** Mostra a rotina local por arquivos, com data e ID conferidos, sem confundir resultado antigo ou repasse pendente com execução atual.
+
+
+- **Depende de mim ao abrir.** A visão Agora começa nas sessões que aguardam uma resposta humana; quando não há nenhuma, explica isso sem confundir atividade com pendência. Modo Foco ligado e feed recolhido por padrão; todos os estados continuam acessíveis.
+
+- **Salas com contexto.** Resumo dos estados e do trabalho em destaque em cada sala, equipes expansíveis e atalho para o agente que precisa de atenção nos detalhes. A busca revela as equipes correspondentes automaticamente.
+
+- **Acompanhamento mais claro.** Cartões compactos ajustáveis, resumo do escritório, filtro de agentes principais e grupos recolhíveis para conclusões e disponibilidade. Equipe e provedor aparecem juntos nos cartões; os filtros de estado permanecem visíveis durante a rolagem.
+- **Modo Foco.** Um controle reduz passeios e limita os balões aos acontecimentos importantes, preservando as preferências anteriores ao sair.
+- **Feed direcionado.** Filtros de erros e da seleção atual permitem acompanhar um agente ou uma sala, com estados vazios explicados.
+- **Detalhes na ordem de uso.** Resultado e próximo passo aparecem junto à atividade atual; estatísticas e configuração técnica ficam em uma seção expansível.
+
+- **Barra superior compacta.** Marca, indicadores e controles alinhados em uma faixa de 56 px quando as contas cabem. Cartões de consumo menores, com percentuais visíveis e renovação nos detalhes por mouse ou teclado; a segunda linha também ocupa menos altura em telas estreitas.
+
+- **Mensagens do Codex conectadas.** A ponte oferece o modo `--messages-only`, que mantém somente a entrega de mensagens ativa.
+- **Filtros e progresso na visão Agora.** Filtre agentes por estado, confira as contagens e acompanhe as tarefas concluídas diretamente nos cartões, com a sala identificada.
+- **Objetivo atualizado em conversas longas.** O carregamento recupera o pedido substancial mais recente sem substituir objetivos novos por títulos antigos.
+
+- **Visão Agora.** Agentes organizados por necessidade de resposta, trabalho em andamento, conclusão e disponibilidade, com objetivo, pasta, estado atual, último resultado e próximo passo. A aba Salas mantém a organização por projeto e oferece renomeação visível.
+- **Salas duplicadas corrigidas.** Caminhos com acentos Unicode equivalentes passam a representar a mesma sala, inclusive no resumo diário, mantendo aliases e personagens salvos.
+- **Comunicação compreensível.** Estado da conexão, instruções expansíveis e cópia do comando de configuração. Colaboração registrada separada da simulação social, agora recolhida nos detalhes.
+- **Menos ruído.** Contexto técnico do navegador removido dos pedidos; o modo Importantes deixa de repetir digitação de respostas e ferramentas genéricas. Agentes ociosos mostram que aguardam uma nova instrução.
+- **Mais espaço para acompanhar.** Enquadramento das salas presentes, botão Focar salas, painel lateral redimensionável pelo mouse e teclado, recolhimento ao abrir detalhes em telas médias e transições curtas com movimento reduzido respeitado.
+
+- **Contas identificadas pelas marcas oficiais.** Os chips agora exibem os símbolos do Claude e do Codex, inclusive nos filtros, cartões, estatísticas e etiquetas dos personagens; a borda continua com a cor de cada conta.
+
+- **Salas explicadas na lista.** O painel agora informa que salas representam pastas com sessões abertas, mostra a pasta de trabalho com rótulo e identifica claramente Claude Code e Codex em cada sala e nos filtros. Títulos de tarefa aparecem com mais espaço.
+
+- **Painéis mais legíveis.** A lista de salas e o feed ganharam melhor espaçamento, alinhamento e hierarquia de texto; superfícies e seleção ficaram mais nítidas sobre o escritório.
+
+- **Botões mais claros e responsivos.** Os controles da barra superior, as ações comuns e o filtro do feed agora distinguem melhor os estados normal, ativo e pressionado, com resposta ao toque e respeito à preferência de movimento reduzido.
+
+- **Escritório maior no celular.** Em telas estreitas e verticais, a abertura amplia as salas para ocupar melhor a altura disponível; arraste para ver as laterais e use Visão geral para enquadrar o prédio inteiro.
+
+- **Feed com foco nos acontecimentos importantes.** O painel abre no modo Importantes, que mostra pedidos, mudanças,
+  testes, erros e conclusões; o botão Tudo revela os passos detalhados. Eventos operacionais idênticos em sequência
+  aparecem agrupados com uma contagem, e a escolha fica salva no navegador.
+
 ## [1.0.3] - 2026-10-16
 
 ### Corrigido

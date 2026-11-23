@@ -1,3 +1,4 @@
+import { cleanUserText } from './user-text';
 // Tradução de chamadas de ferramenta do Claude Code em atividades legíveis (PT-BR).
 // Código puro, usado pelo servidor (transcripts reais) e pelo simulador de demonstração.
 import type { ActivityKind, AskQuestion } from './types';
@@ -638,6 +639,7 @@ function describeMcp(name: string, input: Record<string, unknown>): ActivityDesc
   const [, server = '', ...rest] = name.split('__');
   const tool = rest.join('__');
   const srv = server.replace(/^claude_ai_/, '');
+  if (/cua_repl/i.test(srv)) return make('browser', '🧭', str(input.title) || tr('Conferindo a interface'));
   if (/playwright|chrome|browser|puppeteer/i.test(srv)) {
     const url = str(input.url);
     if (/navigate/.test(tool)) return make('browser', '🧭', url ? tr('Abrindo {0}', [domainOf(url)]) : tr('Navegando no navegador'), url);
@@ -771,7 +773,8 @@ export function describeTool(name: string, rawInput: unknown): ActivityDescripti
 
 /** Atividade para um prompt do usuário. */
 export function describePrompt(text: string): ActivityDescription {
-  return make('prompt', '📨', tr('Nova tarefa: “{0}”', [truncate(text, 30)]), text);
+  const clean = cleanUserText(text);
+  return make('prompt', '📨', clean ? tr('Nova tarefa: “{0}”', [truncate(clean, 60)]) : tr('Nova instrução recebida'), clean || undefined);
 }
 
 export function formatDuration(ms: number): string {

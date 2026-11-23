@@ -707,7 +707,11 @@ export class CodexSource implements AgentSource, CodexLive {
         if (this.threads.get(t.key) !== t || t.state !== state) return;
         state.stats.toolCalls += prefix.state.stats.toolCalls;
         state.stats.subagents += prefix.state.stats.subagents;
-        state.title ??= prefix.state.title;
+        // Head reading only knows the first request. Prefer the newest dated goal from either window.
+        if (prefix.state.title && (prefix.state.titleAt ?? -1) > (state.titleAt ?? -1)) {
+          state.title = prefix.state.title;
+          state.titleAt = prefix.state.titleAt;
+        } else state.title ??= prefix.state.title;
         state.model ??= prefix.state.model;
         if (!state.tasks.length && prefix.state.tasks.length) state.tasks = prefix.state.tasks;
         if (prefix.state.firstAt !== undefined && (state.firstAt === undefined || prefix.state.firstAt < state.firstAt)) state.firstAt = prefix.state.firstAt;

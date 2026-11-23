@@ -1,10 +1,11 @@
+import { canonicalRoomId } from '../../shared/room-id';
 // Nomes dos personagens, persistidos por sessão/subagente em <dataDir>/names.json para que cada um mantenha o nome
 // entre reinícios do servidor, e o personagem escolhido para cada projeto (sala) no editor (ver Office.setCharacter),
 // com a sessão dona dele, para que um reinício não o entregue a outra sessão aberta.
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { parseAppearanceParts, parseCharacterName, parseSeed, type AppearanceParts } from '../../shared/appearance';
-import { pickName, type PersonName } from '../../shared/names';
+import { pickName, type PersonName } from '../../shared/hunter-names';
 import { errMsg, log } from '../log';
 import { tr } from '../../shared/i18n';
 
@@ -83,7 +84,8 @@ export class NameStore {
       const rooms = j.rooms && typeof j.rooms === 'object' && !Array.isArray(j.rooms) ? j.rooms : {};
       for (const [roomId, v] of Object.entries(rooms)) {
         const c = parseStoredCharacter(v);
-        if (c) this.rooms.set(roomId, c);
+        const key = canonicalRoomId(roomId);
+        if (c && c.at >= (this.rooms.get(key)?.at ?? -1)) this.rooms.set(key, c);
       }
     } catch (err) {
       if ((err as NodeJS.ErrnoException).code !== 'ENOENT') log.warn(tr('names.json ilegível ({0}); começando do zero.', [errMsg(err)]));
