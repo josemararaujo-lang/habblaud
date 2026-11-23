@@ -77,6 +77,18 @@ async function snapshotOf(base: string): Promise<OfficeSnapshot> {
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' };
 
+it('keeps pipeline metadata local and read-only', async () => {
+  const pipeline = vi.fn(() => ({ date: '2026-11-22', timeZone: 'America/Bahia', collectedAt: 1, routines: [], coverage: [] }));
+  const env = await start({ pipeline });
+  try {
+    expect((await fetch(`${env.base}/api/pipeline`)).status).toBe(200);
+    expect(pipeline).toHaveBeenCalledTimes(1);
+    expect((await raw(env.base, '/api/pipeline', { headers: { Host: 'habblaud.lan' } })).status).toBe(403);
+    expect((await fetch(`${env.base}/api/pipeline`, { method: 'POST', headers: JSON_HEADERS, body: '{}' })).status).toBe(405);
+    expect(pipeline).toHaveBeenCalledTimes(1);
+  } finally { await env.close(); env.cleanup(); }
+});
+
 /** Requisição crua (o fetch não deixa trocar o cabeçalho Host). */
 function raw(base: string, path: string, opts: { method?: string; headers?: Record<string, string>; body?: string } = {}): Promise<{ status: number; body: string }> {
   const u = new URL(base);

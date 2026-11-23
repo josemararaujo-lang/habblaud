@@ -1,3 +1,4 @@
+import { PipelinePanel } from './pipeline';
 // Interface do Habblaud (painéis DOM sobre o canvas do escritório).
 // Recebe o OfficeStore (dados) e o WorldApi (canvas) e monta: barra superior com uso por conta,
 // barra lateral, gaveta de detalhes, feed, avisos, configurações, ajuda e estados de carregamento/vazio.
@@ -279,6 +280,10 @@ export function createUI(root: HTMLElement, store: OfficeStore, world: WorldApi,
   help = new HelpDialog();
   const day = new DayLauncher(ctx, (el) => root.append(el));
   topbar.addPanelButton(day.button);
+  const pipeline = new PipelinePanel(ctx);
+  topbar.addPanelButton(pipeline.button);
+  root.append(pipeline.el);
+  if (new URLSearchParams(globalThis.location?.search ?? '').get('esteira') === '1') requestAnimationFrame(() => pipeline.open());
   // Botão direito numa sala (lista lateral ou escritório): renomear.
   const renamer = new RoomRenamer(ctx);
   ctx.renameRoom = (id, at) => renamer.open(id, at);
@@ -301,7 +306,7 @@ export function createUI(root: HTMLElement, store: OfficeStore, world: WorldApi,
   }));
   drawer.onLayoutChange = () => applyLayout();
 
-  const components: UiComponent[] = [topbar, sidebar, drawer, terminal, pty, history, deliveries, feed, toasts, settings, empty, banner, tip, notifier, splash, timelapse, sound, day, updateToaster, worldDialog, popups, worldChip];
+  const components: UiComponent[] = [topbar, sidebar, drawer, terminal, pty, history, deliveries, feed, toasts, settings, empty, banner, tip, notifier, splash, timelapse, sound, day, updateToaster, worldDialog, popups, worldChip, pipeline];
   if (scene) components.push(scene);
   root.append(worldSocial.el);
   components.push(worldSocial);

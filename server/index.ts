@@ -4,6 +4,7 @@
 //   npm start      -> node dist/server/index.js (serve dist/client)
 import http from 'node:http';
 import { DesktopSource } from './sources/desktop';
+import { readPipeline } from './sources/pipeline';
 import { readExternalAgents } from './sources/external-handoffs';
 import { join } from 'node:path';
 import { codexDirsRefused, isDefaultDir } from './accounts/detect';
@@ -355,6 +356,7 @@ const ticker = setInterval(() => {
 }, 250);
 
 const api = createApiHandler({
+  pipeline: () => readPipeline(config.home, handoffRoot, config.dataDir),
   renameRoom: (id, name) => {
     const path = office.roomPath(id);
     if (!path) return undefined;

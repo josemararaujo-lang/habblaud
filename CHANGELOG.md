@@ -12,6 +12,8 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Minha esteira.** Linha do tempo local com agentes, horários, próximo disparo previsto e resultados com ID validado. Distingue agenda confirmada, rotina documentada e definição sem agendamento.
+
 - **Equipes pela camisa, nomes compactos.** Claude laranja, Codex azul, Grok preta e Gemini amarela. Etiquetas mais legíveis abaixo dos personagens, sem ícones ou selos de provedor disputando espaço; identificação completa nos detalhes.
 
 

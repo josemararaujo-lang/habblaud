@@ -1,0 +1,38 @@
+.ui-pipeline-button { display: inline-flex; align-items: center; min-height: 32px; padding: 5px 10px !important; border-radius: 12px; background: var(--ui-bg-hover) !important; font: 600 12px/1.3 var(--font-ui) !important; }
+.ui-pipeline-button:hover { background: var(--ui-accent-soft) !important; }
+.ui-dialog.ui-pipeline { width: min(920px,calc(100vw - 28px)); max-height: calc(100dvh - 40px); padding: 0; border-radius: 22px; background: rgba(24,32,42,.96); backdrop-filter: blur(24px) saturate(120%); -webkit-backdrop-filter: blur(24px) saturate(120%); color: var(--ui-text); }
+.ui-pipeline__header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 24px 26px 18px; }
+.ui-pipeline__header h2 { font: 650 23px/1.3 var(--font-ui); letter-spacing: -.02em; }
+.ui-pipeline__note { margin-top: 5px !important; color: var(--ui-muted); font: 11px/1.5 var(--font-ui); }
+.ui-pipeline__actions { display: flex; gap: 8px; flex-shrink: 0; }
+.ui-pipeline__filters { display: flex; gap: 4px; margin: 0 26px 18px; padding: 4px; border-radius: 12px; background: rgba(255,255,255,.05); width: fit-content; }
+.ui-pipeline__filters button { padding: 8px 12px; border-radius: 9px; font: 550 12px/1.3 var(--font-ui); color: var(--ui-muted); }
+.ui-pipeline__filters [aria-pressed='true'] { background: rgba(255,255,255,.11); color: var(--ui-text); }
+.ui-pipeline__content { padding: 0 26px 26px; overflow-y: auto; max-height: calc(100dvh - 215px); scrollbar-color: #7a899d #202936; }
+.ui-pipeline__intro { color: var(--ui-muted); font-size: 12px; line-height: 1.6; margin-bottom: 22px !important; max-width: 70ch; }
+.ui-pipeline__list { padding: 0; margin: 0; list-style: none; }
+.ui-pipeline__row { display: grid; grid-template-columns: 64px minmax(0,1fr); gap: 20px; padding: 23px 0; border-top: 1px solid var(--ui-line); }
+.ui-pipeline__time { font: 600 15px/1.5 var(--font-ui); font-variant-numeric: tabular-nums; color: #d8e6f7; }
+.ui-pipeline__info { min-width: 0; }
+.ui-pipeline__row-head { display: flex; align-items: baseline; justify-content: space-between; gap: 15px; }
+.ui-pipeline__row-head h3 { font: 600 14px/1.5 var(--font-ui); }
+.ui-pipeline__state { font-size: 10px; white-space: nowrap; color: #bbcad9; }
+.ui-pipeline__state.is-active { color: #85dba9; }
+.ui-pipeline__state.is-documented,.ui-pipeline__state.is-unconfirmed { color: #edc478; }
+.ui-pipeline__owner { display: inline-flex; align-items: center; gap: 7px; margin-top: 5px; font-size: 11px; color: var(--ui-muted); }
+.ui-pipeline__owner::before { content: ''; height: 9px; width: 9px; background: var(--team); border: 1px solid rgba(255,255,255,.35); border-radius: 3px; }
+.ui-pipeline__info p { margin-top: 6px; font-size: 11px; line-height: 1.6; color: var(--ui-muted); }
+.ui-pipeline__info .ui-pipeline__next { color: #c9e0f7; }
+.ui-pipeline__info .ui-pipeline__notice { margin: 12px 0; color: #e6cd9b; max-width: 65ch; }
+.ui-pipeline__info .ui-pipeline__result { color: #b9cddc; }
+.ui-pipeline__result.is-mismatch,.ui-pipeline__result.is-unavailable { color: #f5b1a5 !important; }
+.ui-pipeline__details { margin-top: 12px; font-size: 11px; color: var(--ui-muted); overflow-wrap: anywhere; }
+.ui-pipeline__details summary { cursor: pointer; color: #9fc7eb; padding: 5px 0; }
+.ui-pipeline__details[open] { padding-bottom: 5px; }
+.ui-pipeline__coverage { padding-top: 24px; border-top: 1px solid var(--ui-line); margin-top: 12px; }
+.ui-pipeline__coverage h3 { margin-bottom: 12px; font: 600 13px/1.4 var(--font-ui); }
+.ui-pipeline__coverage p { margin-top: 7px; font-size: 11px; line-height: 1.6; color: var(--ui-muted); }
+.ui-pipeline__coverage strong { color: var(--ui-text); font-weight: 550; }
+.ui-pipeline__footnote { max-width: 75ch; padding-top: 13px; }
+@media (max-width:600px) { .ui-pipeline__header { align-items: flex-start; padding: 20px 16px 16px; gap: 10px; } .ui-pipeline__header h2 { font-size: 21px; } .ui-pipeline__actions { flex-direction: column; } .ui-pipeline__actions button { font-size: 11px; padding: 6px 10px; } .ui-pipeline__filters { margin-left: 16px; } .ui-pipeline__content { padding: 0 16px 20px; max-height: calc(100dvh - 220px); } .ui-pipeline__row { gap: 12px; grid-template-columns: 51px minmax(0,1fr); } .ui-pipeline__time { font-size: 13px; } .ui-pipeline__row-head { flex-direction: column; gap: 3px; } }
+@media (prefers-reduced-transparency:reduce),(prefers-contrast:more) { .ui-dialog.ui-pipeline { backdrop-filter: none; background: #18202a; } }

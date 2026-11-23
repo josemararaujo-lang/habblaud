@@ -1317,3 +1317,19 @@ ainda não oferece a mesma precisão de execução do Claude/Codex.
 Os metadados ficam no escritório local; esses personagens são excluídos do uplink
 do Habblaud World. Não há transcrição, permissão de envio, consumo ou conclusão
 inventados. Os cartões da rotina por arquivos continuam sendo uma evidência distinta.
+
+
+### Minha esteira
+
+O botão **Esteira** (ou `/?esteira=1`) abre a programação em leitura: **Manhã**
+e **Todas as rotinas**, agente executor, horário em America/Bahia, previsão do
+próximo disparo e resultado com ID correspondente ao repasse. Um resultado antigo
+não comprova execução de hoje. A tela relê os arquivos a cada 30 s enquanto aberta.
+
+O endpoint `/api/pipeline` é restrito ao acesso local e não permite alterações.
+Lê apenas metadados das automações Codex, arquivos da esteira e nomes das definições
+Claude. Não transmite prompts nem inclui esses dados no World. Observações de agendas
+nativas ficam em `~/.habblaud/pipeline-observations.json`, com fonte e horário;
+após seis horas são tratadas como não revalidadas. Definição local ou documentação
+não equivale a agenda ativa. Gemini é despachado pelo Codex; uma agenda nativa vazia
+não elimina essa etapa. Falhas de acesso ficam explícitas, sem assumir ausência.
