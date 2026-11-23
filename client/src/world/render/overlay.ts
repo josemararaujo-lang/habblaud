@@ -12,7 +12,10 @@ import type { Character } from '../sim/character';
 import { shellAgeKey, shellBubbleAlpha, shellBubbleText, STORM_LIFT, unitHash } from '../sim/shell';
 import type { Sim } from '../sim/sim';
 import { buildAnim } from './anim';
-import { drawFxBanner } from './github-fx';
+import { drawFxBanner, reducedMotion } from './github-fx';
+import { activeRoomTeams, roomPulse } from './room-label';
+import { TEAM_SHIRTS } from '../../../../shared/team-uniform';
+import type { Provider } from '../../../../shared/types';
 import type { HeadInfo, Renderer } from './renderer';
 import { tr } from '../../../../shared/i18n';
 
@@ -24,7 +27,6 @@ const BUBBLE_FONT = `500 11.5px ${UI_FONT}`;
 const SAY_FONT = `500 10.5px ${UI_FONT}`;
 const FLOAT_FONT = `800 12px ${UI_FONT}`;
 const BADGE_FONT = `700 8px ${UI_FONT}`;
-const ROOM_FONT = `700 12px ${UI_FONT}`;
 const CORE_FONT = `600 11px ${UI_FONT}`;
 const CORE_FONT_SMALL = `600 9.5px ${UI_FONT}`;
 const signFont = (size: number) => `700 ${size}px ${UI_FONT}`;
@@ -394,7 +396,7 @@ export class Overlay {
       const anim = room ? buildAnim(room.phase, room.progress(now)) : null;
       // texto da placa quando ela fica grande o bastante para ler; senão, o nome flutuante
       const rect = this.renderer.signRect(vis);
-      const text = room ? room.info.name : vis.id === 'core:recepcao' ? 'Habblaud' : null;
+      const text = !room && vis.id === 'core:recepcao' ? 'Habblaud' : null;
       const readable = !!rect && rect.h * zoom >= SIGN_MIN_PX;
       if (readable && rect && text && (!anim || anim.sign >= 1)) {
         const ax = this.sx(rect.x);
@@ -406,14 +408,14 @@ export class Overlay {
           this.place(ax, ay, w, h);
         }
       }
-      if (room ? readable : zoom >= 1.4) continue;
+      if (!room && zoom >= 1.4) continue;
       const cx = this.sx((r.x + r.w / 2) * TILE);
       const cy = this.sy(r.y * TILE + 6);
       if (cx < -200 || cx > vw + 200 || cy < -40 || cy > vh + 40) continue;
       if (room) {
         // endereço antigo de uma mudança: o nome já está na sala nova
         if (!room.present || room.ghost || (anim && anim.walls < 0.6)) continue;
-        this.drawRoomPill(room.info.name, cx, cy, colW - 8, room.accounts, this.countIn(room.id), room.theme.accent, room.lightOn);
+        this.drawCorePill(room.info.name, cx, cy, colW - 8, activeRoomTeams(this.sim.chars.values(), room.id), now);
       } else if (CORE_NAMES[vis.id]) {
         this.drawCorePill(CORE_NAMES[vis.id], cx, cy, colW - 8);
       }
@@ -441,12 +443,6 @@ export class Overlay {
       const b = drawFxBanner(this.ctx, fx, cx, top, r.w * TILE * zoom - 12, now, (f, t, w) => this.fit(f, t, w), (f, t) => this.measure(f, t));
       if (b) this.place(b.x, b.y, b.w, b.h);
     }
-  }
-
-  private countIn(roomId: string): number {
-    let n = 0;
-    for (const c of this.sim.chars.values()) if (c.roomId === roomId && !c.leaving) n++;
-    return n;
   }
 
   private drawSignText(text: string, x: number, y: number, w: number, h: number, dark: boolean, accounts: string[]): void {
@@ -484,70 +480,7 @@ export class Overlay {
     }
   }
 
-  private drawRoomPill(name: string, cx: number, cy: number, maxW: number, accounts: string[], count: number, accent: string, lit: boolean): void {
-    const { ctx } = this;
-    let dots = accounts.filter((a) => this.sim.accounts.has(a));
-    let countText = count > 0 ? String(count) : '';
-    let cw = countText ? this.measure(LABEL_FONT, countText) + 14 : 0;
-    // nome cortado para caber na largura da coluna; com pouco espaço, o nome vale mais que a
-    // contagem e as bolinhas; sem espaço nem para 3 letras, pílula compacta (só contagem)
-    let text = this.fit(ROOM_FONT, name, Math.min(180, maxW - (18 + dots.length * 10 + cw)));
-    if (text.length < Math.min(7, name.length)) {
-      const alone = this.fit(ROOM_FONT, name, maxW - 18);
-      if (alone.length >= 4) {
-        text = alone;
-        dots = [];
-        countText = '';
-        cw = 0;
-      }
-    }
-    const extras = 18 + dots.length * 10 + cw;
-    // Só vira pílula compacta quando o nome precisou ser cortado (nomes curtos como "app" cabem inteiros).
-    const compact = text !== name && text.length < 4;
-    const tw = compact ? 0 : this.measure(ROOM_FONT, text);
-    const w = Math.round(compact ? Math.max(12, 10 + cw + dots.length * 10) : tw + extras);
-    const h = 22;
-    const x = Math.round(cx - w / 2);
-    const y = Math.round(cy - h - 4);
-    ctx.save();
-    ctx.globalAlpha = lit ? 1 : 0.8;
-    ctx.fillStyle = 'rgba(16,20,32,0.28)';
-    ctx.beginPath();
-    ctx.roundRect(x, y + 2, w, h, 7);
-    ctx.fill();
-    ctx.fillStyle = 'rgba(22,27,40,0.9)';
-    ctx.beginPath();
-    ctx.roundRect(x, y, w, h, 7);
-    ctx.fill();
-    ctx.fillStyle = accent;
-    ctx.beginPath();
-    ctx.roundRect(x, y, 4, h, [7, 0, 0, 7]);
-    ctx.fill();
-    let dx = x + 10;
-    if (!compact) {
-      ctx.font = ROOM_FONT;
-      ctx.fillStyle = '#f3f5fa';
-      ctx.fillText(text, x + 10, y + h / 2 + 1);
-      dx = x + 10 + tw + 8;
-    }
-    for (const id of dots) {
-      accountDot(ctx, dx + 3, y + h / 2, 3.5, this.sim.accounts.get(id)!);
-      dx += 10;
-    }
-    if (countText) {
-      ctx.fillStyle = 'rgba(255,255,255,0.14)';
-      ctx.beginPath();
-      ctx.roundRect(dx + 2, y + 4, cw - 4, h - 8, 5);
-      ctx.fill();
-      ctx.font = LABEL_FONT;
-      ctx.fillStyle = '#dfe5f2';
-      ctx.fillText(countText, dx + 7, y + h / 2 + 0.5);
-    }
-    ctx.restore();
-    this.place(x, y, w, h);
-  }
-
-  private drawCorePill(name: string, cx: number, cy: number, maxW: number): void {
+  private drawCorePill(name: string, cx: number, cy: number, maxW: number, teams: Provider[] = [], now = 0): void {
     const { ctx } = this;
     // fonte um pouco menor antes de cortar o nome
     const font = this.measure(CORE_FONT, name) <= maxW - 14 ? CORE_FONT : CORE_FONT_SMALL;
@@ -562,6 +495,35 @@ export class Overlay {
     ctx.beginPath();
     ctx.roundRect(x, y, w, h, 6);
     ctx.fill();
+    if (teams.length) {
+      // Mesmo balão dos locais: só a atividade real acrescenta uma borda colorida.
+      // Equipes simultâneas dividem o contorno, sem alternar nomes nem cores.
+      ctx.save();
+      ctx.globalAlpha *= roomPulse(now, reducedMotion());
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(x, y, w, h, 6);
+      ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+      ctx.stroke();
+      ctx.lineWidth = 1.5;
+      for (let i = 0; i < teams.length; i++) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x - 2 + i * (w + 4) / teams.length, y - 2, (w + 4) / teams.length, h + 4);
+        ctx.clip();
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, h, 6);
+        ctx.fillStyle = TEAM_SHIRTS[teams[i]];
+        ctx.save();
+        ctx.globalAlpha *= 0.45;
+        ctx.fill();
+        ctx.restore();
+        ctx.strokeStyle = TEAM_SHIRTS[teams[i]];
+        ctx.stroke();
+        ctx.restore();
+      }
+      ctx.restore();
+    }
     ctx.font = font;
     ctx.fillStyle = '#e8ecf5';
     ctx.fillText(text, x + 7, y + h / 2 + 1);

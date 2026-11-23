@@ -12,6 +12,8 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Nomes dos projetos mais discretos.** Mesmo balão compacto dos locais, sem contagens ou bolinhas. Trabalho em andamento pulsa suavemente na cor da equipe; equipes simultâneas compartilham o contorno. Movimento reduzido mantém a borda estática.
+
 - **Interface clara, escura ou automática.** Escolha salva nas Configurações, independente do cenário do escritório. Menus, botões, filtros, campos e interruptores compartilham estados e contraste consistentes; indicadores adaptam as cores ao tema.
 
 - **Esteira compacta e janelas móveis.** A esteira pode acompanhar o escritório sem bloqueá-lo. Diálogos podem ser arrastados pelo cabeçalho e redimensionados pelas bordas ou pelo teclado; posição e tamanho são lembrados, com restauração e texto adaptado à largura da janela.

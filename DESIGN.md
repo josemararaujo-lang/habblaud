@@ -14,5 +14,7 @@ Direção autorizada por Josemar em 22/11/2026: aplicar o visual Glass aprovado 
 - Aparência clara, escura ou automática nas Configurações. Automático acompanha o sistema em tempo real; escolha explícita tem precedência e fica salva no navegador. Cor da interface não altera tema sazonal nem ciclo dia/noite do cenário.
 - Modo claro: texto #172c40, secundário #4c6175, foco #075fa8 sobre superfícies claras. Estados usam verde #167344, âmbar #865000 e erro #a8322b. Marcas dos provedores preservam as cores originais em suas próprias bases.
 
+- Etiquetas de projetos usam o mesmo balão de 18 px dos locais. Apenas agentes em `working` ou `shell`, presentes na sala atribuída, acrescentam contorno nas cores das camisas. Equipes simultâneas dividem a borda; pulso de 2,8 s preserva texto estável. Movimento reduzido usa destaque estático.
+
 ## Evidência e limites
 Referências e decisões em `docs/design/liquid-glass.md`. A adaptação web usa blur e translucidez, sem alegar refração nativa. Figma indisponível pelo limite já registrado; a revisão visual é feita no app local real.
