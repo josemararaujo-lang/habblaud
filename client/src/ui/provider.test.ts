@@ -51,6 +51,8 @@ describe('ferramenta (Claude Code ou Codex)', () => {
     expect(showsProviderTag('codex', 'Codex')).toBe(false);
     expect(showsProviderTag('codex', 'Demo Codex')).toBe(false);
     expect(showsProviderTag('claude', 'Conta C')).toBe(false);
+    expect(showsProviderTag('grok', 'Conta G')).toBe(true);
+    expect(showsProviderTag('grok', 'Grok Bot')).toBe(false);
   });
 
   it('rótulo do chip: e-mail no Claude Code; ferramenta e plano no Codex', () => {

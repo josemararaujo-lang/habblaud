@@ -31,6 +31,7 @@ export function nextAction(a: AgentInfo): string {
   if (a.status === 'waiting') return tr('Abrir e responder');
   if (a.status === 'working' || a.status === 'shell') return tr('Acompanhar execução');
   if (workGroup(a) === 'finished') return tr('Revisar resultado');
+  if (a.provider === 'grok') return tr('Ver no Grok Bot');
   return tr('Abrir conversa');
 }
 

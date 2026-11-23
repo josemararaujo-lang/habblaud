@@ -140,6 +140,9 @@ export function projectWithReport(input: ProjectionInput, ids: WorldIdSource, no
   for (const a of input.agents) {
     if (isDemoId(a.id) || isDemoId(a.roomId) || !roomIds.has(a.roomId)) continue;
     if ((a.kind !== 'main' && a.kind !== 'sub') || !isWorldStatus(a.status)) continue;
+    // O protocolo só conhece Claude Code e Codex: um agente do Grok Bot mandado como um deles seria dado falso, então
+    // fica de fora (e a sala que só tem agentes do Grok não vira andar).
+    if (a.provider === 'grok') continue;
     const list = byRoom.get(a.roomId);
     if (list) list.push(a);
     else byRoom.set(a.roomId, [a]);

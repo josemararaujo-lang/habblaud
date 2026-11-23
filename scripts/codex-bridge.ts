@@ -30,6 +30,22 @@ import { checkFile, insideKnownFolder, tempRoots } from '../server/deliveries/fi
 import { discoverClaudeDirs } from '../server/accounts/detect';
 import { HOST_WAIT_MS } from '../server/host-wait';
 import { readFileSync } from 'node:fs';
+import { Socket } from 'node:net';
+
+// Node 24.15: o fetch (undici) chama setTypeOfService em toda requisição e, no macOS, a chamada dá EINVAL quando o
+// Docker aceita a conexão e a fecha na hora (Habblaud reiniciando). O Node só ignora esse erro no Windows; aqui ele
+// escapava num evento do socket e derrubava a ponte. Ignorado, a requisição falha como "fora do ar" e tenta de novo.
+const setTypeOfService = Socket.prototype.setTypeOfService;
+if (setTypeOfService) {
+  Socket.prototype.setTypeOfService = function (this: Socket, tos: number) {
+    try {
+      return setTypeOfService.call(this, tos);
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === 'EINVAL') return this;
+      throw err;
+    }
+  };
+}
 
 export const DEFAULT_PORT = 4747;
 /** Intervalo entre as rodadas. */

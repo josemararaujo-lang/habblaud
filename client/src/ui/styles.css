@@ -1567,6 +1567,10 @@
   border-color: rgba(113, 183, 255, 0.34);
 }
 
+.ui-acc-filter[data-provider='grok']:not(.is-off) {
+  border-color: rgba(120, 214, 150, 0.34);
+}
+
 .ui-side__scroll {
   flex: 1;
   min-height: 0;
@@ -1695,6 +1699,11 @@
 .ui-room__source[data-provider='codex'] {
   color: #a9d5ff;
   background: rgba(106, 168, 255, 0.15);
+}
+
+.ui-room__source[data-provider='grok'] {
+  color: #b5ecc6;
+  background: rgba(92, 201, 123, 0.14);
 }
 
 .ui-room__source[data-provider='mixed'] {

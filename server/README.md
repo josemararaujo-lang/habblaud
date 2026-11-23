@@ -17,6 +17,7 @@ npm run build && npm start   # produção: serve dist/client
 | Subagentes (inclusive de workflows) | `<config>/projects/<cwd>/<sessionId>/subagents/**/agent-*.jsonl` + `.meta.json` |
 | Conta (e-mail, organização) e cache de uso | `~/.claude.json` (conta padrão) ou `<config>/.claude.json` — só esses campos |
 | Uso ao vivo (5h e semanal) | `~/.habblaud/usage/<conta>.json`, gravado pelo mod do Habblaud (`npm run mod:install`) ou pelo `scripts/statusline-tap.mjs` (`npm run usage:install`) |
+| Agentes do Grok Bot (só leitura) | `<pasta do app>/sand-client-persistence/*.blob`: lista de agentes, réplica das conversas e uso semanal (`sources/grok/`; nunca `sand-secrets.json` nem cookies) |
 | Atalho da conta (`c`, `d`...) | linhas `alias x='... claude ...'` de `~/.zshrc`, `~/.bashrc`, `~/.zprofile`, `~/.bash_profile` |
 
 **Forks** (subagentes que herdam o contexto do pai): o transcript começa com uma linha `fork-context-ref`, a

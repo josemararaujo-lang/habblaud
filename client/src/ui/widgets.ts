@@ -4,7 +4,7 @@ import type { AccountInfo, Activity, AgentInfo, AgentStatus, Provider } from '..
 import { h, setAttr, setHidden, setStyleVar, setText, setTitle, setVariant } from './dom';
 import { WORDMARK } from './icons';
 import { shellDoneKind, shellLine, shellStage, statusLabel, type ShellWait } from './model';
-import { accountChipLabel, accountProvider, showsProviderTag } from './provider';
+import { accountChipLabel, accountProvider, PROVIDER_LOGO, PROVIDER_NAME, showsProviderTag } from './provider';
 import { tr } from '../../../shared/i18n';
 
 /**
@@ -19,7 +19,7 @@ export function setAccountChipBrand(chip: HTMLElement, provider: Provider, color
   setStyleVar(chip, '--acc', color);
   setAttr(chip, 'data-provider', provider);
   const img = chip.firstElementChild;
-  if (img) setAttr(img, 'src', provider === 'codex' ? '/assets/providers/codex.png' : '/assets/providers/claude.svg');
+  if (img) setAttr(img, 'src', PROVIDER_LOGO[provider] ?? PROVIDER_LOGO.claude);
 }
 
 /** `provider` = dica para quando a conta não está no snapshot (ex.: a sessão do histórico diz de que ferramenta é). */
@@ -36,9 +36,13 @@ export function createProviderTag(extra = ''): HTMLElement {
   return h('span', { class: `ui-prov${extra ? ` ${extra}` : ''}`, text: 'Codex', hidden: true, title: tr('Agente do Codex (OpenAI)') });
 }
 
-/** Mostra o selo só para o Codex (e não repete quando o nome da conta já diz "Codex"). */
+/** Mostra o selo só fora do Claude Code (e não repete quando o nome da conta já diz qual é a ferramenta). */
 export function updateProviderTag(tag: HTMLElement, provider: Provider, accountName = ''): void {
-  setHidden(tag, !showsProviderTag(provider, accountName));
+  const shown = showsProviderTag(provider, accountName);
+  setHidden(tag, !shown);
+  if (!shown) return;
+  setText(tag, PROVIDER_NAME[provider]);
+  setTitle(tag, provider === 'grok' ? tr('Agente do Grok Bot (xAI), só leitura') : tr('Agente do Codex (OpenAI)'));
 }
 
 /** Quadradinho de status (pixel), com pulso quando precisa de você. */

@@ -240,6 +240,8 @@ export class MessageRegistry {
   canMessage(agentId: string): boolean {
     const a = this.opts.office.get(agentId);
     if (a?.provider === 'codex') return this.codexAvailable() && present(a) && a.kind === 'main';
+    // Grok Bot: só leitura (os agentes rodam na nuvem; não há como entregar mensagens a eles).
+    if (a?.provider === 'grok') return false;
     const at = this.seen.get(agentId);
     if (at === undefined || this.now() - at >= this.presenceMs) return false;
     return present(a) && a.kind === 'main';
@@ -294,10 +296,10 @@ export class MessageRegistry {
     const session = shortStr(r?.session, ID_MAX);
     if (!r || !session) throw new InvalidRequest('esperado {session, account?}');
     const account = shortStr(r.account, ID_MAX);
-    // O plugin é do Claude Code: agentes do Codex nunca recebem por aqui.
+    // O plugin é do Claude Code: agentes do Codex e do Grok nunca recebem por aqui.
     const agent = this.opts.office
       .list()
-      .find((a) => a.kind === 'main' && a.provider !== 'codex' && a.sessionId === session && (!account || a.account === account) && present(a));
+      .find((a) => a.kind === 'main' && (a.provider ?? 'claude') === 'claude' && a.sessionId === session && (!account || a.account === account) && present(a));
     if (!agent) return [];
 
     const now = this.now();

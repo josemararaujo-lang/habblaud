@@ -4,3 +4,4 @@
 - `codex.png`: ícone oficial do Codex, reduzido de `icon-codex-dark-color.png` incluído no aplicativo Codex/ChatGPT instalado (OpenAI).
 
 As marcas pertencem às respectivas empresas e são usadas somente para identificar a ferramenta associada às contas no Habblaud.
+- `grok.png`: ícone do Grok Bot, reduzido de `icon.icns` incluído no aplicativo Grok Bot instalado (xAI/Anysphere).

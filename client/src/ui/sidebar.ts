@@ -13,6 +13,7 @@ import { aggregateTasks, groupRooms, matchesQuery, type AgentNode, type RoomGrou
 import { officeIsEmpty } from './overlays';
 import { createAgentRow, updateAgentRow } from './rows';
 import { createAccountChip, createProgress, updateAccountChip, updateProgress } from './widgets';
+import { PROVIDER_NAME, providerOf } from './provider';
 import { tr } from '../../../shared/i18n';
 
 interface RoomRefs {
@@ -110,9 +111,9 @@ export class Sidebar implements UiComponent {
       update: (b, a) => {
         const hidden = this.ctx.prefs.hiddenAccounts.includes(a.id);
         updateAccountChip(b.firstElementChild as HTMLElement, a);
-        const provider = a.provider === 'codex' ? tr('Codex') : tr('Claude Code');
+        const provider = PROVIDER_NAME[providerOf(a)];
         setText(b.lastElementChild!, a.name === provider ? provider : `${provider} · ${a.name}`);
-        setAttr(b, 'data-provider', a.provider === 'codex' ? 'codex' : 'claude');
+        setAttr(b, 'data-provider', providerOf(a));
         setAttr(b, 'aria-pressed', String(!hidden));
         setTitle(b, hidden ? tr('Mostrar a {0} na lista, no feed e nos avisos', [a.name]) : tr('Ocultar a {0} na lista, no feed e nos avisos (o escritório continua mostrando todos)', [a.name]));
         b.classList.toggle('is-off', hidden);
@@ -335,12 +336,12 @@ export class Sidebar implements UiComponent {
     const present = summary.total;
     setText(r.count, String(present));
     setTitle(r.count, plural(present, tr('agente'), tr('agentes')));
-    const providers = new Set(visibleAgents.map((a) => a.provider === 'codex' ? 'codex' : 'claude'));
-    const source = providers.size === 2 ? tr('Claude Code + Codex') : providers.has('codex') ? tr('Codex') : tr('Claude Code');
+    const providers = new Set(visibleAgents.map((a) => providerOf(a)));
+    const order = (['claude', 'codex', 'grok'] as const).filter((p) => providers.has(p));
     setHidden(r.source, providers.size === 0);
     if (providers.size) {
-      setText(r.source, source);
-      setAttr(r.source, 'data-provider', providers.size === 2 ? 'mixed' : providers.has('codex') ? 'codex' : 'claude');
+      setText(r.source, order.map((p) => PROVIDER_NAME[p]).join(' + '));
+      setAttr(r.source, 'data-provider', order.length > 1 ? 'mixed' : order[0]);
     }
     setText(r.path, tr('Pasta: {0}', [shortPath(g.room.path)]));
     setTitle(r.head, tr('{0}\nClique para ver a sala', [g.room.path]));

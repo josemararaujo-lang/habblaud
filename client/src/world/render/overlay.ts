@@ -107,6 +107,7 @@ type Item = Bubble | Label;
 const CODEX_CHIP_BG = '#161b26';
 /** Selo "CODEX" das etiquetas: discreto (vidro claro), sem a cor de ninguém. */
 const CODEX_BADGE = 'CODEX';
+const GROK_BADGE = 'GROK';
 
 /**
  * Bolinha minúscula de uma conta (placas e pílulas das salas): cheia no Claude Code, vazada no Codex.
@@ -162,6 +163,7 @@ export function rationBubbles(items: readonly { room: string; prio: number; chan
 export class Overlay {
   private readonly claudeLogo = new Image();
   private readonly codexLogo = new Image();
+  private readonly grokLogo = new Image();
   private widths = new Map<string, number>();
   private fitted = new Map<string, string>();
   private placed: number[] = [];
@@ -187,6 +189,7 @@ export class Overlay {
   ) {
     this.claudeLogo.src = '/assets/providers/claude.svg';
     this.codexLogo.src = '/assets/providers/codex.png';
+    this.grokLogo.src = '/assets/providers/grok.png';
   }
 
   /** Descarta medições (ex.: depois que uma fonte carregou). */
@@ -858,7 +861,8 @@ export class Overlay {
     const chipW = acc ? 15 : 0;
     const visitor = ch === this.sim.visitor;
     const badgeW = visitor ? this.measure(BADGE_FONT, visitorBadge()) + 7 : ch.info.kind === 'sub' && !l.compact ? this.measure(BADGE_FONT, 'SUB') + 7 : 0;
-    const codexW = ch.info.provider === 'codex' && !l.compact ? this.measure(BADGE_FONT, CODEX_BADGE) + 7 : 0;
+    const tool = toolBadge(ch.info.provider);
+    const codexW = tool && !l.compact ? this.measure(BADGE_FONT, tool) + 7 : 0;
     return { nameW, chipW, badgeW, codexW };
   }
 
@@ -890,6 +894,7 @@ export class Overlay {
     const acc = this.sim.accounts.get(ch.info.account);
     const sub = ch.info.kind === 'sub';
     const codex = ch.info.provider === 'codex' || acc?.provider === 'codex';
+    const grok = ch.info.provider === 'grok' || acc?.provider === 'grok';
     const { nameW, chipW, badgeW, codexW } = this.labelWidth(l);
     const { x, y, w, h } = l;
     const selected = sel.agent === ch.id;
@@ -899,7 +904,7 @@ export class Overlay {
     ctx.fill();
     let cx = x + 4;
     if (acc) {
-      const logo = codex ? this.codexLogo : this.claudeLogo;
+      const logo = codex ? this.codexLogo : grok ? this.grokLogo : this.claudeLogo;
       ctx.beginPath();
       ctx.roundRect(cx, y + h / 2 - 6.5, 13, 13, 3);
       ctx.fillStyle = '#171b24';
@@ -945,9 +950,14 @@ export class Overlay {
       ctx.fill();
       ctx.font = BADGE_FONT;
       ctx.fillStyle = '#e8ecf5';
-      ctx.fillText(CODEX_BADGE, cx + 3.5, y + h / 2 + 0.5);
+      ctx.fillText(toolBadge(ch.info.provider) ?? CODEX_BADGE, cx + 3.5, y + h / 2 + 0.5);
     }
   }
+}
+
+/** Selo da ferramenta na etiqueta ("CODEX", "GROK"); o Claude Code não tem selo. */
+function toolBadge(provider: string | undefined): string | undefined {
+  return provider === 'codex' ? CODEX_BADGE : provider === 'grok' ? GROK_BADGE : undefined;
 }
 
 /** Ícone da fala quando ela vira só um chip (visão geral): o primeiro emoji da frase, ou 💬. */
