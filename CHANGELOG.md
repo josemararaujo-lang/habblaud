@@ -12,6 +12,8 @@ do meio (0.**3**.0).
 
 ### Melhorado
 
+- **Histórico, leitor de conversas e editor revisados.** Terminal com cores legíveis nos modos claro e escuro, superfície Glass e filtros consistentes. Histórico com metadados que se adaptam à janela; editor com prévia e amostras de cor mais confortáveis, sem sobreposição de vidro.
+
 - **Revisão visual dos dois temas.** Barra superior compacta sem cortar o botão lateral em telas estreitas; metadados e ações menores mais legíveis, cabeçalhos de menus sempre acessíveis ao rolar e escolhas de personagem no padrão Glass. Controles indisponíveis mantêm o estado visual ao passar o mouse.
 
 - **Glass consistente em toda a interface.** Configurações, Meu dia, ajuda, detalhes, menus e controles compartilham materiais, brilho e estados. Seleções de filtros e opções deslizam, interruptores têm resposta fluida e menus abrem suavemente, com adaptação aos dois temas e às preferências de acessibilidade.

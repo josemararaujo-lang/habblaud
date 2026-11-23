@@ -14,6 +14,7 @@ import './themes.css';
 import './refinement.css';
 import './navigation-glass.css';
 import './controls-glass.css';
+import './terminal-glass.css';
 import { GlassControls } from './glass-selection';
 import { DialogWindows } from './dialog-windows';
 import { ColorMode } from './color-mode';
